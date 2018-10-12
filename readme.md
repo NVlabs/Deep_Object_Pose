@@ -96,7 +96,7 @@ This is the official DOPE ROS package for detection and 6-DoF pose estimation of
   * `Add > Image` to view the raw RGB image or the image with cuboids overlaid
   * `Add > Pose` to view the object coordinate frame in 3D.  If you do not have a coordinate frame set up, you can run this static transformation: `rosrun tf static_transform_publisher 0 0 0 0.7071 0 0 -0.7071 world dope 10`.  Make sure that in RViz's `Global Options`, the `Fixed Frame` is set to `world`. 
 
-* If `rosrun` does not find the package, run `rospack find dope`. 
+* If `rosrun` does not find the package (`[rospack] Error: package 'dope' not found`), be sure that you called `source devel/setup.bash` as mentioned above.  To find the package, run `rospack find dope`. 
 
 
 ## YCB 3D Models
