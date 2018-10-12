@@ -1,0 +1,5 @@
+/weights
+*.pyc
+*._
+*.png
+__pycache__
