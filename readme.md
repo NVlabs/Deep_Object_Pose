@@ -124,7 +124,7 @@ Copyright (C) 2018 NVIDIA Corporation. All rights reserved. Licensed under the [
 
 ## Acknowledgment 
 
-Thanks to Jeffrey Smith for creating the Docker image. 
+Thanks to Jeffrey Smith (jeffreys@nvidia.com) for creating the Docker image. 
 
 
 ## Contact
