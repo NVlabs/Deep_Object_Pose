@@ -1339,12 +1339,18 @@ def _runnetwork(epoch, loader, train=True):
 
         loss = None
         
+        # Belief maps loss
         for l in output_belief: #output, each belief map layers. 
             if loss is None:
                 loss = ((l - target_belief) * (l-target_belief)).mean()
             else:
                 loss_tmp = ((l - target_belief) * (l-target_belief)).mean()
                 loss += loss_tmp
+        
+        # Affinities loss
+        for l in output_affinities: #output, each belief map layers. 
+            loss_tmp = ((l - target_affinity) * (l-target_affinity)).mean()
+            loss += loss_tmp 
 
         if train:
             loss.backward()
