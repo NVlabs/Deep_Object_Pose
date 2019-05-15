@@ -351,6 +351,10 @@ def loadimages(root):
             if exists(imgpath) and exists(imgpath.replace('png',"json")):
                 imgs.append((imgpath,imgpath.replace(path,"").replace("/",""),
                     imgpath.replace('png',"json")))
+        for imgpath in glob.glob(path+"/*.jpg"):
+            if exists(imgpath) and exists(imgpath.replace('jpg',"json")):
+                imgs.append((imgpath,imgpath.replace(path,"").replace("/",""),
+                    imgpath.replace('jpg',"json")))
 
     def explore(path):
         if not os.path.isdir(path):
