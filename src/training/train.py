@@ -458,7 +458,7 @@ class MultipleVertexJson(data.Dataset):
                                 data['rotations'])).float() 
 
         if len(points_all) == 0:
-            points_all = torch.zeros(1)
+            points_all = torch.zeros(1, 10, 2).double()
         
         # self.save == true assumes there is only 
         # one object instance in the scene. 
