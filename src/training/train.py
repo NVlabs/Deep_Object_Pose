@@ -111,7 +111,7 @@ class DopeNetwork(nn.Module):
 
         self.stop_at_stage = stop_at_stage
 
-        vgg_full = models.vgg19(pretrained=False).features
+        vgg_full = models.vgg19(pretrained=pretrained).features
         self.vgg = nn.Sequential()
         for i_layer in range(24):
             self.vgg.add_module(str(i_layer), vgg_full[i_layer])
