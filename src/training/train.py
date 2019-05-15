@@ -111,7 +111,7 @@ class DopeNetwork(nn.Module):
 
         self.stop_at_stage = stop_at_stage
 
-        vgg_full = models.vgg19(pretrained=False).features
+        vgg_full = models.vgg19(pretrained=pretrained).features
         self.vgg = nn.Sequential()
         for i_layer in range(24):
             self.vgg.add_module(str(i_layer), vgg_full[i_layer])
@@ -351,6 +351,10 @@ def loadimages(root):
             if exists(imgpath) and exists(imgpath.replace('png',"json")):
                 imgs.append((imgpath,imgpath.replace(path,"").replace("/",""),
                     imgpath.replace('png',"json")))
+        for imgpath in glob.glob(path+"/*.jpg"):
+            if exists(imgpath) and exists(imgpath.replace('jpg',"json")):
+                imgs.append((imgpath,imgpath.replace(path,"").replace("/",""),
+                    imgpath.replace('jpg',"json")))
 
     def explore(path):
         if not os.path.isdir(path):
@@ -387,7 +391,6 @@ class MultipleVertexJson(data.Dataset):
             random_rotation = 15.0,
             ):
         ###################
-        self.save = save
         self.objectsofinterest = objectsofinterest
         self.img_size = img_size
         self.loader = loader
@@ -455,7 +458,7 @@ class MultipleVertexJson(data.Dataset):
                                 data['rotations'])).float() 
 
         if len(points_all) == 0:
-            points_all = torch.zeros(1)
+            points_all = torch.zeros(1, 10, 2).double()
         
         # self.save == true assumes there is only 
         # one object instance in the scene. 
@@ -961,7 +964,7 @@ def make_grid(tensor, nrow=8, padding=2,
     if tensor.dim() == 4 and tensor.size(1) == 1:  # single-channel images
         tensor = torch.cat((tensor, tensor, tensor), 1)
 
-    if normalize is True:
+    if normalize == True:
         tensor = tensor.clone()  # avoid modifying tensor in-place
         if range is not None:
             assert isinstance(range, tuple), \
@@ -977,7 +980,7 @@ def make_grid(tensor, nrow=8, padding=2,
             else:
                 norm_ip(t, float(t.min()), float(t.max()))
 
-        if scale_each is True:
+        if scale_each == True:
             for t in tensor:  # loop over mini-batch dimension
                 norm_range(t, range)
         else:
@@ -1239,7 +1242,7 @@ else:
 print ("load data")
 #load the dataset using the loader in utils_pose
 trainingdata = None
-if not opt.data is "":
+if not opt.data == "":
     train_dataset = MultipleVertexJson(
         root = opt.data,
         objectsofinterest=opt.object,
