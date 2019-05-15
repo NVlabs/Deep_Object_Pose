@@ -391,7 +391,6 @@ class MultipleVertexJson(data.Dataset):
             random_rotation = 15.0,
             ):
         ###################
-        self.save = save
         self.objectsofinterest = objectsofinterest
         self.img_size = img_size
         self.loader = loader
@@ -965,7 +964,7 @@ def make_grid(tensor, nrow=8, padding=2,
     if tensor.dim() == 4 and tensor.size(1) == 1:  # single-channel images
         tensor = torch.cat((tensor, tensor, tensor), 1)
 
-    if normalize is True:
+    if normalize == True:
         tensor = tensor.clone()  # avoid modifying tensor in-place
         if range is not None:
             assert isinstance(range, tuple), \
@@ -981,7 +980,7 @@ def make_grid(tensor, nrow=8, padding=2,
             else:
                 norm_ip(t, float(t.min()), float(t.max()))
 
-        if scale_each is True:
+        if scale_each == True:
             for t in tensor:  # loop over mini-batch dimension
                 norm_range(t, range)
         else:
@@ -1243,7 +1242,7 @@ else:
 print ("load data")
 #load the dataset using the loader in utils_pose
 trainingdata = None
-if not opt.data is "":
+if not opt.data == "":
     train_dataset = MultipleVertexJson(
         root = opt.data,
         objectsofinterest=opt.object,
