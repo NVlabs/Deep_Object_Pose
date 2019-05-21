@@ -110,7 +110,12 @@ class DopeNetwork(nn.Module):
         super(DopeNetwork, self).__init__()
 
         self.stop_at_stage = stop_at_stage
-
+        
+		if pretrained is False:
+			print("Training network without imagenet weights.")
+		else:
+			print("Training network pretrained on imagenet.")
+            
         vgg_full = models.vgg19(pretrained=pretrained).features
         self.vgg = nn.Sequential()
         for i_layer in range(24):
@@ -1192,6 +1197,9 @@ if args.config:
 parser.set_defaults(**defaults)
 parser.add_argument("--option")
 opt = parser.parse_args(remaining_argv)
+
+if opt.pretrained in ['false', 'False']:
+	opt.pretrained = False
 
 if not "/" in opt.outf:
     opt.outf = "train_{}".format(opt.outf)
