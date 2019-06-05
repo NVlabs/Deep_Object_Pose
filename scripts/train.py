@@ -102,11 +102,11 @@ class DopeNetwork(nn.Module):
 
         self.stop_at_stage = stop_at_stage
         
-		if pretrained is False:
-			print("Training network without imagenet weights.")
-		else:
-			print("Training network pretrained on imagenet.")
-            
+        if pretrained is False:
+            print("Training network without imagenet weights.")
+        else:
+            print("Training network pretrained on imagenet.")
+
         vgg_full = models.vgg19(pretrained=pretrained).features
         self.vgg = nn.Sequential()
         for i_layer in range(24):
