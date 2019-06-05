@@ -26,14 +26,12 @@ from geometry_msgs.msg import PoseStamped
 from PIL import Image
 from PIL import ImageDraw
 
-# Import DOPE code
-rospack = rospkg.RosPack()
-g_path2package = rospack.get_path('dope')
-sys.path.append("{}/src/inference".format(g_path2package))
-from cuboid import *
-from detector import *
+from dope.inference.cuboid import Cuboid3d
+from dope.inference.cuboid_pnp_solver import CuboidPNPSolver
+from dope.inference.detector import ModelData, ObjectDetector
 
 ### Global Variables
+g_path2package = rospkg.RosPack().get_path('dope')
 g_bridge = CvBridge()
 g_img = None
 g_draw = None
