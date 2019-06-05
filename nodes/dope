@@ -10,25 +10,22 @@ listening to an image topic and publishing poses.
 """
 
 from __future__ import print_function
-import yaml
-import sys 
+
+import sys
 
 import numpy as np
-import cv2
-
-import rospy
 import rospkg
-from std_msgs.msg import String, Empty
-from cv_bridge import CvBridge, CvBridgeError
-from sensor_msgs.msg import Image as ImageSensor_msg
-from geometry_msgs.msg import PoseStamped
-
+import rospy
+import yaml
 from PIL import Image
 from PIL import ImageDraw
-
+from cv_bridge import CvBridge
 from dope.inference.cuboid import Cuboid3d
 from dope.inference.cuboid_pnp_solver import CuboidPNPSolver
 from dope.inference.detector import ModelData, ObjectDetector
+from geometry_msgs.msg import PoseStamped
+from sensor_msgs.msg import Image as ImageSensor_msg
+from std_msgs.msg import String
 
 ### Global Variables
 g_path2package = rospkg.RosPack().get_path('dope')

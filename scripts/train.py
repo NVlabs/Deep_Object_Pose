@@ -51,43 +51,32 @@ after each epoch. It will use the 8 gpus using pytorch data parallel.
 
 import argparse
 import ConfigParser
-import os
 import random
-import shutil
-import numpy as np 
+import numpy as np
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.nn.parallel
-import torch.backends.cudnn as cudnn
 import torch.optim as optim
 import torch.utils.data
-import torchvision.datasets as dset
 import torchvision.transforms as transforms
-import torchvision.utils as vutils
 from torch.autograd import Variable
 import torch.utils.data as data
 import torchvision.models as models
 import datetime
 import json
 import glob
-import os 
-import copy
+import os
 
 from PIL import Image
-from PIL import ImageFilter
-from PIL import ImageOps
 from PIL import ImageDraw
-from PIL import ImageFont
 from PIL import ImageEnhance
 
 from math import acos
 from math import sqrt
 from math import pi    
 
-from os.path import exists, basename
-from os.path import join
+from os.path import exists
 
 import cv2
 import colorsys,math

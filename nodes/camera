@@ -9,14 +9,11 @@ It uses OpenCV to capture from camera 0.
 """
 
 from __future__ import print_function
-import rospy
-from std_msgs.msg import String
-from cv_bridge import CvBridge, CvBridgeError
-from sensor_msgs.msg import Image as ImageSensor
 
-from sensor_msgs.msg import Image as Image_msg
-import numpy as np
 import cv2
+import rospy
+from cv_bridge import CvBridge
+from sensor_msgs.msg import Image as Image_msg
 
 # Global variables
 cam_index = 0  # index of camera to capture

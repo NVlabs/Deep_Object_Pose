@@ -2,10 +2,11 @@
 # This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 # https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
 
-from enum import IntEnum, unique
-import numpy as np
+from enum import IntEnum
+
 import cv2
-from pyrr import Quaternion, Matrix44, Vector3, euler
+import numpy as np
+
 
 # Related to the object's local coordinate system
 # @unique

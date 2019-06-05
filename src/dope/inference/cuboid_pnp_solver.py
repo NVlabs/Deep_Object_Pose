@@ -2,10 +2,11 @@
 # This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 # https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
 
-import numpy as np
-from pyrr import Quaternion
 import cv2
-from cuboid import *
+import numpy as np
+from cuboid import CuboidVertexType
+from pyrr import Quaternion
+
 
 class CuboidPNPSolver(object):
     """
