@@ -8,6 +8,8 @@ project(dope)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  cv_bridge
+  geometry_msgs
   rospy
   std_msgs
   tf2
@@ -103,9 +105,7 @@ catkin_python_setup()
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES dope
-#  CATKIN_DEPENDS rospy std_msgs tf2
+  CATKIN_DEPENDS geometry_msgs std_msgs
 #  DEPENDS system_lib
 )
 
@@ -163,6 +163,12 @@ include_directories(
 #   scripts/my_python_script
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
+
+catkin_install_python(PROGRAMS
+  nodes/camera
+  nodes/dope
+  scripts/train.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 ## Mark executables and/or libraries for installation
 # install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node
