@@ -90,12 +90,12 @@ class Draw(object):
 class DopeNode(object):
     """ROS node that listens to image topic, runs DOPE, and publishes DOPE results"""
     def __init__(self, params):
-        self.params = params
         self.pubs = {}
         self.models = {}
         self.pnp_solvers = {}
         self.pub_dimension = {}
         self.draw_colors = {}
+        self.dimensions = {}
         self.cv_bridge = CvBridge()
 
         # Initialize parameters
@@ -132,6 +132,8 @@ class DopeNode(object):
 
             self.draw_colors[model] = \
                 tuple(params["draw_colors"][model])
+            self.dimensions[model] = \
+                tuple(params["dimensions"][model])
             self.pnp_solvers[model] = \
                 CuboidPNPSolver(
                     model,
@@ -211,7 +213,7 @@ class DopeNode(object):
 
                 # Publish
                 self.pubs[m].publish(pose_msg)
-                self.pub_dimension[m].publish(str(self.params['dimensions'][m]))
+                self.pub_dimension[m].publish(str(self.dimensions[m]))
 
                 # Draw the cube
                 if None not in result['projected_points']:
