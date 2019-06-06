@@ -29,65 +29,67 @@ from std_msgs.msg import String
 g_path2package = rospkg.RosPack().get_path('dope')
 g_bridge = CvBridge()
 g_img = None
-g_draw = None
 
 
-### Code to visualize the neural network output
+class Draw(object):
+    """Drawing helper class to visualize the neural network output"""
 
-def DrawLine(point1, point2, lineColor, lineWidth):
-    '''Draws line on image'''
-    global g_draw
-    if not point1 is None and point2 is not None:
-        g_draw.line([point1,point2], fill=lineColor, width=lineWidth)
+    def __init__(self, im):
+        """
+        :param im: The image to draw in.
+        """
+        self.draw = ImageDraw.Draw(im)
 
-def DrawDot(point, pointColor, pointRadius):
-    '''Draws dot (filled circle) on image'''
-    global g_draw
-    if point is not None:
-        xy = [
-            point[0]-pointRadius, 
-            point[1]-pointRadius, 
-            point[0]+pointRadius, 
-            point[1]+pointRadius
-        ]
-        g_draw.ellipse(xy, 
-            fill=pointColor, 
-            outline=pointColor
-        )
+    def draw_line(self, point1, point2, line_color, line_width=2):
+        """Draws line on image"""
+        if point1 is not None and point2 is not None:
+            self.draw.line([point1, point2], fill=line_color, width=line_width)
 
-def DrawCube(points, color=(255, 0, 0)):
-    '''
-    Draws cube with a thick solid line across 
-    the front top edge and an X on the top face.
-    '''
+    def draw_dot(self, point, point_color, point_radius):
+        """Draws dot (filled circle) on image"""
+        if point is not None:
+            xy = [
+                point[0] - point_radius,
+                point[1] - point_radius,
+                point[0] + point_radius,
+                point[1] + point_radius
+            ]
+            self.draw.ellipse(xy,
+                              fill=point_color,
+                              outline=point_color
+                              )
 
-    lineWidthForDrawing = 2
+    def draw_cube(self, points, color=(255, 0, 0)):
+        """
+        Draws cube with a thick solid line across
+        the front top edge and an X on the top face.
+        """
 
-    # draw front
-    DrawLine(points[0], points[1], color, lineWidthForDrawing)
-    DrawLine(points[1], points[2], color, lineWidthForDrawing)
-    DrawLine(points[3], points[2], color, lineWidthForDrawing)
-    DrawLine(points[3], points[0], color, lineWidthForDrawing)
-    
-    # draw back
-    DrawLine(points[4], points[5], color, lineWidthForDrawing)
-    DrawLine(points[6], points[5], color, lineWidthForDrawing)
-    DrawLine(points[6], points[7], color, lineWidthForDrawing)
-    DrawLine(points[4], points[7], color, lineWidthForDrawing)
-    
-    # draw sides
-    DrawLine(points[0], points[4], color, lineWidthForDrawing)
-    DrawLine(points[7], points[3], color, lineWidthForDrawing)
-    DrawLine(points[5], points[1], color, lineWidthForDrawing)
-    DrawLine(points[2], points[6], color, lineWidthForDrawing)
+        # draw front
+        self.draw_line(points[0], points[1], color)
+        self.draw_line(points[1], points[2], color)
+        self.draw_line(points[3], points[2], color)
+        self.draw_line(points[3], points[0], color)
 
-    # draw dots
-    DrawDot(points[0], pointColor=color, pointRadius = 4)
-    DrawDot(points[1], pointColor=color, pointRadius = 4)
+        # draw back
+        self.draw_line(points[4], points[5], color)
+        self.draw_line(points[6], points[5], color)
+        self.draw_line(points[6], points[7], color)
+        self.draw_line(points[4], points[7], color)
 
-    # draw x on the top 
-    DrawLine(points[0], points[5], color, lineWidthForDrawing)
-    DrawLine(points[1], points[4], color, lineWidthForDrawing)
+        # draw sides
+        self.draw_line(points[0], points[4], color)
+        self.draw_line(points[7], points[3], color)
+        self.draw_line(points[5], points[1], color)
+        self.draw_line(points[2], points[6], color)
+
+        # draw dots
+        self.draw_dot(points[0], point_color=color, point_radius=4)
+        self.draw_dot(points[1], point_color=color, point_radius=4)
+
+        # draw x on the top
+        self.draw_line(points[0], points[5], color)
+        self.draw_line(points[1], points[4], color)
 
 
 class DopeNode(object):
@@ -181,7 +183,6 @@ class DopeNode(object):
 
     def run_dope_node(self, freq=5):
         global g_img
-        global g_draw
 
         rate = rospy.Rate(freq)
 
@@ -190,7 +191,7 @@ class DopeNode(object):
                 # Copy and draw image
                 img_copy = g_img.copy()
                 im = Image.fromarray(img_copy)
-                g_draw = ImageDraw.Draw(im)
+                draw = Draw(im)
 
                 for m in self.models:
                     # Detect object
@@ -228,7 +229,7 @@ class DopeNode(object):
                             points2d = []
                             for pair in result['projected_points']:
                                 points2d.append(tuple(pair))
-                            DrawCube(points2d, self.draw_colors[m])
+                            draw.draw_cube(points2d, self.draw_colors[m])
 
                 # Publish the image with results overlaid
                 self.pub_rgb_dope_points.publish(
