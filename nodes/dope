@@ -11,8 +11,6 @@ listening to an image topic and publishing poses.
 
 from __future__ import print_function
 
-import sys
-
 import numpy as np
 import rospkg
 import rospy
@@ -172,7 +170,9 @@ def run_dope_node(params, freq=5):
             ImageSensor_msg, 
             queue_size=10
         )
-    
+
+    topic_cam = params['topic_camera']
+
     # Starts ROS listener
     rospy.Subscriber(
         topic_cam, 
@@ -180,8 +180,6 @@ def run_dope_node(params, freq=5):
         __image_callback
     )
 
-    # Initialize ROS node
-    rospy.init_node('dope_vis', anonymous=True)
     rate = rospy.Rate(freq)
 
     print ("Running DOPE...  (Listening to camera topic: '{}')".format(topic_cam)) 
@@ -242,14 +240,17 @@ def run_dope_node(params, freq=5):
         rate.sleep()
 
 
-if __name__ == "__main__":
-    '''Main routine to run DOPE'''
+def main():
+    """Main routine to run DOPE"""
 
-    if len(sys.argv) > 1:
-        config_name = sys.argv[1]
+    # Initialize ROS node
+    rospy.init_node('dope')
+    argv = rospy.myargv()
+
+    if len(argv) > 1:
+        config_name = argv[1]
     else:
         config_name = "config_pose.yaml"
-    rospack = rospkg.RosPack()
     params = None
     yaml_path = g_path2package + '/config/{}'.format(config_name)
     with open(yaml_path, 'r') as stream:
@@ -260,9 +261,11 @@ if __name__ == "__main__":
         except yaml.YAMLError as exc:
             print(exc)
 
-    topic_cam = params['topic_camera']
-
-    try :
+    try:
         run_dope_node(params)
     except rospy.ROSInterruptException:
         pass
+
+
+if __name__ == "__main__":
+    main()
