@@ -25,10 +25,6 @@ from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import Image as ImageSensor_msg
 from std_msgs.msg import String
 
-### Global Variables
-g_path2package = rospkg.RosPack().get_path('dope')
-g_bridge = CvBridge()
-
 
 class Draw(object):
     """Drawing helper class to visualize the neural network output"""
@@ -100,6 +96,7 @@ class DopeNode(object):
         self.pnp_solvers = {}
         self.pub_dimension = {}
         self.draw_colors = {}
+        self.cv_bridge = CvBridge()
 
         # Initialize parameters
         matrix_camera = np.zeros((3, 3))
@@ -124,11 +121,12 @@ class DopeNode(object):
         self.config_detect.thresh_points = params["thresh_points"]
 
         # For each object to detect, load network model, create PNP solver, and start ROS publishers
+        path2package = rospkg.RosPack().get_path('dope')
         for model in params['weights']:
             self.models[model] = \
                 ModelData(
                     model,
-                    g_path2package + "/weights/" + params['weights'][model]
+                    path2package + "/weights/" + params['weights'][model]
                 )
             self.models[model].load_net_model()
 
@@ -177,7 +175,7 @@ class DopeNode(object):
 
     def image_callback(self, msg):
         """Image callback"""
-        img = g_bridge.imgmsg_to_cv2(msg, "rgb8")
+        img = self.cv_bridge.imgmsg_to_cv2(msg, "rgb8")
         # cv2.imwrite('img.png', cv2.cvtColor(img, cv2.COLOR_BGR2RGB))  # for debugging
 
         # Copy and draw image
@@ -244,7 +242,8 @@ def main():
     else:
         config_name = "config_pose.yaml"
     params = None
-    yaml_path = g_path2package + '/config/{}'.format(config_name)
+    path2package = rospkg.RosPack().get_path('dope')
+    yaml_path = path2package + '/config/{}'.format(config_name)
     with open(yaml_path, 'r') as stream:
         try:
             print("Loading DOPE parameters from '{}'...".format(yaml_path))
