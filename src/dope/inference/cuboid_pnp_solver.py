@@ -25,7 +25,7 @@ class CuboidPNPSolver(object):
         if (not camera_intrinsic_matrix is None):
             self._camera_intrinsic_matrix = camera_intrinsic_matrix
         else:
-            camera_intrinsic_matrix = np.array([
+            self._camera_intrinsic_matrix = np.array([
                 [0, 0, 0],
                 [0, 0, 0],
                 [0, 0, 0]
