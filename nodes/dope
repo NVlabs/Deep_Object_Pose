@@ -32,14 +32,6 @@ g_img = None
 g_draw = None
 
 
-### Basic functions
-def __image_callback(msg):
-    '''Image callback'''
-    global g_img
-    g_img = g_bridge.imgmsg_to_cv2(msg, "rgb8")
-    # cv2.imwrite('img.png', cv2.cvtColor(g_img, cv2.COLOR_BGR2RGB))  # for debugging
-
-
 ### Code to visualize the neural network output
 
 def DrawLine(point1, point2, lineColor, lineWidth):
@@ -98,146 +90,154 @@ def DrawCube(points, color=(255, 0, 0)):
     DrawLine(points[1], points[4], color, lineWidthForDrawing)
 
 
-def run_dope_node(params, freq=5):
-    '''Starts ROS node to listen to image topic, run DOPE, and publish DOPE results'''
+class DopeNode(object):
+    """ROS node that listens to image topic, runs DOPE, and publishes DOPE results"""
+    def __init__(self, params):
+        self.params = params
+        self.pubs = {}
+        self.models = {}
+        self.pnp_solvers = {}
+        self.pub_dimension = {}
+        self.draw_colors = {}
 
-    global g_img
-    global g_draw
+        # Initialize parameters
+        matrix_camera = np.zeros((3, 3))
+        matrix_camera[0, 0] = params["camera_settings"]['fx']
+        matrix_camera[1, 1] = params["camera_settings"]['fy']
+        matrix_camera[0, 2] = params["camera_settings"]['cx']
+        matrix_camera[1, 2] = params["camera_settings"]['cy']
+        matrix_camera[2, 2] = 1
+        dist_coeffs = np.zeros((4, 1))
 
-    pubs = {}
-    models = {}
-    pnp_solvers = {}
-    pub_dimension = {}
-    draw_colors = {}
+        if "dist_coeffs" in params["camera_settings"]:
+            dist_coeffs = np.array(params["camera_settings"]['dist_coeffs'])
+        self.config_detect = lambda: None
+        self.config_detect.mask_edges = 1
+        self.config_detect.mask_faces = 1
+        self.config_detect.vertex = 1
+        self.config_detect.threshold = 0.5
+        self.config_detect.softmax = 1000
+        self.config_detect.thresh_angle = params['thresh_angle']
+        self.config_detect.thresh_map = params['thresh_map']
+        self.config_detect.sigma = params['sigma']
+        self.config_detect.thresh_points = params["thresh_points"]
 
-    # Initialize parameters
-    matrix_camera = np.zeros((3,3))
-    matrix_camera[0,0] = params["camera_settings"]['fx']
-    matrix_camera[1,1] = params["camera_settings"]['fy']
-    matrix_camera[0,2] = params["camera_settings"]['cx']
-    matrix_camera[1,2] = params["camera_settings"]['cy']
-    matrix_camera[2,2] = 1
-    dist_coeffs = np.zeros((4,1))
+        # For each object to detect, load network model, create PNP solver, and start ROS publishers
+        for model in params['weights']:
+            self.models[model] = \
+                ModelData(
+                    model,
+                    g_path2package + "/weights/" + params['weights'][model]
+                )
+            self.models[model].load_net_model()
 
-    if "dist_coeffs" in params["camera_settings"]:
-        dist_coeffs = np.array(params["camera_settings"]['dist_coeffs'])
-    config_detect = lambda: None
-    config_detect.mask_edges = 1
-    config_detect.mask_faces = 1
-    config_detect.vertex = 1
-    config_detect.threshold = 0.5
-    config_detect.softmax = 1000
-    config_detect.thresh_angle = params['thresh_angle']
-    config_detect.thresh_map = params['thresh_map']
-    config_detect.sigma = params['sigma']
-    config_detect.thresh_points = params["thresh_points"]
+            self.draw_colors[model] = \
+                tuple(params["draw_colors"][model])
+            self.pnp_solvers[model] = \
+                CuboidPNPSolver(
+                    model,
+                    matrix_camera,
+                    Cuboid3d(params['dimensions'][model]),
+                    dist_coeffs=dist_coeffs
+                )
+            self.pubs[model] = \
+                rospy.Publisher(
+                    '{}/pose_{}'.format(params['topic_publishing'], model),
+                    PoseStamped,
+                    queue_size=10
+                )
+            self.pub_dimension[model] = \
+                rospy.Publisher(
+                    '{}/dimension_{}'.format(params['topic_publishing'], model),
+                    String,
+                    queue_size=10
+                )
 
-    # For each object to detect, load network model, create PNP solver, and start ROS publishers
-    for model in params['weights']:
-        models[model] =\
-            ModelData(
-                model, 
-                g_path2package + "/weights/" + params['weights'][model]
-            )
-        models[model].load_net_model()
-        
-        draw_colors[model] = \
-            tuple(params["draw_colors"][model])
-        pnp_solvers[model] = \
-            CuboidPNPSolver(
-                model,
-                matrix_camera,
-                Cuboid3d(params['dimensions'][model]),
-                dist_coeffs=dist_coeffs
-            )
-        pubs[model] = \
+        # Start ROS publisher
+        self.pub_rgb_dope_points = \
             rospy.Publisher(
-                '{}/pose_{}'.format(params['topic_publishing'], model), 
-                PoseStamped, 
+                params['topic_publishing'] + "/rgb_points",
+                ImageSensor_msg,
                 queue_size=10
             )
-        pub_dimension[model] = \
-            rospy.Publisher(
-                '{}/dimension_{}'.format(params['topic_publishing'], model),
-                String, 
-                queue_size=10
-            )
 
-    # Start ROS publisher
-    pub_rgb_dope_points = \
-        rospy.Publisher(
-            params['topic_publishing']+"/rgb_points", 
-            ImageSensor_msg, 
-            queue_size=10
+        topic_cam = params['topic_camera']
+
+        # Starts ROS listener
+        rospy.Subscriber(
+            topic_cam,
+            ImageSensor_msg,
+            self.image_callback
         )
 
-    topic_cam = params['topic_camera']
+        print("Running DOPE...  (Listening to camera topic: '{}')".format(topic_cam))
+        print("Ctrl-C to stop")
 
-    # Starts ROS listener
-    rospy.Subscriber(
-        topic_cam, 
-        ImageSensor_msg, 
-        __image_callback
-    )
+    def image_callback(self, msg):
+        """Image callback"""
+        global g_img
+        g_img = g_bridge.imgmsg_to_cv2(msg, "rgb8")
+        # cv2.imwrite('img.png', cv2.cvtColor(g_img, cv2.COLOR_BGR2RGB))  # for debugging
 
-    rate = rospy.Rate(freq)
+    def run_dope_node(self, freq=5):
+        global g_img
+        global g_draw
 
-    print ("Running DOPE...  (Listening to camera topic: '{}')".format(topic_cam)) 
-    print ("Ctrl-C to stop")
+        rate = rospy.Rate(freq)
 
-    while not rospy.is_shutdown():
-        if g_img is not None:
-            # Copy and draw image
-            img_copy = g_img.copy()
-            im = Image.fromarray(img_copy)
-            g_draw = ImageDraw.Draw(im)
+        while not rospy.is_shutdown():
+            if g_img is not None:
+                # Copy and draw image
+                img_copy = g_img.copy()
+                im = Image.fromarray(img_copy)
+                g_draw = ImageDraw.Draw(im)
 
-            for m in models:
-                # Detect object
-                results = ObjectDetector.detect_object_in_image(
-                            models[m].net, 
-                            pnp_solvers[m],
-                            g_img,
-                            config_detect
-                            )
-                
-                # Publish pose and overlay cube on image
-                for i_r, result in enumerate(results):
-                    if result["location"] is None:
-                        continue
-                    loc = result["location"]
-                    ori = result["quaternion"]                    
-                    msg = PoseStamped()
-                    msg.header.frame_id = params["frame_id"]
-                    msg.header.stamp = rospy.Time.now()
-                    CONVERT_SCALE_CM_TO_METERS = 100
-                    msg.pose.position.x = loc[0] / CONVERT_SCALE_CM_TO_METERS
-                    msg.pose.position.y = loc[1] / CONVERT_SCALE_CM_TO_METERS
-                    msg.pose.position.z = loc[2] / CONVERT_SCALE_CM_TO_METERS
-                    msg.pose.orientation.x = ori[0]
-                    msg.pose.orientation.y = ori[1]
-                    msg.pose.orientation.z = ori[2]
-                    msg.pose.orientation.w = ori[3]
+                for m in self.models:
+                    # Detect object
+                    results = ObjectDetector.detect_object_in_image(
+                        self.models[m].net,
+                        self.pnp_solvers[m],
+                        g_img,
+                        self.config_detect
+                    )
 
-                    # Publish
-                    pubs[m].publish(msg)
-                    pub_dimension[m].publish(str(params['dimensions'][m]))
+                    # Publish pose and overlay cube on image
+                    for i_r, result in enumerate(results):
+                        if result["location"] is None:
+                            continue
+                        loc = result["location"]
+                        ori = result["quaternion"]
+                        msg = PoseStamped()
+                        msg.header.frame_id = self.params["frame_id"]
+                        msg.header.stamp = rospy.Time.now()
+                        CONVERT_SCALE_CM_TO_METERS = 100
+                        msg.pose.position.x = loc[0] / CONVERT_SCALE_CM_TO_METERS
+                        msg.pose.position.y = loc[1] / CONVERT_SCALE_CM_TO_METERS
+                        msg.pose.position.z = loc[2] / CONVERT_SCALE_CM_TO_METERS
+                        msg.pose.orientation.x = ori[0]
+                        msg.pose.orientation.y = ori[1]
+                        msg.pose.orientation.z = ori[2]
+                        msg.pose.orientation.w = ori[3]
 
-                    # Draw the cube
-                    if None not in result['projected_points']:
-                        points2d = []
-                        for pair in result['projected_points']:
-                            points2d.append(tuple(pair))
-                        DrawCube(points2d, draw_colors[m])
-                
-            # Publish the image with results overlaid
-            pub_rgb_dope_points.publish(
-                CvBridge().cv2_to_imgmsg(
-                    np.array(im)[...,::-1], 
-                    "bgr8"
+                        # Publish
+                        self.pubs[m].publish(msg)
+                        self.pub_dimension[m].publish(str(self.params['dimensions'][m]))
+
+                        # Draw the cube
+                        if None not in result['projected_points']:
+                            points2d = []
+                            for pair in result['projected_points']:
+                                points2d.append(tuple(pair))
+                            DrawCube(points2d, self.draw_colors[m])
+
+                # Publish the image with results overlaid
+                self.pub_rgb_dope_points.publish(
+                    CvBridge().cv2_to_imgmsg(
+                        np.array(im)[..., ::-1],
+                        "bgr8"
+                    )
                 )
-            )
-        rate.sleep()
+            rate.sleep()
 
 
 def main():
@@ -261,8 +261,10 @@ def main():
         except yaml.YAMLError as exc:
             print(exc)
 
+    n = DopeNode(params)
+
     try:
-        run_dope_node(params)
+        n.run_dope_node()
     except rospy.ROSInterruptException:
         pass
 
