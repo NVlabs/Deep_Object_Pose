@@ -173,9 +173,9 @@ class DopeNode(object):
         print("Running DOPE...  (Listening to camera topic: '{}')".format(topic_cam))
         print("Ctrl-C to stop")
 
-    def image_callback(self, msg):
+    def image_callback(self, image_msg):
         """Image callback"""
-        img = self.cv_bridge.imgmsg_to_cv2(msg, "rgb8")
+        img = self.cv_bridge.imgmsg_to_cv2(image_msg, "rgb8")
         # cv2.imwrite('img.png', cv2.cvtColor(img, cv2.COLOR_BGR2RGB))  # for debugging
 
         # Copy and draw image
@@ -198,20 +198,19 @@ class DopeNode(object):
                     continue
                 loc = result["location"]
                 ori = result["quaternion"]
-                msg = PoseStamped()
-                msg.header.frame_id = self.params["frame_id"]
-                msg.header.stamp = rospy.Time.now()
+                pose_msg = PoseStamped()
+                pose_msg.header = image_msg.header
                 CONVERT_SCALE_CM_TO_METERS = 100
-                msg.pose.position.x = loc[0] / CONVERT_SCALE_CM_TO_METERS
-                msg.pose.position.y = loc[1] / CONVERT_SCALE_CM_TO_METERS
-                msg.pose.position.z = loc[2] / CONVERT_SCALE_CM_TO_METERS
-                msg.pose.orientation.x = ori[0]
-                msg.pose.orientation.y = ori[1]
-                msg.pose.orientation.z = ori[2]
-                msg.pose.orientation.w = ori[3]
+                pose_msg.pose.position.x = loc[0] / CONVERT_SCALE_CM_TO_METERS
+                pose_msg.pose.position.y = loc[1] / CONVERT_SCALE_CM_TO_METERS
+                pose_msg.pose.position.z = loc[2] / CONVERT_SCALE_CM_TO_METERS
+                pose_msg.pose.orientation.x = ori[0]
+                pose_msg.pose.orientation.y = ori[1]
+                pose_msg.pose.orientation.z = ori[2]
+                pose_msg.pose.orientation.w = ori[3]
 
                 # Publish
-                self.pubs[m].publish(msg)
+                self.pubs[m].publish(pose_msg)
                 self.pub_dimension[m].publish(str(self.params['dimensions'][m]))
 
                 # Draw the cube

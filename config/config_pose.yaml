@@ -1,6 +1,5 @@
 topic_camera: "/dope/webcam_rgb_raw"
 topic_publishing: "dope"
-frame_id: "/dope"
 
 # Comment any of these lines to prevent detection / pose estimation of that object
 weights: {
