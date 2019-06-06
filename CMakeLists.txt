@@ -10,6 +10,7 @@ project(dope)
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   geometry_msgs
+  message_filters
   rospy
   std_msgs
   tf2

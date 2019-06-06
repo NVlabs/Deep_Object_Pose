@@ -1,4 +1,5 @@
 topic_camera: "/dope/webcam_rgb_raw"
+topic_camera_info: "/dope/camera_info"
 topic_publishing: "dope"
 
 # Comment any of these lines to prevent detection / pose estimation of that object
@@ -32,17 +33,6 @@ draw_colors: {
     "sugar": [232, 222, 12],  # yellow
     "bleach": [232, 222, 12],  # yellow
         
-}
-
-# Camera intrinsics (Logitech C920)
-camera_settings: {
-    "name": "logitech_c920",
-    "width": 640,
-    "height": 480,
-    "fx": 641.5,
-    "fy": 641.5,
-    "cx": 320.0,
-    "cy": 240.0
 }
 
 # Config params for DOPE

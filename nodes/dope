@@ -11,6 +11,7 @@ listening to an image topic and publishing poses.
 
 from __future__ import print_function
 
+import message_filters
 import numpy as np
 import rospkg
 import rospy
@@ -22,7 +23,7 @@ from dope.inference.cuboid import Cuboid3d
 from dope.inference.cuboid_pnp_solver import CuboidPNPSolver
 from dope.inference.detector import ModelData, ObjectDetector
 from geometry_msgs.msg import PoseStamped
-from sensor_msgs.msg import Image as ImageSensor_msg
+from sensor_msgs.msg import CameraInfo, Image as ImageSensor_msg
 from std_msgs.msg import String
 
 
@@ -98,17 +99,6 @@ class DopeNode(object):
         self.dimensions = {}
         self.cv_bridge = CvBridge()
 
-        # Initialize parameters
-        matrix_camera = np.zeros((3, 3))
-        matrix_camera[0, 0] = params["camera_settings"]['fx']
-        matrix_camera[1, 1] = params["camera_settings"]['fy']
-        matrix_camera[0, 2] = params["camera_settings"]['cx']
-        matrix_camera[1, 2] = params["camera_settings"]['cy']
-        matrix_camera[2, 2] = 1
-        dist_coeffs = np.zeros((4, 1))
-
-        if "dist_coeffs" in params["camera_settings"]:
-            dist_coeffs = np.array(params["camera_settings"]['dist_coeffs'])
         self.config_detect = lambda: None
         self.config_detect.mask_edges = 1
         self.config_detect.mask_faces = 1
@@ -137,9 +127,7 @@ class DopeNode(object):
             self.pnp_solvers[model] = \
                 CuboidPNPSolver(
                     model,
-                    matrix_camera,
-                    Cuboid3d(params['dimensions'][model]),
-                    dist_coeffs=dist_coeffs
+                    cuboid3d=Cuboid3d(params['dimensions'][model])
                 )
             self.pubs[model] = \
                 rospy.Publisher(
@@ -162,21 +150,31 @@ class DopeNode(object):
                 queue_size=10
             )
 
-        topic_cam = params['topic_camera']
-
-        # Starts ROS listener
-        rospy.Subscriber(
-            topic_cam,
-            ImageSensor_msg,
-            self.image_callback,
-            queue_size=1
+        # Start ROS subscriber
+        image_sub = message_filters.Subscriber(
+            params['topic_camera'],
+            ImageSensor_msg
         )
+        info_sub = message_filters.Subscriber(
+            params['topic_camera_info'],
+            CameraInfo
+        )
+        ts = message_filters.TimeSynchronizer([image_sub, info_sub], 1)
+        ts.registerCallback(self.image_callback)
 
-        print("Running DOPE...  (Listening to camera topic: '{}')".format(topic_cam))
+        print("Running DOPE...  (Listening to camera topic: '{}')".format(params['topic_camera']))
         print("Ctrl-C to stop")
 
-    def image_callback(self, image_msg):
+    def image_callback(self, image_msg, camera_info):
         """Image callback"""
+
+        # Update camera matrix
+        P = np.matrix(camera_info.P, dtype='float64')
+        P.resize((3, 4))
+        camera_matrix = P[:, :3]
+        for m in self.models:
+            self.pnp_solvers[m].set_camera_intrinsic_matrix(camera_matrix)
+
         img = self.cv_bridge.imgmsg_to_cv2(image_msg, "rgb8")
         # cv2.imwrite('img.png', cv2.cvtColor(img, cv2.COLOR_BGR2RGB))  # for debugging
 
