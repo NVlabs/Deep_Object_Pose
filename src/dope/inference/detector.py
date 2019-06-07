@@ -279,6 +279,7 @@ class ObjectDetector(object):
                 'quaternion': quaternion,
                 'cuboid2d': cuboid2d,
                 'projected_points': projected_points,
+                'score': obj[-1],
             })
 
         return detected_objects
@@ -432,11 +433,8 @@ class ObjectDetector(object):
 
                         # distance between vertexes
                         dist_point = np.linalg.norm(np.array(point) - np.array(center))
-                        
-                        if dist_angle < config.thresh_angle \
-                                and best_dist > 1000 \
-                                or dist_angle < config.thresh_angle \
-                                and best_dist > dist_point:
+
+                        if dist_angle < config.thresh_angle and (best_dist > 1000 or best_dist > dist_point):
                             i_best = i_obj
                             best_angle = dist_angle
                             best_dist = dist_point

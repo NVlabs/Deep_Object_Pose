@@ -26,6 +26,16 @@ dimensions: {
     "bleach": [10.267730712890625,26.625339508056641,7.5134143829345703]
         }
 
+class_ids: {
+    "cracker": 1,
+    "gelatin": 2,
+    "meat":    3,
+    "mustard": 4,
+    "soup":    5,
+    "sugar":   6,
+    "bleach":  7,
+}
+
 draw_colors: {
     "cracker": [13, 255, 128],  # green
     "gelatin": [255, 255, 255],  # while

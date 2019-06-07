@@ -26,6 +26,7 @@ from dope.inference.detector import ModelData, ObjectDetector
 from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import CameraInfo, Image as ImageSensor_msg
 from std_msgs.msg import String
+from vision_msgs.msg import Detection3D, Detection3DArray, ObjectHypothesisWithPose
 
 
 class Draw(object):
@@ -98,6 +99,7 @@ class DopeNode(object):
         self.pub_dimension = {}
         self.draw_colors = {}
         self.dimensions = {}
+        self.class_ids = {}
         self.cv_bridge = CvBridge()
 
         self.input_is_rectified = params['input_is_rectified']
@@ -128,6 +130,8 @@ class DopeNode(object):
                 tuple(params["draw_colors"][model])
             self.dimensions[model] = \
                 tuple(params["dimensions"][model])
+            self.class_ids[model] = params["class_ids"][model]
+
             self.pnp_solvers[model] = \
                 CuboidPNPSolver(
                     model,
@@ -146,11 +150,17 @@ class DopeNode(object):
                     queue_size=10
                 )
 
-        # Start ROS publisher
+        # Start ROS publishers
         self.pub_rgb_dope_points = \
             rospy.Publisher(
                 params['topic_publishing'] + "/rgb_points",
                 ImageSensor_msg,
+                queue_size=10
+            )
+        self.pub_detections = \
+            rospy.Publisher(
+                '~detected_objects',
+                Detection3DArray,
                 queue_size=10
             )
 
@@ -203,7 +213,10 @@ class DopeNode(object):
         im = Image.fromarray(img_copy)
         draw = Draw(im)
 
-        for m in self.models:
+        detection_array = Detection3DArray()
+        detection_array.header = image_msg.header
+
+        for model_id, m in enumerate(self.models):
             # Detect object
             results = ObjectDetector.detect_object_in_image(
                 self.models[m].net,
@@ -233,6 +246,19 @@ class DopeNode(object):
                 self.pubs[m].publish(pose_msg)
                 self.pub_dimension[m].publish(str(self.dimensions[m]))
 
+                # Add to Detection3DArray
+                detection = Detection3D()
+                hypothesis = ObjectHypothesisWithPose()
+                hypothesis.id = self.class_ids[result["name"]]
+                hypothesis.score = result["score"]
+                hypothesis.pose.pose = pose_msg.pose
+                detection.results.append(hypothesis)
+                detection.bbox.center = pose_msg.pose
+                detection.bbox.size.x = self.dimensions[m][0] / CONVERT_SCALE_CM_TO_METERS
+                detection.bbox.size.y = self.dimensions[m][1] / CONVERT_SCALE_CM_TO_METERS
+                detection.bbox.size.z = self.dimensions[m][2] / CONVERT_SCALE_CM_TO_METERS
+                detection_array.detections.append(detection)
+
                 # Draw the cube
                 if None not in result['projected_points']:
                     points2d = []
@@ -247,6 +273,7 @@ class DopeNode(object):
                 "bgr8"
             )
         )
+        self.pub_detections.publish(detection_array)
 
 
 def main():

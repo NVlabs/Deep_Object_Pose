@@ -53,9 +53,11 @@
   <depend>geometry_msgs</depend>
   <depend>message_filters</depend>
   <depend>rospy</depend>
+  <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
   <depend>tf2</depend>
-  
+  <depend>vision_msgs</depend>
+
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

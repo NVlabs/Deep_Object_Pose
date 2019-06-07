@@ -12,8 +12,10 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   message_filters
   rospy
+  sensor_msgs
   std_msgs
   tf2
+  vision_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -106,7 +108,7 @@ catkin_python_setup()
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  CATKIN_DEPENDS geometry_msgs std_msgs
+  CATKIN_DEPENDS geometry_msgs sensor_msgs std_msgs vision_msgs
 #  DEPENDS system_lib
 )
 
