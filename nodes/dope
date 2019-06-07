@@ -27,6 +27,7 @@ from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import CameraInfo, Image as ImageSensor_msg
 from std_msgs.msg import String
 from vision_msgs.msg import Detection3D, Detection3DArray, ObjectHypothesisWithPose
+from visualization_msgs.msg import Marker, MarkerArray
 
 
 class Draw(object):
@@ -163,6 +164,12 @@ class DopeNode(object):
                 Detection3DArray,
                 queue_size=10
             )
+        self.pub_markers = \
+            rospy.Publisher(
+                '~markers',
+                MarkerArray,
+                queue_size=10
+            )
 
         # Start ROS subscriber
         image_sub = message_filters.Subscriber(
@@ -274,6 +281,57 @@ class DopeNode(object):
             )
         )
         self.pub_detections.publish(detection_array)
+        self.publish_markers(detection_array)
+
+    def publish_markers(self, detection_array):
+        # Delete all existing markers
+        markers = MarkerArray()
+        marker = Marker()
+        marker.action = Marker.DELETEALL
+        markers.markers.append(marker)
+        self.pub_markers.publish(markers)
+
+        # Object markers
+        class_id_to_name = {class_id: name for name, class_id in self.class_ids.iteritems()}
+        markers = MarkerArray()
+        for i, det in enumerate(detection_array.detections):
+            name = class_id_to_name[det.results[0].id]
+            color = self.draw_colors[name]
+
+            # cube marker
+            marker = Marker()
+            marker.header = detection_array.header
+            marker.action = Marker.ADD
+            marker.pose = det.bbox.center
+            marker.color.r = color[0] / 255.0
+            marker.color.g = color[1] / 255.0
+            marker.color.b = color[2] / 255.0
+            marker.color.a = 0.4
+            marker.ns = "bboxes"
+            marker.id = i
+            marker.type = Marker.CUBE
+            marker.scale = det.bbox.size
+            markers.markers.append(marker)
+
+            # text marker
+            marker = Marker()
+            marker.header = detection_array.header
+            marker.action = Marker.ADD
+            marker.pose = det.bbox.center
+            marker.color.r = color[0] / 255.0
+            marker.color.g = color[1] / 255.0
+            marker.color.b = color[2] / 255.0
+            marker.color.a = 1.0
+            marker.id = i
+            marker.ns = "texts"
+            marker.type = Marker.TEXT_VIEW_FACING
+            marker.scale.x = 0.05
+            marker.scale.y = 0.05
+            marker.scale.z = 0.05
+            marker.text = '{} ({:.2f})'.format(name, det.results[0].score)
+            markers.markers.append(marker)
+
+        self.pub_markers.publish(markers)
 
 
 def main():
