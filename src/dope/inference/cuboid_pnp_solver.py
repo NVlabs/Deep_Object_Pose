@@ -38,6 +38,10 @@ class CuboidPNPSolver(object):
         '''Sets the camera intrinsic matrix'''
         self._camera_intrinsic_matrix = new_intrinsic_matrix
 
+    def set_dist_coeffs(self, dist_coeffs):
+        '''Sets the camera intrinsic matrix'''
+        self._dist_coeffs = dist_coeffs
+
     def solve_pnp(self, cuboid2d_points, pnp_algorithm = None):
         """
         Detects the rotation and traslation 

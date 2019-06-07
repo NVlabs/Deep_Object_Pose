@@ -99,6 +99,8 @@ class DopeNode(object):
         self.dimensions = {}
         self.cv_bridge = CvBridge()
 
+        self.input_is_rectified = params['input_is_rectified']
+
         self.config_detect = lambda: None
         self.config_detect.mask_edges = 1
         self.config_detect.mask_faces = 1
@@ -168,12 +170,21 @@ class DopeNode(object):
     def image_callback(self, image_msg, camera_info):
         """Image callback"""
 
-        # Update camera matrix
-        P = np.matrix(camera_info.P, dtype='float64')
-        P.resize((3, 4))
-        camera_matrix = P[:, :3]
+        # Update camera matrix and distortion coefficients
+        if self.input_is_rectified:
+            P = np.matrix(camera_info.P, dtype='float64')
+            P.resize((3, 4))
+            camera_matrix = P[:, :3]
+            dist_coeffs = np.zeros((4, 1))
+        else:
+            camera_matrix = np.matrix(camera_info.K, dtype='float64')
+            camera_matrix.resize((3, 3))
+            dist_coeffs = np.matrix(camera_info.D, dtype='float64')
+            dist_coeffs.resize((len(camera_info.D), 1))
+
         for m in self.models:
             self.pnp_solvers[m].set_camera_intrinsic_matrix(camera_matrix)
+            self.pnp_solvers[m].set_dist_coeffs(dist_coeffs)
 
         img = self.cv_bridge.imgmsg_to_cv2(image_msg, "rgb8")
         # cv2.imwrite('img.png', cv2.cvtColor(img, cv2.COLOR_BGR2RGB))  # for debugging

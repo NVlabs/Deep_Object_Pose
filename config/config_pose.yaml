@@ -1,6 +1,7 @@
 topic_camera: "/dope/webcam_rgb_raw"
 topic_camera_info: "/dope/camera_info"
 topic_publishing: "dope"
+input_is_rectified: True   # Whether the input image is rectified (strongly suggested!)
 
 # Comment any of these lines to prevent detection / pose estimation of that object
 weights: {

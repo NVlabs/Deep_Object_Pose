@@ -65,9 +65,10 @@ This is the official DOPE ROS package for detection and 6-DoF pose estimation of
   
 
 3. **Edit config info** (if desired) in `~/catkin_ws/src/dope/config/config_pose.yaml`
-    * `topic_camera`: RGB topic to listen to (must be rectified)
+    * `topic_camera`: RGB topic to listen to
     * `topic_camera_info`: camera info topic to listen to
     * `topic_publishing`: topic name for publishing
+    * `input_is_rectified`: Whether the input images are rectified. It is strongly suggested to use a rectified input topic.
     * `weights`: dictionary of object names and there weights path name, **comment out any line to disable detection/estimation of that object**
     * `dimension`: dictionary of dimensions for the objects  (key values must match the `weights` names)
     * `draw_colors`: dictionary of object colors  (key values must match the `weights` names)
