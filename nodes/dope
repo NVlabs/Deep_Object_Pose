@@ -11,6 +11,7 @@ listening to an image topic and publishing poses.
 
 from __future__ import print_function
 
+import cv2
 import message_filters
 import numpy as np
 import rospkg
@@ -100,6 +101,7 @@ class DopeNode(object):
         self.cv_bridge = CvBridge()
 
         self.input_is_rectified = params['input_is_rectified']
+        self.downscale_height = params['downscale_height']
 
         self.config_detect = lambda: None
         self.config_detect.mask_edges = 1
@@ -170,6 +172,9 @@ class DopeNode(object):
     def image_callback(self, image_msg, camera_info):
         """Image callback"""
 
+        img = self.cv_bridge.imgmsg_to_cv2(image_msg, "rgb8")
+        # cv2.imwrite('img.png', cv2.cvtColor(img, cv2.COLOR_BGR2RGB))  # for debugging
+
         # Update camera matrix and distortion coefficients
         if self.input_is_rectified:
             P = np.matrix(camera_info.P, dtype='float64')
@@ -182,12 +187,16 @@ class DopeNode(object):
             dist_coeffs = np.matrix(camera_info.D, dtype='float64')
             dist_coeffs.resize((len(camera_info.D), 1))
 
+        # Downscale image if necessary
+        height, width, _ = img.shape
+        scaling_factor = float(self.downscale_height) / height
+        if scaling_factor < 1.0:
+            camera_matrix[:2] *= scaling_factor
+            img = cv2.resize(img, (int(scaling_factor * width), int(scaling_factor * height)))
+
         for m in self.models:
             self.pnp_solvers[m].set_camera_intrinsic_matrix(camera_matrix)
             self.pnp_solvers[m].set_dist_coeffs(dist_coeffs)
-
-        img = self.cv_bridge.imgmsg_to_cv2(image_msg, "rgb8")
-        # cv2.imwrite('img.png', cv2.cvtColor(img, cv2.COLOR_BGR2RGB))  # for debugging
 
         # Copy and draw image
         img_copy = img.copy()

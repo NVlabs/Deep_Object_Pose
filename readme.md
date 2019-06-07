@@ -75,7 +75,9 @@ This is the official DOPE ROS package for detection and 6-DoF pose estimation of
     * `weights`: dictionary of object names and there weights path name, **comment out any line to disable detection/estimation of that object**
     * `dimension`: dictionary of dimensions for the objects  (key values must match the `weights` names)
     * `draw_colors`: dictionary of object colors  (key values must match the `weights` names)
-    * `thresh_points`: Thresholding the confidence for object detection; increase this value if you see too many false positives, reduce it if  objects are not detected. 
+    * `thresh_points`: Thresholding the confidence for object detection; increase this value if you see too many false positives, reduce it if  objects are not detected.
+    * `downscale_height`: If the input image is larger than this, scale it down to this pixel height. Very large input images eat up all the GPU memory and slow down inference. Also, DOPE works best when the object size (in pixels) has appeared in the training data (which is downscaled to 400 px). For these reasons, downscaling large input images to something reasonable (e.g., 400-500 px) improves memory consumption, inference speed *and* recognition results.
+
     
 4. **Start DOPE node**
     ```
