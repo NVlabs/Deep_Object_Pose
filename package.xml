@@ -52,10 +52,10 @@
   <depend>cv_bridge</depend>
   <depend>geometry_msgs</depend>
   <depend>message_filters</depend>
+  <depend>python-argparse</depend>
   <depend>rospy</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
-  <depend>tf2</depend>
   <depend>vision_msgs</depend>
 
 

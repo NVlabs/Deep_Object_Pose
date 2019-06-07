@@ -15,7 +15,6 @@ This is the official DOPE ROS package for detection and 6-DoF pose estimation of
    We have tested on Ubuntu 16.04 with ROS Kinetic with an NVIDIA Titan X with python 2.7.  The code may work on other systems.
    If you do not have the full ROS install, you may need to install some packages, *e.g.*,
    ```
-   apt-get install ros-kinetic-tf2
    apt-get install ros-kinetic-cv-bridge
    ```
    
