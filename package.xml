@@ -53,6 +53,7 @@
   <depend>geometry_msgs</depend>
   <depend>message_filters</depend>
   <depend>python-argparse</depend>
+  <depend>resource_retriever</depend>
   <depend>rospy</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>

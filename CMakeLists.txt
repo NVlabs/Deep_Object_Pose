@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   geometry_msgs
   message_filters
+  resource_retriever
   rospy
   sensor_msgs
   std_msgs

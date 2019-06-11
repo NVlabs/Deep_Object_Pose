@@ -6,13 +6,13 @@ downscale_height: 500      # if the input image is larger than this, scale it do
 
 # Comment any of these lines to prevent detection / pose estimation of that object
 weights: {
-  "cracker":"cracker_60.pth", 
-   "gelatin":"gelatin_60.pth",
-   "meat":"meat_20.pth", 
-   "mustard":"mustard_60.pth", 
-   "soup":"soup_60.pth", 
-   "sugar":"sugar_60.pth",
-   "bleach":"bleach_28_dr.pth"
+    # "cracker":"package://dope/weights/cracker_60.pth",
+    # "gelatin":"package://dope/weights/gelatin_60.pth",
+    # "meat":"package://dope/weights/meat_20.pth",
+    # "mustard":"package://dope/weights/mustard_60.pth",
+    "soup":"package://dope/weights/soup_60.pth",
+    #"sugar":"package://dope/weights/sugar_60.pth"
+    # "bleach":"package://dope/weights/bleach_28_dr.pth"
 }
 
 # Cuboid dimension in cm x,y,z
@@ -23,8 +23,8 @@ dimensions: {
     "mustard": [9.6024150848388672,19.130100250244141,5.824894905090332],
     "soup": [6.7659378051757813,10.185500144958496,6.771425724029541],
     "sugar": [9.267730712890625,17.625339508056641,4.5134143829345703],
-    "bleach": [10.267730712890625,26.625339508056641,7.5134143829345703]
-        }
+    "bleach": [10.267730712890625,26.625339508056641,7.5134143829345703],
+}
 
 class_ids: {
     "cracker": 1,
@@ -44,7 +44,6 @@ draw_colors: {
     "soup": [255, 101, 0],  # orange
     "sugar": [232, 222, 12],  # yellow
     "bleach": [232, 222, 12],  # yellow
-        
 }
 
 # optional: if you provide a mesh of the object here, a mesh marker will be
