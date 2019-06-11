@@ -10,7 +10,7 @@ weights: {
    "mustard":"mustard_60.pth", 
    "soup":"soup_60.pth", 
    "sugar":"sugar_60.pth",
-   "bleach":"bleach_20.pth"
+   "bleach":"bleach_28_dr.pth"
 }
 
 # Cuboid dimension in cm x,y,z
