@@ -70,9 +70,9 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
 
 # ROS Kinetic
 WORKDIR ${HOME}
-RUN apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116 \
+RUN apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654 \
     && sh -c 'echo "deb http://packages.ros.org/ros/ubuntu xenial main" > /etc/apt/sources.list.d/ros-latest.list' \
-    && sh -c 'echo "deb http://packages.ros.org/ros-shadow-fixed/ubuntu/ xenial main" > /etc/apt/sources.list.d/ros-shadow.list' \
+    && sh -c 'echo "deb http://packages.ros.org/ros-testing/ubuntu/ xenial main" > /etc/apt/sources.list.d/ros-testing.list' \
     && apt-get update && apt-get -y --no-install-recommends install \
         ros-kinetic-gazebo-ros-pkgs \
         ros-kinetic-mavros          \
