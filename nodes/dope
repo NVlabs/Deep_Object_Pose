@@ -17,6 +17,7 @@ import numpy as np
 import resource_retriever
 import rospkg
 import rospy
+import tf.transformations
 import yaml
 from PIL import Image
 from PIL import ImageDraw
@@ -102,6 +103,7 @@ class DopeNode(object):
         self.draw_colors = {}
         self.dimensions = {}
         self.class_ids = {}
+        self.model_transforms = {}
         self.meshes = {}
         self.cv_bridge = CvBridge()
 
@@ -127,6 +129,12 @@ class DopeNode(object):
                     resource_retriever.get_filename(params['weights'][model], use_protocol=False)
                 )
             self.models[model].load_net_model()
+
+            try:
+                M = np.array(params['model_transforms'][model], dtype='float64')
+                self.model_transforms[model] = tf.transformations.quaternion_from_matrix(M)
+            except KeyError:
+                self.model_transforms[model] = np.array([0.0, 0.0, 0.0, 1.0], dtype='float64')
 
             try:
                 self.meshes[model] = params['meshes'][model]
@@ -229,7 +237,7 @@ class DopeNode(object):
         detection_array = Detection3DArray()
         detection_array.header = image_msg.header
 
-        for model_id, m in enumerate(self.models):
+        for m in self.models:
             # Detect object
             results = ObjectDetector.detect_object_in_image(
                 self.models[m].net,
@@ -244,20 +252,30 @@ class DopeNode(object):
                     continue
                 loc = result["location"]
                 ori = result["quaternion"]
+
+                # transform orientation
+                transformed_ori = tf.transformations.quaternion_multiply(ori, self.model_transforms[m])
+
+                # rotate bbox dimensions if necessary
+                # (this only works properly if model_transform is in 90 degree angles)
+                dims = rotate_vector(vector=self.dimensions[m], quaternion=self.model_transforms[m])
+                dims = np.absolute(dims)
+                dims = tuple(dims)
+
                 pose_msg = PoseStamped()
                 pose_msg.header = image_msg.header
                 CONVERT_SCALE_CM_TO_METERS = 100
                 pose_msg.pose.position.x = loc[0] / CONVERT_SCALE_CM_TO_METERS
                 pose_msg.pose.position.y = loc[1] / CONVERT_SCALE_CM_TO_METERS
                 pose_msg.pose.position.z = loc[2] / CONVERT_SCALE_CM_TO_METERS
-                pose_msg.pose.orientation.x = ori[0]
-                pose_msg.pose.orientation.y = ori[1]
-                pose_msg.pose.orientation.z = ori[2]
-                pose_msg.pose.orientation.w = ori[3]
+                pose_msg.pose.orientation.x = transformed_ori[0]
+                pose_msg.pose.orientation.y = transformed_ori[1]
+                pose_msg.pose.orientation.z = transformed_ori[2]
+                pose_msg.pose.orientation.w = transformed_ori[3]
 
                 # Publish
                 self.pubs[m].publish(pose_msg)
-                self.pub_dimension[m].publish(str(self.dimensions[m]))
+                self.pub_dimension[m].publish(str(dims))
 
                 # Add to Detection3DArray
                 detection = Detection3D()
@@ -267,9 +285,9 @@ class DopeNode(object):
                 hypothesis.pose.pose = pose_msg.pose
                 detection.results.append(hypothesis)
                 detection.bbox.center = pose_msg.pose
-                detection.bbox.size.x = self.dimensions[m][0] / CONVERT_SCALE_CM_TO_METERS
-                detection.bbox.size.y = self.dimensions[m][1] / CONVERT_SCALE_CM_TO_METERS
-                detection.bbox.size.z = self.dimensions[m][2] / CONVERT_SCALE_CM_TO_METERS
+                detection.bbox.size.x = dims[0] / CONVERT_SCALE_CM_TO_METERS
+                detection.bbox.size.y = dims[1] / CONVERT_SCALE_CM_TO_METERS
+                detection.bbox.size.z = dims[2] / CONVERT_SCALE_CM_TO_METERS
                 detection_array.detections.append(detection)
 
                 # Draw the cube
@@ -360,6 +378,15 @@ class DopeNode(object):
                 pass
 
         self.pub_markers.publish(markers)
+
+
+def rotate_vector(vector, quaternion):
+    q_conj = tf.transformations.quaternion_conjugate(quaternion)
+    vector = np.array(vector, dtype='float64')
+    vector = np.append(vector, [0.0])
+    vector = tf.transformations.quaternion_multiply(q_conj, vector)
+    vector = tf.transformations.quaternion_multiply(vector, quaternion)
+    return vector[:3]
 
 
 def main():
