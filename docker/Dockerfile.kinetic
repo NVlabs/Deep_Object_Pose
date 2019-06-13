@@ -68,12 +68,13 @@ RUN apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key C1CF6
     && apt-get clean                                                                 \
     && rm -rf /var/lib/apt/lists/{apt,dpkg,cache,log} /tmp/* /var/tmp/*
 
-RUN echo 'source /opt/ros/kinetic/setup.bash' >> ${HOME}/.bashrc
-
 # Setup catkin workspace
 ENV CATKIN_WS ${HOME}/catkin_ws
+COPY . ${CATKIN_WS}/src/dope
 COPY docker/init_workspace.sh ${HOME}
-RUN ${HOME}/init_workspace.sh
+RUN ${CATKIN_WS}/src/dope/docker/init_workspace.sh
+
+RUN echo "source ${CATKIN_WS}/devel/setup.bash" >> ${HOME}/.bashrc
 
 ENV DISPLAY :0
 ENV TERM=xterm
