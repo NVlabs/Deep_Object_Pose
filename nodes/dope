@@ -15,10 +15,8 @@ import cv2
 import message_filters
 import numpy as np
 import resource_retriever
-import rospkg
 import rospy
 import tf.transformations
-import yaml
 from PIL import Image
 from PIL import ImageDraw
 from cv_bridge import CvBridge
@@ -95,7 +93,7 @@ class Draw(object):
 
 class DopeNode(object):
     """ROS node that listens to image topic, runs DOPE, and publishes DOPE results"""
-    def __init__(self, params):
+    def __init__(self):
         self.pubs = {}
         self.models = {}
         self.pnp_solvers = {}
@@ -107,8 +105,8 @@ class DopeNode(object):
         self.meshes = {}
         self.cv_bridge = CvBridge()
 
-        self.input_is_rectified = params['input_is_rectified']
-        self.downscale_height = params['downscale_height']
+        self.input_is_rectified = rospy.get_param('~input_is_rectified', True)
+        self.downscale_height = rospy.get_param('~downscale_height', 500)
 
         self.config_detect = lambda: None
         self.config_detect.mask_edges = 1
@@ -116,51 +114,49 @@ class DopeNode(object):
         self.config_detect.vertex = 1
         self.config_detect.threshold = 0.5
         self.config_detect.softmax = 1000
-        self.config_detect.thresh_angle = params['thresh_angle']
-        self.config_detect.thresh_map = params['thresh_map']
-        self.config_detect.sigma = params['sigma']
-        self.config_detect.thresh_points = params["thresh_points"]
+        self.config_detect.thresh_angle = rospy.get_param('~thresh_angle', 0.5)
+        self.config_detect.thresh_map = rospy.get_param('~thresh_map', 0.01)
+        self.config_detect.sigma = rospy.get_param('~sigma', 3)
+        self.config_detect.thresh_points = rospy.get_param("~thresh_points", 0.1)
 
         # For each object to detect, load network model, create PNP solver, and start ROS publishers
-        for model in params['weights']:
+        for model, weights_url in rospy.get_param('~weights').iteritems():
             self.models[model] = \
                 ModelData(
                     model,
-                    resource_retriever.get_filename(params['weights'][model], use_protocol=False)
+                    resource_retriever.get_filename(weights_url, use_protocol=False)
                 )
             self.models[model].load_net_model()
 
             try:
-                M = np.array(params['model_transforms'][model], dtype='float64')
+                M = np.array(rospy.get_param('~model_transforms')[model], dtype='float64')
                 self.model_transforms[model] = tf.transformations.quaternion_from_matrix(M)
             except KeyError:
                 self.model_transforms[model] = np.array([0.0, 0.0, 0.0, 1.0], dtype='float64')
 
             try:
-                self.meshes[model] = params['meshes'][model]
+                self.meshes[model] = rospy.get_param('~meshes')[model]
             except KeyError:
                 pass
 
-            self.draw_colors[model] = \
-                tuple(params["draw_colors"][model])
-            self.dimensions[model] = \
-                tuple(params["dimensions"][model])
-            self.class_ids[model] = params["class_ids"][model]
+            self.draw_colors[model] = tuple(rospy.get_param("~draw_colors")[model])
+            self.dimensions[model] = tuple(rospy.get_param("~dimensions")[model])
+            self.class_ids[model] = rospy.get_param("~class_ids")[model]
 
             self.pnp_solvers[model] = \
                 CuboidPNPSolver(
                     model,
-                    cuboid3d=Cuboid3d(params['dimensions'][model])
+                    cuboid3d=Cuboid3d(rospy.get_param('~dimensions')[model])
                 )
             self.pubs[model] = \
                 rospy.Publisher(
-                    '{}/pose_{}'.format(params['topic_publishing'], model),
+                    '{}/pose_{}'.format(rospy.get_param('~topic_publishing'), model),
                     PoseStamped,
                     queue_size=10
                 )
             self.pub_dimension[model] = \
                 rospy.Publisher(
-                    '{}/dimension_{}'.format(params['topic_publishing'], model),
+                    '{}/dimension_{}'.format(rospy.get_param('~topic_publishing'), model),
                     String,
                     queue_size=10
                 )
@@ -168,7 +164,7 @@ class DopeNode(object):
         # Start ROS publishers
         self.pub_rgb_dope_points = \
             rospy.Publisher(
-                params['topic_publishing'] + "/rgb_points",
+                rospy.get_param('~topic_publishing') + "/rgb_points",
                 ImageSensor_msg,
                 queue_size=10
             )
@@ -187,17 +183,17 @@ class DopeNode(object):
 
         # Start ROS subscriber
         image_sub = message_filters.Subscriber(
-            params['topic_camera'],
+            rospy.get_param('~topic_camera'),
             ImageSensor_msg
         )
         info_sub = message_filters.Subscriber(
-            params['topic_camera_info'],
+            rospy.get_param('~topic_camera_info'),
             CameraInfo
         )
         ts = message_filters.TimeSynchronizer([image_sub, info_sub], 1)
         ts.registerCallback(self.image_callback)
 
-        print("Running DOPE...  (Listening to camera topic: '{}')".format(params['topic_camera']))
+        print("Running DOPE...  (Listening to camera topic: '{}')".format(rospy.get_param('~topic_camera')))
         print("Ctrl-C to stop")
 
     def image_callback(self, image_msg, camera_info):
@@ -394,24 +390,7 @@ def main():
 
     # Initialize ROS node
     rospy.init_node('dope')
-    argv = rospy.myargv()
-
-    if len(argv) > 1:
-        config_name = argv[1]
-    else:
-        config_name = "config_pose.yaml"
-    params = None
-    path2package = rospkg.RosPack().get_path('dope')
-    yaml_path = path2package + '/config/{}'.format(config_name)
-    with open(yaml_path, 'r') as stream:
-        try:
-            print("Loading DOPE parameters from '{}'...".format(yaml_path))
-            params = yaml.load(stream)
-            print('    Parameters loaded.')
-        except yaml.YAMLError as exc:
-            print(exc)
-
-    n = DopeNode(params)
+    DopeNode()
 
     try:
         rospy.spin()

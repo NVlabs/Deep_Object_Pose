@@ -77,13 +77,10 @@ This is the official DOPE ROS package for detection and 6-DoF pose estimation of
     * `thresh_points`: Thresholding the confidence for object detection; increase this value if you see too many false positives, reduce it if  objects are not detected.
     * `downscale_height`: If the input image is larger than this, scale it down to this pixel height. Very large input images eat up all the GPU memory and slow down inference. Also, DOPE works best when the object size (in pixels) has appeared in the training data (which is downscaled to 400 px). For these reasons, downscaling large input images to something reasonable (e.g., 400-500 px) improves memory consumption, inference speed *and* recognition results.
 
-    
 4. **Start DOPE node**
     ```
-    $ rosrun dope dope [my_config.yaml]  # Config file is optional; default is `config_pose.yaml`
+    $ roslaunch dope dope.launch [config:=/path/to/my_config.yaml]  # Config file is optional; default is `config_pose.yaml`
     ```
-
-    *Note:*  Config files must be located in the `~/catkin_ws/src/dope/config/` folder.
 
 
 ## Debugging

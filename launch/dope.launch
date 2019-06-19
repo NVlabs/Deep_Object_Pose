@@ -1,0 +1,7 @@
+<launch>
+  <arg name="config" default="$(find dope)/config/config_pose.yaml" doc="Path to parameter config file"/>
+
+  <node name="dope" pkg="dope" type="dope" output="screen" clear_params="true">
+    <rosparam file="$(arg config)"/>
+  </node>
+</launch>
