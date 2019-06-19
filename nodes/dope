@@ -101,6 +101,7 @@ class DopeNode(object):
         self.draw_colors = {}
         self.dimensions = {}
         self.class_ids = {}
+        self.meshes = {}
         self.cv_bridge = CvBridge()
 
         self.input_is_rectified = params['input_is_rectified']
@@ -126,6 +127,11 @@ class DopeNode(object):
                     path2package + "/weights/" + params['weights'][model]
                 )
             self.models[model].load_net_model()
+
+            try:
+                self.meshes[model] = params['meshes'][model]
+            except KeyError:
+                pass
 
             self.draw_colors[model] = \
                 tuple(params["draw_colors"][model])
@@ -330,6 +336,28 @@ class DopeNode(object):
             marker.scale.z = 0.05
             marker.text = '{} ({:.2f})'.format(name, det.results[0].score)
             markers.markers.append(marker)
+
+            # mesh marker
+            try:
+                marker = Marker()
+                marker.header = detection_array.header
+                marker.action = Marker.ADD
+                marker.pose = det.bbox.center
+                marker.color.r = color[0] / 255.0
+                marker.color.g = color[1] / 255.0
+                marker.color.b = color[2] / 255.0
+                marker.color.a = 0.7
+                marker.ns = "meshes"
+                marker.id = i
+                marker.type = Marker.MESH_RESOURCE
+                marker.scale.x = 1.0
+                marker.scale.y = 1.0
+                marker.scale.z = 1.0
+                marker.mesh_resource = self.meshes[name]
+                markers.markers.append(marker)
+            except KeyError:
+                # user didn't specify self.meshes[name], so don't publish marker
+                pass
 
         self.pub_markers.publish(markers)
 

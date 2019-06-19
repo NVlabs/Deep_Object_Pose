@@ -47,6 +47,12 @@ draw_colors: {
         
 }
 
+# optional: if you provide a mesh of the object here, a mesh marker will be
+# published for visualization in RViz
+meshes: {
+#  "cracker": "package://dope/meshes/003_cracker_box/google_16k/textured.obj",
+}
+
 # Config params for DOPE
 thresh_angle: 0.5
 thresh_map: 0.01
