@@ -56,8 +56,26 @@ model_transforms: {
 
 # optional: if you provide a mesh of the object here, a mesh marker will be
 # published for visualization in RViz
+# You can use the nvdu_ycb tool to download the meshes: https://github.com/NVIDIA/Dataset_Utilities#nvdu_ycb
 meshes: {
-#  "cracker": "package://dope/meshes/003_cracker_box/google_16k/textured.obj",
+#    "cracker": "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/003_cracker_box/google_16k/textured.obj",
+#    "gelatin": "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/009_gelatin_box/google_16k/textured.obj",
+#    "meat":    "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/010_potted_meat_can/google_16k/textured.obj",
+#    "mustard": "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/006_mustard_bottle/google_16k/textured.obj",
+#    "soup":    "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/005_tomato_soup_can/google_16k/textured.obj",
+#    "sugar":   "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/004_sugar_box/google_16k/textured.obj",
+#    "bleach":  "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/021_bleach_cleanser/google_16k/textured.obj",
+}
+
+# optional: If the specified meshes are not in meters, provide a scale here (e.g. if the mesh is in centimeters, scale should be 0.01). default scale: 1.0.
+mesh_scales: {
+    "cracker": 0.01,
+    "gelatin": 0.01,
+    "meat":    0.01,
+    "mustard": 0.01,
+    "soup":    0.01,
+    "sugar":   0.01,
+    "bleach":  0.01,
 }
 
 # Config params for DOPE

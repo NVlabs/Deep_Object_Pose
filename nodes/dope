@@ -103,6 +103,7 @@ class DopeNode(object):
         self.class_ids = {}
         self.model_transforms = {}
         self.meshes = {}
+        self.mesh_scales = {}
         self.cv_bridge = CvBridge()
 
         self.input_is_rectified = rospy.get_param('~input_is_rectified', True)
@@ -138,6 +139,11 @@ class DopeNode(object):
                 self.meshes[model] = rospy.get_param('~meshes')[model]
             except KeyError:
                 pass
+
+            try:
+                self.mesh_scales[model] = rospy.get_param('~mesh_scales')[model]
+            except KeyError:
+                self.mesh_scales[model] = 1.0
 
             self.draw_colors[model] = tuple(rospy.get_param("~draw_colors")[model])
             self.dimensions[model] = tuple(rospy.get_param("~dimensions")[model])
@@ -364,9 +370,9 @@ class DopeNode(object):
                 marker.ns = "meshes"
                 marker.id = i
                 marker.type = Marker.MESH_RESOURCE
-                marker.scale.x = 1.0
-                marker.scale.y = 1.0
-                marker.scale.z = 1.0
+                marker.scale.x = self.mesh_scales[name]
+                marker.scale.y = self.mesh_scales[name]
+                marker.scale.z = self.mesh_scales[name]
                 marker.mesh_resource = self.meshes[name]
                 markers.markers.append(marker)
             except KeyError:
