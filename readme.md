@@ -65,6 +65,8 @@ This is the official DOPE ROS package for detection and 6-DoF pose estimation of
     * [libuvc_camera](http://wiki.ros.org/libuvc_camera)
 
     The camera must publish a correct `camera_info` topic to enable DOPE to compute the correct poses. Basically all ROS drivers have a `camera_info_url` parameter where you can set the calibration info (but most ROS drivers include a reasonable default).
+
+    For details see the [camera tutorial](doc/camera_tutorial.md).
   
 3. **Edit config info** (if desired) in `~/catkin_ws/src/dope/config/config_pose.yaml`
     * `topic_camera`: RGB topic to listen to
