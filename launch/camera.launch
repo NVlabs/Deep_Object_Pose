@@ -1,0 +1,5 @@
+<launch>
+  <node name="dope_webcam" pkg="dope" type="camera" output="screen">
+    <param name="camera_info_url" value="package://dope/config/camera_info.yaml" />
+  </node>
+</launch>

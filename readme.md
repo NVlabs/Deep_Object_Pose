@@ -59,12 +59,12 @@ This is the official DOPE ROS package for detection and 6-DoF pose estimation of
 
 2. **Start camera node** (or start your own camera node)
       ```
-      $ rosrun dope camera  # Publishes RGB images to `/dope/webcam_rgb_raw`
+      $ roslaunch dope camera.launch  # Publishes RGB images to `/dope/webcam_rgb_raw`
       ```
 
     The camera must publish a correct `camera_info` topic to enable DOPE to compute the correct poses. Basically all ROS drivers have a `camera_info_url` parameter where you can set the calibration info (but most ROS drivers include a reasonable default).
 
-    For details see the [camera tutorial](doc/camera_tutorial.md).
+    For details on calibration and rectification of your camera see the [camera tutorial](doc/camera_tutorial.md).
   
 3. **Edit config info** (if desired) in `~/catkin_ws/src/dope/config/config_pose.yaml`
     * `topic_camera`: RGB topic to listen to
