@@ -45,7 +45,7 @@ with NVIDIA Docker v1, that version is no longer supported by NVIDIA; rather, us
       Only the first invocation of this script with a given name will create a container. Subsequent executions will attach to the running container allowing you -- in effect -- to have multiple terminal sessions into a single container.
 
 5. **Build DOPE**
-   Return to step 5 of the [installation instructions](../readme.md).
+   Return to step 7 of the [installation instructions](../readme.md) (downloading the weights).
 
    *Note:* Since the Docker container binds directly to the host's network, it will see `roscore` even if running outside the docker container.
 
