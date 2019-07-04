@@ -49,10 +49,19 @@
   <!-- Use doc_depend for packages you need only for building documentation: -->
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
+  <depend>camera_info_manager_py</depend>
+  <depend>cv_bridge</depend>
+  <depend>geometry_msgs</depend>
+  <depend>message_filters</depend>
+  <depend>python-argparse</depend>
+  <depend>resource_retriever</depend>
   <depend>rospy</depend>
+  <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
-  <depend>tf2</depend>
-  
+  <depend>tf</depend>
+  <depend>vision_msgs</depend>
+  <depend>visualization_msgs</depend>
+
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

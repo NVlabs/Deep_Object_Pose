@@ -1,16 +1,18 @@
-topic_camera: "/dope/webcam_rgb_raw"
+topic_camera: "/dope/webcam/image_raw"
+topic_camera_info: "/dope/webcam/camera_info"
 topic_publishing: "dope"
-frame_id: "/dope"
+input_is_rectified: True   # Whether the input image is rectified (strongly suggested!)
+downscale_height: 500      # if the input image is larger than this, scale it down to this pixel height
 
 # Comment any of these lines to prevent detection / pose estimation of that object
 weights: {
-  "cracker":"cracker_60.pth", 
-   "gelatin":"gelatin_60.pth",
-   "meat":"meat_20.pth", 
-   "mustard":"mustard_60.pth", 
-   "soup":"soup_60.pth", 
-   "sugar":"sugar_60.pth",
-   "bleach":"bleach_28_dr.pth"
+    # "cracker":"package://dope/weights/cracker_60.pth",
+    # "gelatin":"package://dope/weights/gelatin_60.pth",
+    # "meat":"package://dope/weights/meat_20.pth",
+    # "mustard":"package://dope/weights/mustard_60.pth",
+    "soup":"package://dope/weights/soup_60.pth",
+    #"sugar":"package://dope/weights/sugar_60.pth"
+    # "bleach":"package://dope/weights/bleach_28_dr.pth"
 }
 
 # Cuboid dimension in cm x,y,z
@@ -21,8 +23,18 @@ dimensions: {
     "mustard": [9.6024150848388672,19.130100250244141,5.824894905090332],
     "soup": [6.7659378051757813,10.185500144958496,6.771425724029541],
     "sugar": [9.267730712890625,17.625339508056641,4.5134143829345703],
-    "bleach": [10.267730712890625,26.625339508056641,7.5134143829345703]
-        }
+    "bleach": [10.267730712890625,26.625339508056641,7.5134143829345703],
+}
+
+class_ids: {
+    "cracker": 1,
+    "gelatin": 2,
+    "meat":    3,
+    "mustard": 4,
+    "soup":    5,
+    "sugar":   6,
+    "bleach":  7,
+}
 
 draw_colors: {
     "cracker": [13, 255, 128],  # green
@@ -32,18 +44,38 @@ draw_colors: {
     "soup": [255, 101, 0],  # orange
     "sugar": [232, 222, 12],  # yellow
     "bleach": [232, 222, 12],  # yellow
-        
 }
 
-# Camera intrinsics (Logitech C920)
-camera_settings: {
-    "name": "logitech_c920",
-    "width": 640,
-    "height": 480,
-    "fx": 641.5,
-    "fy": 641.5,
-    "cx": 320.0,
-    "cy": 240.0
+# optional: provide a transform that is applied to the pose returned by DOPE
+model_transforms: {
+#    "cracker": [[ 0,  0,  1,  0],
+#                [ 0, -1,  0,  0],
+#                [ 1,  0,  0,  0],
+#                [ 0,  0,  0,  1]]
+}
+
+# optional: if you provide a mesh of the object here, a mesh marker will be
+# published for visualization in RViz
+# You can use the nvdu_ycb tool to download the meshes: https://github.com/NVIDIA/Dataset_Utilities#nvdu_ycb
+meshes: {
+#    "cracker": "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/003_cracker_box/google_16k/textured.obj",
+#    "gelatin": "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/009_gelatin_box/google_16k/textured.obj",
+#    "meat":    "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/010_potted_meat_can/google_16k/textured.obj",
+#    "mustard": "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/006_mustard_bottle/google_16k/textured.obj",
+#    "soup":    "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/005_tomato_soup_can/google_16k/textured.obj",
+#    "sugar":   "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/004_sugar_box/google_16k/textured.obj",
+#    "bleach":  "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/021_bleach_cleanser/google_16k/textured.obj",
+}
+
+# optional: If the specified meshes are not in meters, provide a scale here (e.g. if the mesh is in centimeters, scale should be 0.01). default scale: 1.0.
+mesh_scales: {
+    "cracker": 0.01,
+    "gelatin": 0.01,
+    "meat":    0.01,
+    "mustard": 0.01,
+    "soup":    0.01,
+    "sugar":   0.01,
+    "bleach":  0.01,
 }
 
 # Config params for DOPE

@@ -1,0 +1,75 @@
+#!/usr/bin/env python
+# Copyright (c) 2018 NVIDIA Corporation. All rights reserved.
+# This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
+# https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+
+"""
+This file opens an RGB camera and publishes images via ROS. 
+It uses OpenCV to capture from camera 0.
+"""
+
+import cv2
+import rospy
+from camera_info_manager import CameraInfoManager
+from cv_bridge import CvBridge
+from sensor_msgs.msg import Image, CameraInfo
+import sys
+
+
+def publish_images(freq=100):
+    cam_index = 0  # index of camera to capture
+
+    ### initialize ROS publishers etc.
+    rospy.init_node('dope_webcam')
+    camera_ns = rospy.get_param('camera', 'dope/webcam')
+    img_topic = '{}/image_raw'.format(camera_ns)
+    info_topic = '{}/camera_info'.format(camera_ns)
+    image_pub = rospy.Publisher(img_topic, Image, queue_size=10)
+    info_pub = rospy.Publisher(info_topic, CameraInfo, queue_size=10)
+    info_manager = CameraInfoManager(cname='dope_webcam_{}'.format(cam_index),
+                                     namespace=camera_ns)
+    try:
+        camera_info_url = rospy.get_param('~camera_info_url')
+        if not info_manager.setURL(camera_info_url):
+            rospy.logwarn('Camera info URL invalid: %s', camera_info_url)
+    except KeyError:
+        # we don't have a camera_info_url, so we'll keep the
+        # default ('file://${ROS_HOME}/camera_info/${NAME}.yaml')
+        pass
+
+    info_manager.loadCameraInfo()
+    if not info_manager.isCalibrated():
+        rospy.logwarn('Camera is not calibrated, please supply a valid camera_info_url parameter!')
+
+    ### open camera
+    cap = cv2.VideoCapture(cam_index)
+    if not cap.isOpened():
+        rospy.logfatal("ERROR:  Unable to open camera for capture.  Is camera plugged in?")
+        sys.exit(1)
+
+    rospy.loginfo("Publishing images from camera %s to topic '%s'...", cam_index, img_topic)
+    rospy.loginfo("Ctrl-C to stop")
+
+    ### publish images
+    rate = rospy.Rate(freq)
+    while not rospy.is_shutdown():
+        ret, frame = cap.read()
+
+        if ret:
+            image = CvBridge().cv2_to_imgmsg(frame, "bgr8")
+            image.header.frame_id = 'dope_webcam'
+            image.header.stamp = rospy.Time.now()
+            image_pub.publish(image)
+            # we need to call getCameraInfo() every time in case it was updated
+            camera_info = info_manager.getCameraInfo()
+            camera_info.header = image.header
+            info_pub.publish(camera_info)
+
+        rate.sleep()
+
+
+if __name__ == "__main__":
+    try:
+        publish_images()
+    except rospy.ROSInterruptException:
+        pass

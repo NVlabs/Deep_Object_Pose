@@ -2,10 +2,11 @@
 # This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 # https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
 
-import numpy as np
-from pyrr import Quaternion
 import cv2
-from cuboid import *
+import numpy as np
+from cuboid import CuboidVertexType
+from pyrr import Quaternion
+
 
 class CuboidPNPSolver(object):
     """
@@ -24,7 +25,7 @@ class CuboidPNPSolver(object):
         if (not camera_intrinsic_matrix is None):
             self._camera_intrinsic_matrix = camera_intrinsic_matrix
         else:
-            camera_intrinsic_matrix = np.array([
+            self._camera_intrinsic_matrix = np.array([
                 [0, 0, 0],
                 [0, 0, 0],
                 [0, 0, 0]
@@ -36,6 +37,10 @@ class CuboidPNPSolver(object):
     def set_camera_intrinsic_matrix(self, new_intrinsic_matrix):
         '''Sets the camera intrinsic matrix'''
         self._camera_intrinsic_matrix = new_intrinsic_matrix
+
+    def set_dist_coeffs(self, dist_coeffs):
+        '''Sets the camera intrinsic matrix'''
+        self._dist_coeffs = dist_coeffs
 
     def solve_pnp(self, cuboid2d_points, pnp_algorithm = None):
         """

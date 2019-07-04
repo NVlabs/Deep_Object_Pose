@@ -9,31 +9,17 @@ Contains the following classes:
 '''
 
 import time
-import json
-import os, shutil
-import sys
-import traceback
 from os import path
-import threading
-from threading import Thread
 
 import numpy as np
-import cv2
-
 import torch
 import torch.nn as nn
-import torchvision.transforms as transforms
-from torch.autograd import Variable
 import torchvision.models as models
-
-from scipy import ndimage
-import scipy
-import scipy.ndimage as ndimage
-import scipy.ndimage.filters as filters
+import torchvision.transforms as transforms
 from scipy.ndimage.filters import gaussian_filter
+from torch.autograd import Variable
 
 # Import the definition of the neural network model and cuboids
-from cuboid_pnp_solver import *
 
 #global transform for image input
 transform = transforms.Compose([
@@ -293,6 +279,7 @@ class ObjectDetector(object):
                 'quaternion': quaternion,
                 'cuboid2d': cuboid2d,
                 'projected_points': projected_points,
+                'score': obj[-1],
             })
 
         return detected_objects
@@ -446,11 +433,8 @@ class ObjectDetector(object):
 
                         # distance between vertexes
                         dist_point = np.linalg.norm(np.array(point) - np.array(center))
-                        
-                        if dist_angle < config.thresh_angle \
-                                and best_dist > 1000 \
-                                or dist_angle < config.thresh_angle \
-                                and best_dist > dist_point:
+
+                        if dist_angle < config.thresh_angle and (best_dist > 1000 or best_dist > dist_point):
                             i_best = i_obj
                             best_angle = dist_angle
                             best_dist = dist_point
