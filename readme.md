@@ -8,6 +8,10 @@ This is the official DOPE ROS package for detection and 6-DoF pose estimation of
 
 ![DOPE Objects](dope_objects.png)
 
+## Update 
+03/07/2019 - ROS interface update (thanks to Martin Günther)
+11/06/2019 - Added bleach YCB weights 
+
 ## Installing
 
 We have tested on Ubuntu 16.04 with ROS Kinetic with an NVIDIA Titan X with python 2.7.  The code may work on other systems.
