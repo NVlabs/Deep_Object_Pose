@@ -10,6 +10,7 @@ This is the official DOPE ROS package for detection and 6-DoF pose estimation of
 
 ## Update 
 03/07/2019 - ROS interface update (thanks to Martin Günther)
+
 11/06/2019 - Added bleach YCB weights 
 
 ## Installing
