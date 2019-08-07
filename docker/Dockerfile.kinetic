@@ -29,7 +29,6 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     && apt-get clean \
     # pip
     && pip install setuptools wheel \
-    && pip install 'matplotlib==2.2.2' --force-reinstall \
     # cleanup
     && rm -rf /var/lib/apt/lists/{apt,dpkg,cache,log} /tmp/* /var/tmp/*
 

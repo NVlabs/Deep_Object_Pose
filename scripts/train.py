@@ -9,7 +9,6 @@ from __future__ import print_function
 ######################################################
 """
 REQUIREMENTS:
-matplotlib==2.2.2
 simplejson==3.16.0
 numpy==1.14.1
 opencv_python==3.4.3.18
