@@ -9,6 +9,8 @@ This is the official DOPE ROS package for detection and 6-DoF pose estimation of
 ![DOPE Objects](dope_objects.png)
 
 ## Update 
+16/03/2020 - Added a wiki (thanks to [@saratrajput](https://github.com/saratrajput)) 
+
 03/07/2019 - ROS interface update (thanks to Martin Günther)
 
 11/06/2019 - Added bleach YCB weights 
