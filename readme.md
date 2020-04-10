@@ -17,7 +17,7 @@ This is the official DOPE ROS package for detection and 6-DoF pose estimation of
 
 ## Installing
 
-We have tested on Ubuntu 16.04 with ROS Kinetic with an NVIDIA Titan X with python 2.7.  The code may work on other systems.
+We have tested on Ubuntu 16.04 and 18.04 with ROS Kinetic and Lunar with an NVIDIA Titan X and RTX 2080ti with python 2.7.  The code may work on other systems.
 
 The following steps describe the native installation. Alternatively, use the provided [Docker image](docker/readme.md) and skip to Step #7.
 
