@@ -105,6 +105,7 @@ class DopeNode(object):
         self.meshes = {}
         self.mesh_scales = {}
         self.cv_bridge = CvBridge()
+        self.prev_num_detections = 0
 
         self.input_is_rectified = rospy.get_param('~input_is_rectified', True)
         self.downscale_height = rospy.get_param('~downscale_height', 500)
@@ -310,13 +311,6 @@ class DopeNode(object):
         self.publish_markers(detection_array)
 
     def publish_markers(self, detection_array):
-        # Delete all existing markers
-        markers = MarkerArray()
-        marker = Marker()
-        marker.action = Marker.DELETEALL
-        markers.markers.append(marker)
-        self.pub_markers.publish(markers)
-
         # Object markers
         class_id_to_name = {class_id: name for name, class_id in self.class_ids.iteritems()}
         markers = MarkerArray()
@@ -378,6 +372,15 @@ class DopeNode(object):
             except KeyError:
                 # user didn't specify self.meshes[name], so don't publish marker
                 pass
+
+        for i in range(len(detection_array.detections), self.prev_num_detections):
+            for ns in ["bboxes", "texts", "meshes"]:
+                marker = Marker()
+                marker.action = Marker.DELETE
+                marker.ns = ns
+                marker.id = i
+                markers.markers.append(marker)
+        self.prev_num_detections = len(detection_array.detections)
 
         self.pub_markers.publish(markers)
 
