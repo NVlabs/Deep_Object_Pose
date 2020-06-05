@@ -27,7 +27,7 @@ with NVIDIA Docker v1, that version is no longer supported by NVIDIA; rather, us
 2. **Build the docker image**
    ```
    $ cd dope/docker
-   $ nvidia-docker build -t nvidia-dope:kinetic-v1 -f Dockerfile.kinetic ..
+   $ docker build -t nvidia-dope:kinetic-v1 -f Dockerfile.kinetic ..
    ```
    This will take several minutes and requires an internet connection.
 

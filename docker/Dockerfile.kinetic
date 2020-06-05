@@ -1,34 +1,30 @@
-FROM nvidia/cudagl:9.0-devel-ubuntu16.04
+FROM nvidia/cudagl:10.0-devel-ubuntu16.04
 
 # Copyright (c) 2018, NVIDIA CORPORATION. All rights reserved.
 # Full license terms provided in LICENSE.md file.
 
 # Build with:
-# nvidia-docker build -t nvidia-dope:kinetic-v1 -f Dockerfile.kinetic ..
+# docker build -t nvidia-dope:kinetic-v1 -f Dockerfile.kinetic ..
 
 ENV HOME /root
+ENV DEBIAN_FRONTEND=noninteractive
 
 WORKDIR ${HOME}
 
 RUN apt-get update && apt-get -y --no-install-recommends install software-properties-common
-
-# cuDNN version must match the one used by TensorRT.
-# TRT 4.0 is compiled with cuDNN 7.1.
 
 RUN apt-get update && apt-get -y --no-install-recommends install \
         ca-certificates \
         build-essential \
         cmake \
         git \
-        libcudnn7=7.1.4.18-1+cuda9.0 \
-        libcudnn7-dev=7.1.4.18-1+cuda9.0 \
         libopencv-dev \
         python-dev \
         python-pip \
     && apt-get -y autoremove \
     && apt-get clean \
     # pip
-    && pip install setuptools wheel \
+    && pip install setuptools==44.1.1 wheel \
     # cleanup
     && rm -rf /var/lib/apt/lists/{apt,dpkg,cache,log} /tmp/* /var/tmp/*
 
@@ -52,6 +48,9 @@ RUN git clone http://github.com/opencv/opencv.git && cd opencv \
     && make -j `nproc`                      \
     && make install                         \
     && cd ${HOME} && rm -rf ./opencv/
+
+COPY requirements.txt ${HOME}
+RUN pip install --no-cache-dir -r requirements.txt
 
 # ROS Kinetic
 # Use rosdep to install all dependencies (including ROS itself)
@@ -77,8 +76,5 @@ RUN echo "source ${CATKIN_WS}/devel/setup.bash" >> ${HOME}/.bashrc
 
 ENV DISPLAY :0
 ENV TERM=xterm
-# Some QT-Apps don't not show controls without this
+# Some QT-Apps don't show controls without this
 ENV QT_X11_NO_MITSHM 1
-
-COPY requirements.txt ${HOME}
-RUN pip install --no-cache-dir -r requirements.txt
