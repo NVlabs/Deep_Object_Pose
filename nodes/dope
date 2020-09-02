@@ -121,7 +121,7 @@ class DopeNode(object):
         self.config_detect.thresh_points = rospy.get_param("~thresh_points", 0.1)
 
         # For each object to detect, load network model, create PNP solver, and start ROS publishers
-        for model, weights_url in rospy.get_param('~weights').iteritems():
+        for model, weights_url in rospy.get_param('~weights').items():
             self.models[model] = \
                 ModelData(
                     model,
@@ -318,7 +318,7 @@ class DopeNode(object):
         self.pub_markers.publish(markers)
 
         # Object markers
-        class_id_to_name = {class_id: name for name, class_id in self.class_ids.iteritems()}
+        class_id_to_name = {class_id: name for name, class_id in self.class_ids.items()}
         markers = MarkerArray()
         for i, det in enumerate(detection_array.detections):
             name = class_id_to_name[det.results[0].id]

@@ -8,7 +8,10 @@ This is the official DOPE ROS package for detection and 6-DoF pose estimation of
 
 ![DOPE Objects](dope_objects.png)
 
-## Update 
+## Updates 
+
+02/09/2010 - Upgraded DOPE to use Python 3. Updated Dockerfile to use Python3-compatible ROS Noetic. The Python 2.7/ROS Kinetic is still available on the ['ros-kinetic' branch](https://github.com/NVlabs/Deep_Object_Pose/tree/ros-kinetic).
+
 16/03/2020 - Added a wiki (thanks to [@saratrajput](https://github.com/saratrajput)) 
 
 03/07/2019 - ROS interface update (thanks to Martin Günther)
@@ -17,15 +20,15 @@ This is the official DOPE ROS package for detection and 6-DoF pose estimation of
 
 ## Installing
 
-We have tested on Ubuntu 16.04 and 18.04 with ROS Kinetic and Lunar with an NVIDIA Titan X and RTX 2080ti with python 2.7.  The code may work on other systems.
+We have tested on Ubuntu 18.04 with ROS Noetic with an NVIDIA Titan X and RTX 2080ti with python 3.8.  The code may work on other systems.
 
 The following steps describe the native installation. Alternatively, use the provided [Docker image](docker/readme.md) and skip to Step #7.
 
 1. **Install ROS**
 
-    Follow these [instructions](http://wiki.ros.org/kinetic/Installation/Ubuntu).
+    Follow these [instructions](http://wiki.ros.org/noetic/Installation/Ubuntu).
     You can select any of the default configurations in step 1.4; even the
-    ROS-Base (Bare Bones) package (`ros-kinetic-ros-base`) is enough.
+    ROS-Base (Bare Bones) package (`ros-noetic-ros-base`) is enough.
 
 2. **Create a catkin workspace** (if you do not already have one). To create a catkin workspace, follow these [instructions](http://wiki.ros.org/catkin/Tutorials/create_a_workspace):
     ```
@@ -43,14 +46,14 @@ The following steps describe the native installation. Alternatively, use the pro
 4. **Install python dependencies**
     ```
     $ cd ~/catkin_ws/src/dope
-    $ pip install -r requirements.txt
+    $ python3 -m pip install -r requirements.txt
     ```
 
 5. **Install ROS dependencies**
     ```
     $ cd ~/catkin_ws
-    $ rosdep install --from-paths src -i --rosdistro kinetic
-    $ sudo apt-get install ros-kinetic-rosbash ros-kinetic-ros-comm
+    $ rosdep install --from-paths src -i --rosdistro noetic
+    $ sudo apt-get install ros-noetic-rosbash ros-noetic-ros-comm
     ```
 
 6. **Build**

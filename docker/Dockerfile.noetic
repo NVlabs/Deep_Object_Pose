@@ -1,0 +1,61 @@
+FROM ros:noetic-robot
+
+# Copyright (c) 2020, NVIDIA CORPORATION. All rights reserved.
+# Full license terms provided in LICENSE.md file.
+# To build:
+# docker build -t nvidia-dope:noetic-v1 -f Dockerfile.noetic ..
+
+ENV HOME /root
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system and development components
+RUN apt-get update && apt-get -y --no-install-recommends install \
+    apt-utils \
+    software-properties-common \
+    build-essential \
+    cmake \
+    git \
+    python3-pip \
+    libxext6 \
+    libx11-6 \
+    libglvnd0 \
+    libgl1 \
+    libglx0 \
+    libegl1 \
+    freeglut3-dev \
+    && apt-get -y autoremove \
+    && apt-get clean
+
+# Install required ROS components
+RUN apt-get update && apt-get -y --no-install-recommends install \
+  ros-noetic-cv-bridge \
+  ros-noetic-geometry-msgs \
+  ros-noetic-message-filters \
+  ros-noetic-resource-retriever \
+  ros-noetic-rospy \
+  ros-noetic-sensor-msgs \
+  ros-noetic-std-msgs \
+  ros-noetic-tf \
+  ros-noetic-vision-msgs \
+  ros-noetic-visualization-msgs \
+  ros-noetic-rviz \
+  && apt-get -y autoremove \
+  && apt-get clean
+
+# pip install required Python packages
+COPY requirements.txt ${HOME}
+RUN python3 -m pip install --no-cache-dir -r ${HOME}/requirements.txt
+
+# Setup catkin workspace
+ENV CATKIN_WS ${HOME}/catkin_ws
+COPY . ${CATKIN_WS}/src/dope
+COPY docker/init_workspace.sh ${HOME}
+RUN ${CATKIN_WS}/src/dope/docker/init_workspace.sh
+RUN echo "source ${CATKIN_WS}/devel/setup.bash" >> ${HOME}/.bashrc
+
+ENV DISPLAY :0
+ENV NVIDIA_VISIBLE_DEVICES all
+ENV NVIDIA_DRIVER_CAPABILITIES graphics,utility,compute
+ENV TERM=xterm
+# Some QT-Apps don't show controls without this
+ENV QT_X11_NO_MITSHM 1

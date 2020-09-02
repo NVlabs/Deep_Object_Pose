@@ -4,17 +4,11 @@ Running ROS inside of [Docker](https://www.docker.com/) is an excellent way to
 experiment with DOPE, as it allows the user to completely isolate all software and configuration
 changes from the host system.  This document describes how to create and run a
 Docker image that contains a complete ROS environment that supports DOPE,
-including all required components, such as ROS Kinetic, rviz, CUDA with cuDNN,
+including all required components, such as ROS Noetic, rviz, CUDA with cuDNN,
 and other packages.
 
 The current configuration assumes all components are installed on an x86 host
-platform running Ubuntu 16.04.  Further, use of the DOPE Docker container requires
-an NVIDIA GPU to be present, and it uses
-[NVIDIA Docker](https://github.com/NVIDIA/nvidia-docker/) for seamless CUDA usage.
-
-(This setup was tested with NVIDIA Docker v2. Although these steps should work
-with NVIDIA Docker v1, that version is no longer supported by NVIDIA; rather, users are encouraged to
-[upgrade](https://github.com/nvidia/nvidia-docker/wiki/Installation-(version-2.0)).)
+platform running Ubuntu 18.04 or later.  Further, use of the DOPE Docker container requires an NVIDIA GPU to be present, and the use of Docker version 19.03.0 or later.
 
 
 ### Steps
@@ -27,7 +21,7 @@ with NVIDIA Docker v1, that version is no longer supported by NVIDIA; rather, us
 2. **Build the docker image**
    ```
    $ cd dope/docker
-   $ docker build -t nvidia-dope:kinetic-v1 -f Dockerfile.kinetic ..
+   $ docker build -t nvidia-dope:noetic-v1 -f Dockerfile.noetic ..
    ```
    This will take several minutes and requires an internet connection.
 
@@ -39,7 +33,7 @@ with NVIDIA Docker v1, that version is no longer supported by NVIDIA; rather, us
    $ ./run_dope_docker.sh [name] [host dir] [container dir]
    ```
    Parameters:
-   - `name` is an optional field that specifies the name of this image. By default, it is `nvidia-dope-v1`.  By using different names, you can create multiple containers from the same image.
+   - `name` is an optional field that specifies the name of this image. By default, it is `nvidia-dope-v2`.  By using different names, you can create multiple containers from the same image.
    - `host dir` and `container dir` are a pair of optional fields that allow you to specify a mapping between a directory on your host machine and a location inside the container.  This is useful for sharing code and data between the two systems.  By default, it maps the directory containing dope to `/root/catkin_ws/src/dope` in the container.
 
       Only the first invocation of this script with a given name will create a container. Subsequent executions will attach to the running container allowing you -- in effect -- to have multiple terminal sessions into a single container.
@@ -48,8 +42,3 @@ with NVIDIA Docker v1, that version is no longer supported by NVIDIA; rather, us
    Return to step 7 of the [installation instructions](../readme.md) (downloading the weights).
 
    *Note:* Since the Docker container binds directly to the host's network, it will see `roscore` even if running outside the docker container.
-
-
-### Acknowledgment
-
-The DOPE Docker image is based on NVIDIA's [Redtail Docker image](https://github.com/NVIDIA-Jetson/redtail/wiki/testing-in-simulator#redtail-docker).

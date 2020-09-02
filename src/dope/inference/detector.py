@@ -135,7 +135,7 @@ class DopeNetwork(nn.Module):
 
         return [out1_2, out2_2, out3_2, out4_2, out5_2, out6_2],\
                [out1_1, out2_1, out3_1, out4_1, out5_1, out6_1]
-                        
+
     @staticmethod
     def create_stage(in_channels, out_channels, first=False):
         '''Create the neural network layers for a single stage.'''
@@ -293,7 +293,7 @@ class ObjectDetector(object):
         for j in range(vertex2.size()[0]):
             belief = vertex2[j].clone()
             map_ori = belief.cpu().data.numpy()
-            
+
             map = gaussian_filter(belief.cpu().data.numpy(), sigma=config.sigma)
             p = 1
             map_left = np.zeros(map.shape)
@@ -307,14 +307,14 @@ class ObjectDetector(object):
 
             peaks_binary = np.logical_and.reduce(
                                 (
-                                    map >= map_left, 
-                                    map >= map_right, 
-                                    map >= map_up, 
-                                    map >= map_down, 
+                                    map >= map_left,
+                                    map >= map_right,
+                                    map >= map_up,
+                                    map >= map_down,
                                     map > config.thresh_map)
                                 )
-            peaks = zip(np.nonzero(peaks_binary)[1], np.nonzero(peaks_binary)[0]) 
-            
+            peaks = zip(np.nonzero(peaks_binary)[1], np.nonzero(peaks_binary)[0])
+
             # Computing the weigthed average for localizing the peaks
             peaks = list(peaks)
             win = 5
@@ -331,7 +331,7 @@ class ObjectDetector(object):
                                 or p[1]+i >= map_ori.shape[0] \
                                 or p[0]+j < 0 \
                                 or p[0]+j >= map_ori.shape[1]:
-                            continue 
+                            continue
 
                         i_values[j+ran, i+ran] = p[1] + i
                         j_values[j+ran, i+ran] = p[0] + j
@@ -387,23 +387,23 @@ class ObjectDetector(object):
                         continue
 
                     i_best = -1
-                    best_dist = 10000 
+                    best_dist = 10000
                     best_angle = 100
                     for i_obj in range(len(objects)):
                         center = [objects[i_obj][0][0], objects[i_obj][0][1]]
 
-                        # integer is used to look into the affinity map, 
-                        # but the float version is used to run 
+                        # integer is used to look into the affinity map,
+                        # but the float version is used to run
                         point_int = [int(candidate[0]), int(candidate[1])]
                         point = [candidate[0], candidate[1]]
 
                         # look at the distance to the vector field.
                         v_aff = np.array([
-                                        aff[i_lists*2, 
+                                        aff[i_lists*2,
                                         point_int[1],
                                         point_int[0]].data.item(),
-                                        aff[i_lists*2+1, 
-                                            point_int[1], 
+                                        aff[i_lists*2+1,
+                                            point_int[1],
                                             point_int[0]].data.item()]) * 10
 
                         # normalize the vector
@@ -414,7 +414,7 @@ class ObjectDetector(object):
 
                         xvec/=norms
                         yvec/=norms
-                            
+
                         v_aff = np.concatenate([[xvec],[yvec]])
 
                         v_center = np.array(center) - np.array(point)
@@ -422,12 +422,12 @@ class ObjectDetector(object):
                         yvec = v_center[1]
 
                         norms = np.sqrt(xvec * xvec + yvec * yvec)
-                            
+
                         xvec /= norms
                         yvec /= norms
 
                         v_center = np.concatenate([[xvec],[yvec]])
-                        
+
                         # vector affinity
                         dist_angle = np.linalg.norm(v_center - v_aff)
 
@@ -439,9 +439,9 @@ class ObjectDetector(object):
                             best_angle = dist_angle
                             best_dist = dist_point
 
-                    if i_best is -1:
+                    if i_best == -1:
                         continue
-                    
+
                     if objects[i_best][1][i_lists] is None \
                             or best_angle < config.thresh_angle \
                             and best_dist < objects[i_best][2][i_lists][1]:
