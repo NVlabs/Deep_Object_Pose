@@ -144,8 +144,11 @@ class DopeNode(object):
                 self.mesh_scales[model] = rospy.get_param('~mesh_scales')[model]
             except KeyError:
                 self.mesh_scales[model] = 1.0
+            try:
+                self.draw_colors[model] = tuple(rospy.get_param("~draw_colors")[model])
+            except:
+                self.draw_colors[model] = (np.random.randint(0,255),np.random.randint(0,255),np.random.randint(0,255))
 
-            self.draw_colors[model] = tuple(rospy.get_param("~draw_colors")[model])
             self.dimensions[model] = tuple(rospy.get_param("~dimensions")[model])
             self.class_ids[model] = rospy.get_param("~class_ids")[model]
 
