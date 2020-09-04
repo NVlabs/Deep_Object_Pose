@@ -136,8 +136,20 @@ The following steps describe the native installation. Alternatively, use the pro
 
 DOPE returns the poses of the objects in the camera coordinate frame.  DOPE uses the aligned YCB models, which can be obtained using [NVDU](https://github.com/NVIDIA/Dataset_Utilities) (see the `nvdu_ycb` command).
 
+## HOPE 3D Models
 
-## Citation
+![HOPE 3D models rendered in UE4](https://i.imgur.com/V6wX64p.png)
+
+We introduce new toy 3d models that you download [here](https://drive.google.com/drive/folders/1jiJS9KgcYAkfb8KJPp5MRlB0P11BStft). 
+The folders are arranged like the YCB 3d models organization. 
+You can buy the real objects using the following links 
+[set 1](https://www.amazon.com/gp/product/B071ZMT9S2), 
+[set 2](https://www.amazon.com/gp/product/B007EA6PKS), 
+[set 3](https://www.amazon.com/gp/product/B00H4SKSPS), 
+and 
+[set 4](https://www.amazon.com/gp/product/B072M2PGX9). 
+
+## How to cite DOPE 
 
 If you use this tool in a research project, please cite as follows:
 ```
