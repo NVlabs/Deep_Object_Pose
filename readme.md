@@ -1,5 +1,5 @@
 [![License CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-blue.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode)
-![Python 2.7](https://img.shields.io/badge/python-2.7-green.svg)
+![Python 2.7](https://img.shields.io/badge/python-3.8-blue.svg)
 # Deep Object Pose Estimation - ROS Inference
 
 This is the official DOPE ROS package for detection and 6-DoF pose estimation of **known objects** from an RGB camera.  The network has been trained on the following YCB objects:  cracker box, sugar box, tomato soup can, mustard bottle, potted meat can, and gelatin box.  For more details, see our [CoRL 2018 paper](https://arxiv.org/abs/1809.10790) and [video](https://youtu.be/yVGViBqWtBI).
@@ -9,15 +9,15 @@ This is the official DOPE ROS package for detection and 6-DoF pose estimation of
 ![DOPE Objects](dope_objects.png)
 
 ## Updates 
-03/09/2020 - Added HOPE weights to google drive, the 3d models, and the objects dimensions to config. [Tremblay et al., IROS 2020](https://arxiv.org/abs/2008.11822).
+2020/03/09 - Added HOPE weights to google drive, the 3d models, and the objects dimensions to config. [Tremblay et al., IROS 2020](https://arxiv.org/abs/2008.11822).
 
-02/09/2020 - Upgraded DOPE to use Python 3. Updated Dockerfile to use Python3-compatible ROS Noetic. The Python 2.7/ROS Kinetic is still available on the ['ros-kinetic' branch](https://github.com/NVlabs/Deep_Object_Pose/tree/ros-kinetic).
+2020/02/09 - Upgraded DOPE to use Python 3. Updated Dockerfile to use Python3-compatible ROS Noetic. The Python 2.7/ROS Kinetic is still available on the ['ros-kinetic' branch](https://github.com/NVlabs/Deep_Object_Pose/tree/ros-kinetic).
 
-16/03/2020 - Added a wiki (thanks to [@saratrajput](https://github.com/saratrajput)) 
+2020/16/03 - Added a wiki (thanks to [@saratrajput](https://github.com/saratrajput)) 
 
-03/07/2019 - ROS interface update (thanks to Martin Günther)
+2019/03/07 - ROS interface update (thanks to Martin Günther)
 
-11/06/2019 - Added bleach YCB weights 
+2019/11/06 - Added bleach YCB weights 
 
 ## Installing
 
