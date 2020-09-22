@@ -177,6 +177,12 @@ class DopeNode(object):
                 ImageSensor_msg,
                 queue_size=10
             )
+        self.pub_camera_info = \
+            rospy.Publisher(
+                rospy.get_param('~topic_publishing') + "/camera_info",
+                CameraInfo,
+                queue_size=10
+            )
         self.pub_detections = \
             rospy.Publisher(
                 '~detected_objects',
@@ -303,12 +309,10 @@ class DopeNode(object):
                     draw.draw_cube(points2d, self.draw_colors[m])
 
         # Publish the image with results overlaid
-        self.pub_rgb_dope_points.publish(
-            CvBridge().cv2_to_imgmsg(
-                np.array(im)[..., ::-1],
-                "bgr8"
-            )
-        )
+        rgb_points_img = CvBridge().cv2_to_imgmsg(np.array(im)[..., ::-1], "bgr8")
+        rgb_points_img.header = camera_info.header
+        self.pub_rgb_dope_points.publish(rgb_points_img)
+        self.pub_camera_info.publish(camera_info)
         self.pub_detections.publish(detection_array)
         self.publish_markers(detection_array)
 
