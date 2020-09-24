@@ -53,11 +53,13 @@ class CuboidPNPSolver(object):
         if pnp_algorithm is None:
             if CuboidPNPSolver.cv2majorversion == 2:
                 pnp_algorithm = cv2.CV_ITERATIVE
-            elif CuboidPNPSolver.cv2majorversion == 3:
+            elif CuboidPNPSolver.cv2majorversion > 2:
                 pnp_algorithm = cv2.SOLVEPNP_ITERATIVE
                 # Alternative algorithms:
                 # pnp_algorithm = SOLVE_PNP_P3P
                 # pnp_algorithm = SOLVE_PNP_EPNP
+            else:
+                assert True, "DOPE will not work with versions of OpenCV earlier than 2.0"
 
         location = None
         quaternion = None
