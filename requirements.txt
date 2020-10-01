@@ -1,8 +1,7 @@
-pyrr
-torch
-torchvision
-numpy
-scipy
-opencv_python
-Pillow
-
+pyrr==0.10.3
+torch==1.6.0
+torchvision==0.7.0
+numpy==1.17.4
+scipy==1.5.2
+opencv_python==4.4.0.44
+Pillow==7.2.0
