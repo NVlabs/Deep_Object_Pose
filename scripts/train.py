@@ -1365,7 +1365,7 @@ def _runnetwork(epoch, loader, train=True):
 
         with open (opt.outf+namefile,'a') as file:
             s = '{}, {},{:.15f}\n'.format(
-                epoch,batch_idx,loss.data[0]) 
+                epoch,batch_idx,loss.data.item()) 
             # print (s)
             file.write(s)
 
@@ -1373,12 +1373,12 @@ def _runnetwork(epoch, loader, train=True):
             if batch_idx % opt.loginterval == 0:
                 print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.15f}'.format(
                     epoch, batch_idx * len(data), len(loader.dataset),
-                    100. * batch_idx / len(loader), loss.data[0]))
+                    100. * batch_idx / len(loader), loss.data.item()))
         else:
             if batch_idx % opt.loginterval == 0:
                 print('Test Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.15f}'.format(
                     epoch, batch_idx * len(data), len(loader.dataset),
-                    100. * batch_idx / len(loader), loss.data[0]))
+                    100. * batch_idx / len(loader), loss.data.item()))
 
         # break
         if not opt.nbupdates is None and nb_update_network > int(opt.nbupdates):
