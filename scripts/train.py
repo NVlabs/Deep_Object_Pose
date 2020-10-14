@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright (c) 2018 NVIDIA Corporation. All rights reserved.
 # This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
@@ -31,7 +31,7 @@ HOW TO TRAIN DOPE
 This is the DOPE training code.  
 It is provided as a convenience for researchers, but it is otherwise unsupported.
 
-Please refer to `python train.py --help` for specific details about the 
+Please refer to `python3 train.py --help` for specific details about the 
 training code. 
 
 If you download the FAT dataset 
@@ -39,7 +39,7 @@ If you download the FAT dataset
 you can train a YCB object DOPE detector as follows: 
 
 ```
-python train.py --data path/to/FAT --object soup --outf soup 
+python3 train.py --data path/to/FAT --object soup --outf soup 
 --gpuids 0 1 2 3 4 5 6 7 
 ```
 
