@@ -61,7 +61,13 @@
   <depend>tf</depend>
   <depend>vision_msgs</depend>
   <depend>visualization_msgs</depend>
-
+  <depend>python3-pyrr</depend>
+  <depend>python-pytorch-pip</depend>
+  <depend>python3-numpy</depend>
+  <depend>python3-scipy</depend>
+  <depend>python3-opencv</depend>
+  <depend>python3-pil</depend>
+  <depend>python-configparser</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
