@@ -61,7 +61,7 @@
   <depend>tf</depend>
   <depend>vision_msgs</depend>
   <depend>visualization_msgs</depend>
-  <depend>python3-pyrr</depend>
+  <depend>python3-pyrr-pip</depend>
   <depend>python-pytorch-pip</depend>
   <depend>python3-numpy</depend>
   <depend>python3-scipy</depend>
