@@ -49,7 +49,7 @@ after each epoch. It will use the 8 gpus using pytorch data parallel.
 
 
 import argparse
-import ConfigParser
+import configparser
 import random
 import numpy as np
 
