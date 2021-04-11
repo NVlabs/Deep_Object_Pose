@@ -516,10 +516,16 @@ class MultipleVertexJson(data.Dataset):
             return new_cuboid
 
         # Random image manipulation, rotation and translation with zero padding
-        dx = round(np.random.normal(0, 2) * float(self.random_translation[0]))
-        dy = round(np.random.normal(0, 2) * float(self.random_translation[1]))
-        angle = round(np.random.normal(0, 1) * float(self.random_rotation))
+	# These create a bug, thank you to 
+	# https://tanelp.github.io/posts/a-bug-that-plagues-thousands-of-open-source-ml-projects/
+	# dx = round(np.random.normal(0, 2) * float(self.random_translation[0]))
+        # dy = round(np.random.normal(0, 2) * float(self.random_translation[1]))
+        # angle = round(np.random.normal(0, 1) * float(self.random_rotation))
 
+        dx = round(torch.normal(0, 2) * float(self.random_translation[0]))
+        dy = round(torch.normal(0, 2) * float(self.random_translation[1]))
+        angle = round(torch.normal(0, 1) * float(self.random_rotation))	
+	
         tm = np.float32([[1, 0, dx], [0, 1, dy]])
         rm = cv2.getRotationMatrix2D(
             (img.size[0]/2, img.size[1]/2), angle, 1)
