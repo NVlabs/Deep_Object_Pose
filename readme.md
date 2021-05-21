@@ -4,7 +4,7 @@
 
 This is the official DOPE ROS package for detection and 6-DoF pose estimation of **known objects** from an RGB camera.  The network has been trained on the following YCB objects:  cracker box, sugar box, tomato soup can, mustard bottle, potted meat can, and gelatin box.  For more details, see our [CoRL 2018 paper](https://arxiv.org/abs/1809.10790) and [video](https://youtu.be/yVGViBqWtBI).
 
-*Note:*  The instructions below refer to inference only.  Training code is also provided but not supported.
+*Note:*  The instructions below refer to inference only.  Training code is also provided but not supported. Thank you to [@Blaine141](https://github.com/blaine141) You can check out how to train DOPE on a single [GPU and using NVISII](https://github.com/NVlabs/Deep_Object_Pose/issues/155#issuecomment-791148200).
 
 ![DOPE Objects](dope_objects.png)
 
