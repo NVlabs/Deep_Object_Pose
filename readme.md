@@ -97,6 +97,7 @@ The following steps describe the native installation. Alternatively, use the pro
     * `model_transforms`: dictionary of transforms that are applied to the pose before publishing (key values must match the `weights` names)
     * `meshes`: dictionary of mesh filenames for visualization (key values must match the `weights` names)
     * `mesh_scales`: dictionary of scaling factors for the visualization meshes (key values must match the `weights` names)
+    * `overlay_belief_images`: whether to overlay the input image on the belief images published on /dope/belief_[obj_name]
     * `thresh_angle`: undocumented
     * `thresh_map`: undocumented
     * `sigma`: undocumented
@@ -112,7 +113,7 @@ The following steps describe the native installation. Alternatively, use the pro
 
 * The following ROS topics are published (assuming `topic_publishing == 'dope'`):
     ```
-    /dope/webcam_rgb_raw       # RGB images from camera
+    /dope/belief_[obj_name]    # belief maps of object
     /dope/dimension_[obj_name] # dimensions of object
     /dope/pose_[obj_name]      # timestamped pose of object
     /dope/rgb_points           # RGB images with detected cuboids overlaid

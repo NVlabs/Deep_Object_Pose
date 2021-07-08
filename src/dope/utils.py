@@ -82,3 +82,21 @@ def make_grid(tensor, nrow=8, padding=2,
                 .copy_(tensor[k])
             k = k + 1
     return grid
+
+
+def get_image_grid(tensor, nrow=3, padding=2, mean=None, std=None):
+    """
+    Saves a given Tensor into an image file.
+    If given a mini-batch tensor, will save the tensor as a grid of images.
+    """
+    from PIL import Image
+
+    # tensor = tensor.cpu()
+    grid = make_grid(tensor, nrow=nrow, padding=padding, pad_value=1)
+    if not mean is None:
+        # ndarr = grid.mul(std).add(mean).mul(255).byte().transpose(0,2).transpose(0,1).numpy()
+        ndarr = grid.mul(std).add(mean).mul(255).byte().transpose(0, 2).transpose(0, 1).numpy()
+    else:
+        ndarr = grid.mul(0.5).add(0.5).mul(255).byte().transpose(0, 2).transpose(0, 1).numpy()
+    im = Image.fromarray(ndarr)
+    return im
