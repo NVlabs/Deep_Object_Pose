@@ -167,6 +167,8 @@ mesh_scales: {
     "bleach":  0.01,
 }
 
+overlay_belief_images: True   # Whether to overlay the input image on the belief images published on /dope/belief_[obj_name]
+
 # Config params for DOPE
 thresh_angle: 0.5
 thresh_map: 0.01

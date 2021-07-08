@@ -98,6 +98,7 @@ class DopeNode(object):
         self.models = {}
         self.pnp_solvers = {}
         self.pub_dimension = {}
+        self.pub_belief = {}
         self.draw_colors = {}
         self.dimensions = {}
         self.class_ids = {}
@@ -109,6 +110,7 @@ class DopeNode(object):
 
         self.input_is_rectified = rospy.get_param('~input_is_rectified', True)
         self.downscale_height = rospy.get_param('~downscale_height', 500)
+        self.overlay_belief_images = rospy.get_param('~overlay_belief_images', True)
 
         self.config_detect = lambda: None
         self.config_detect.mask_edges = 1
@@ -168,6 +170,12 @@ class DopeNode(object):
                 rospy.Publisher(
                     '{}/dimension_{}'.format(rospy.get_param('~topic_publishing'), model),
                     String,
+                    queue_size=10
+                )
+            self.pub_belief[model] = \
+                rospy.Publisher(
+                    '{}/belief_{}'.format(rospy.get_param('~topic_publishing'), model),
+                    ImageSensor_msg,
                     queue_size=10
                 )
 
@@ -250,12 +258,16 @@ class DopeNode(object):
         detection_array.header = image_msg.header
 
         for m in self.models:
+            publish_belief_img = (self.pub_belief[m].get_num_connections() > 0)
+
             # Detect object
-            results = ObjectDetector.detect_object_in_image(
+            results, im_belief = ObjectDetector.detect_object_in_image(
                 self.models[m].net,
                 self.pnp_solvers[m],
                 img,
-                self.config_detect
+                self.config_detect,
+                make_belief_debug_img=publish_belief_img,
+                overlay_image=self.overlay_belief_images
             )
 
             # Publish pose and overlay cube on image
@@ -308,6 +320,12 @@ class DopeNode(object):
                     for pair in result['projected_points']:
                         points2d.append(tuple(pair))
                     draw.draw_cube(points2d, self.draw_colors[m])
+
+            # Publish the belief image
+            if publish_belief_img:
+                belief_img = self.cv_bridge.cv2_to_imgmsg(np.array(im_belief)[..., ::-1], "bgr8")
+                belief_img.header = camera_info.header
+                self.pub_belief[m].publish(belief_img)
 
         # Publish the image with results overlaid
         rgb_points_img = CvBridge().cv2_to_imgmsg(np.array(im)[..., ::-1], "bgr8")
