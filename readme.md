@@ -11,7 +11,7 @@ This is the official DOPE ROS package for detection and 6-DoF pose estimation of
 ## Updates 
 2021/08/07 - Added publishing belief maps. Thank you to Martin Günther. 
 
-2020/03/09 - Added HOPE [weights to google drive](https://drive.google.com/open?id=1DfoA3m_Bm0fW8tOWXGVxi4ETlLEAgmcg), [the 3d models](https://drive.google.com/drive/folders/1jiJS9KgcYAkfb8KJPp5MRlB0P11BStft), and the objects dimensions to config. [Tremblay et al., IROS 2020](https://arxiv.org/abs/2008.11822).  The HOPE dataset is also part of the [BOP challenge](https://bop.felk.cvut.cz/datasets/#HOPE)
+2020/03/09 - Added HOPE [weights to google drive](https://drive.google.com/open?id=1DfoA3m_Bm0fW8tOWXGVxi4ETlLEAgmcg), [the 3d models](https://drive.google.com/drive/folders/1jiJS9KgcYAkfb8KJPp5MRlB0P11BStft), and the objects dimensions to config. [Tremblay et al., IROS 2020](https://arxiv.org/abs/2008.11822).  The HOPE dataset can be found [here](https://github.com/swtyree/hope-dataset/) and is also part of the [BOP challenge](https://bop.felk.cvut.cz/datasets/#HOPE)
 
 2020/02/09 - Upgraded DOPE to use Python 3. Updated Dockerfile to use Python3-compatible ROS Noetic. The Python 2.7/ROS Kinetic is still available on the ['ros-kinetic' branch](https://github.com/NVlabs/Deep_Object_Pose/tree/ros-kinetic).
 
@@ -152,7 +152,7 @@ You can buy the real objects using the following links
 and 
 [set 4](https://www.amazon.com/gp/product/B072M2PGX9). 
 
-The HOPE dataset is also part of the [BOP challenge](https://bop.felk.cvut.cz/datasets/#HOPE).
+The HOPE dataset can be found [here](https://github.com/swtyree/hope-dataset/) and is also part of the [BOP challenge](https://bop.felk.cvut.cz/datasets/#HOPE).
 
 ## How to cite DOPE 
 
