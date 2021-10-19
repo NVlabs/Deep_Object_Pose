@@ -8,7 +8,9 @@ This is the official DOPE ROS package for detection and 6-DoF pose estimation of
 
 ![DOPE Objects](dope_objects.png)
 
-## Updates 
+## Updates
+2021/10/20 - Added ROS2 Foxy inference support through [Isaac ROS DOPE package](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_dnn_inference/tree/main/isaac_ros_dope) for Jetson and x86+CUDA-capable GPU.
+
 2021/08/07 - Added publishing belief maps. Thank you to Martin Günther. 
 
 2020/03/09 - Added HOPE [weights to google drive](https://drive.google.com/open?id=1DfoA3m_Bm0fW8tOWXGVxi4ETlLEAgmcg), [the 3d models](https://drive.google.com/drive/folders/1jiJS9KgcYAkfb8KJPp5MRlB0P11BStft), and the objects dimensions to config. [Tremblay et al., IROS 2020](https://arxiv.org/abs/2008.11822).  The HOPE dataset can be found [here](https://github.com/swtyree/hope-dataset/) and is also part of the [BOP challenge](https://bop.felk.cvut.cz/datasets/#HOPE)
@@ -23,7 +25,14 @@ This is the official DOPE ROS package for detection and 6-DoF pose estimation of
 
 ## Installing
 
-We have tested on Ubuntu 20.04 with ROS Noetic with an NVIDIA Titan X and RTX 2080ti with python 3.8.  The code may work on other systems.
+We have tested on Ubuntu 20.04 with ROS Noetic with an NVIDIA Titan X and RTX 2080ti with Python 3.8. The code may work on other systems.
+
+---
+***NOTE***
+
+For hardware-accelerated ROS2 inference support, please visit [Isaac ROS DOPE](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_dnn_inference/tree/main/isaac_ros_dope) which has been tested with ROS2 Foxy on Jetson AGX Xavier/JetPack 4.6 and on x86/Ubuntu 20.04 with RTX3060i.
+
+---
 
 The following steps describe the native installation. Alternatively, use the provided [Docker image](docker/readme.md) and skip to Step #7.
 
