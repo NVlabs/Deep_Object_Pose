@@ -7,7 +7,6 @@ FROM nvcr.io/nvidia/pytorch:21.11-py3
 
 ENV HOME /root
 ENV DEBIAN_FRONTEND=noninteractive
-ENV PYTHONPATH="${PYTHONPATH}:/usr/local/lib:/workspace/dope/src"
 
 # Install system and development components
 RUN apt-get update && apt-get -y --no-install-recommends install \
@@ -37,6 +36,7 @@ ENV DISPLAY :0
 ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES graphics,utility,compute
 ENV TERM=xterm
+ENV PYTHONPATH "${PYTHONPATH}:/usr/local/lib:/workspace/dope/sr"
 # Some QT-Apps don't show controls without this
 ENV QT_X11_NO_MITSHM 1
 
