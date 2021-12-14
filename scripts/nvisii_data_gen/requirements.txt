@@ -2,3 +2,4 @@ nvisii
 numpy 
 opencv-python
 pybullet
+randomcolor

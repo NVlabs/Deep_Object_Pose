@@ -8,7 +8,7 @@ downscale_height: 500      # if the input image is larger than this, scale it do
 weights: {
     # "cracker":"package://dope/weights/cracker_60.pth",
     # "gelatin":"package://dope/weights/gelatin_60.pth",
-    # "meat":"package://dope/weights/meat_20.pth",
+    "meat":"../../weights/meat_20.pth",
     # "mustard":"package://dope/weights/mustard_60.pth",
     # "soup":"package://dope/weights/soup_60.pth",
     # 'peg_hole': "package://dope/weights/peg_box_40.pth",
@@ -17,12 +17,13 @@ weights: {
     # "bleach":"package://dope/weights/bleach_28_dr.pth"
     # 'pudding':"weights_dope/pudding.pth"
     # 'pudding':"weights_dope/dope_network/net_epoch_60.pth"
-    'alphabet_soup':"weights_dope/resnet_simple/alphabe_soup.pth"
+    #'alphabet_soup':"weights_dope/resnet_simple/alphabe_soup.pth"
 }
 
 # Type of neural network architecture
 architectures: {
     'pudding':"dope",
+    "meat" : "dope",
     'alphabet_soup':'resnet_simple',   
 }
 

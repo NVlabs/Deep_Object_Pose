@@ -318,7 +318,7 @@ for i_obj in range(int(opt.nb_objects)):
     toy_to_load = google_content_folder[random.randint(0,len(google_content_folder)-1)]
 
     obj_to_load = toy_to_load + "/google_16k/textured.obj"
-    texture_to_load = toy_to_load + "/google_16k/texture_map_flat.png"
+    texture_to_load = toy_to_load + "/google_16k/texture_map.png"
     name = "hope_" + toy_to_load.split('/')[-2] + f"_{i_obj}"
     adding_mesh_object(name,obj_to_load,texture_to_load,scale=0.01)
 

@@ -150,6 +150,7 @@ class DopeNode(object):
         camera_info, 
         img_name = "00000.png", # this is the name of the img file to save, it needs the .png at the end
         output_folder = 'out_inference', # folder where to put the output
+        save=False,
         ):
         img_name = str(img_name).zfill(5)
         """Image callback"""
@@ -237,13 +238,16 @@ class DopeNode(object):
                         points2d.append(tuple(pair))
                     draw.draw_cube(points2d, self.draw_colors[m])
         # save the output of the image. 
-        im.save(f"{output_folder}/{img_name}.png")
-
-        # save the json files 
-        with open(f"{output_folder}/{img_name.replace('png','json')}", 'w') as fp:
-            json.dump(dict_out, fp)
-
-            
+        if save:
+            im.save(f"{output_folder}/{img_name}.png")
+            # save the json files 
+            with open(f"{output_folder}/{img_name.replace('png','json')}", 'w') as fp:  
+                json.dump(dict_out, fp)
+        
+        open_cv_image = np.array(im)
+        open_cv_image = cv2.cvtColor(open_cv_image, cv2.COLOR_RGB2BGR)
+        cv2.imshow('Open_cv_image', open_cv_image)
+        cv2.waitKey(1)
 
 def rotate_vector(vector, quaternion):
     q_conj = tf.transformations.quaternion_conjugate(quaternion)
@@ -285,13 +289,16 @@ if __name__ == "__main__":
     parser.add_argument('--realsense',
         action='store_true',
         help='use the realsense camera')
+    parser.add_argument('--save',
+        action='store_true',
+        help='save?')
 
 
     opt = parser.parse_args()
 
     # load the configs
     with open(opt.config) as f:
-        config = yaml.load(f, Loader=yaml.FullLoader)
+        pose_config = yaml.load(f, Loader=yaml.FullLoader)
     with open(opt.camera) as f:
         camera_info = yaml.load(f, Loader=yaml.FullLoader)
     
@@ -335,7 +342,7 @@ if __name__ == "__main__":
             cap = cv2.VideoCapture(0)
 
     # An object to run dope node
-    dope_node = DopeNode(config)
+    dope_node = DopeNode(pose_config)
 
 
     # starting the loop here
@@ -351,6 +358,7 @@ if __name__ == "__main__":
                 frames = pipeline.wait_for_frames()
                 depth_frame = frames.get_depth_frame()
                 color_frame = frames.get_color_frame()
+                frame = np.asanyarray(color_frame.get_data())
             else:
                 ret, frame = cap.read()
 
@@ -370,4 +378,5 @@ if __name__ == "__main__":
             frame, 
             camera_info,
             img_name = img_name,
-            output_folder = opt.outf)
+            output_folder = opt.outf,
+            save=opt.save)
