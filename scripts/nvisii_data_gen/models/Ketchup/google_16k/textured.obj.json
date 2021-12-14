@@ -1,0 +1,15 @@
+{
+  "created_at": "2019-11-20T15:13:41.741628",
+  "version": "0.1",
+  "mtllibs": [
+    "textured.mtl"
+  ],
+  "vertex_buffers": [
+    {
+      "material": "textured:_texture",
+      "vertex_format": "T2F_N3F_V3F",
+      "byte_offset": 0,
+      "byte_length": 1491360
+    }
+  ]
+}

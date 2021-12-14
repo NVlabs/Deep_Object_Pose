@@ -1,0 +1,4 @@
+nvisii
+numpy 
+opencv-python
+pybullet

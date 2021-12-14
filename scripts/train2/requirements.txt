@@ -1,0 +1,15 @@
+matplotlib
+simplejson
+numpy
+opencv_python
+photutils
+scipy
+torch
+pyquaternion
+tqdm
+pyrr
+Pillow==5.2.0
+torchvision
+PyYAML
+tensorboardX
+
