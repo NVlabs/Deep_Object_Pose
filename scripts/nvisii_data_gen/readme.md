@@ -94,7 +94,12 @@ If you use this data generation script in your research, please cite as follow,
 }
 ``` 
 
-# To verify
+# Training
+
+Please use the updated training scripts with this data: https://github.com/NVlabs/Deep_Object_Pose/tree/master/scripts/train2. 
+
+<!-- # To verify
 
 - Verify that the data exported is compatible with the training script directly. This script does not export `_camera_setting.json` file for example, the information is directly in the `.json` files. 
 PRs are welcome :P. 
+ -->
