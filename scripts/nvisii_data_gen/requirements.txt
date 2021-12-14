@@ -2,3 +2,6 @@ nvisii
 numpy 
 opencv-python
 pybullet
+randomcolor
+requests
+simplejson
