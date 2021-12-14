@@ -4,5 +4,5 @@ torchvision==0.7.0
 numpy==1.17.4
 scipy==1.5.2
 opencv_python==4.4.0.44
-Pillow==8.1.1
+Pillow==8.3.2
 configparser==5.0.0
