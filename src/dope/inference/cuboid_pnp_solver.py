@@ -4,7 +4,7 @@
 
 import cv2
 import numpy as np
-from .cuboid import CuboidVertexType
+from cuboid import CuboidVertexType
 from pyrr import Quaternion
 
 

@@ -284,9 +284,8 @@ def loadjson(path, objectsofinterest, img):
         info = data['objects'][i_line]
         if not objectsofinterest is None and \
            not objectsofinterest in info['class'].lower():
-           continue 
-
-        print("Object found", objectsofinterest)
+            continue 
+        
         box = info['bounding_box']
         boxToAdd = []
 
@@ -1053,227 +1052,245 @@ def DrawCube(points, which_color = 0, color = None, draw = None):
 # TRAINING CODE MAIN STARTING HERE
 ##################################################
 
-if __name__ == "__main__":
+print ("start:" , datetime.datetime.now().time())
 
-    print ("start:" , datetime.datetime.now().time())
+data_dir = "/opt/ml/input/data/channel1"
+model_dir = "/opt/ml/model"
+hyperparameters_file = "/opt/ml/input/config/hyperparameters.json"
 
-    data_dir = "/opt/ml/input/data/channel1"
-    checkpoints_dir = "/opt/ml/checkpoints"
-    model_dir = "/opt/ml/model"
-    workspace_dir = "/workspace"
-    base_checkpoint = "/workspace/pre-trained-model/model.ckpt"
-    base_checkpoint_dir = "/workspace/pre-trained-model/"
-    hyperparameters_file = "/opt/ml/input/config/hyperparameters.json"
+# hyperparameters
+with open(hyperparameters_file) as f:
+    hyperparameters = json.load(f)
+gpus = hyperparameters["gpus"]
+obj = hyperparameters["obj"]
+gpuids = gpus.split(" ")
+print(f"Using {gpuids} GPUs")
+print(f"Training {obj}")
 
-    # hyperparameters
-    try:
-        with open(hyperparameters_file) as f:
-            hyperparameters = json.load(f)
-        gpus = hyperparameters["gpus"]
-        obj = hyperparameters["obj"]
-        gpuids = gpus.split(" ")
-    except:
-        gpuids = [0]
-        obj = ''
-    
-    print(f"Using {gpuids} GPUs")
-    print(f"Training {obj}")
+conf_parser = argparse.ArgumentParser(
+    description=__doc__, # printed with -h/--help
+    # Don't mess with format of description
+    formatter_class=argparse.RawDescriptionHelpFormatter,
+    # Turn off help, so we print all options in response to -h
+    add_help=False
+    )
+conf_parser.add_argument("-c", "--config",
+                        help="Specify config file", metavar="FILE")
 
-    conf_parser = argparse.ArgumentParser(
-        description=__doc__, # printed with -h/--help
-        # Don't mess with format of description
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        # Turn off help, so we print all options in response to -h
-        add_help=False
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--hyperparameters', 
+    default = '',
+)
+
+parser.add_argument('--data',  
+    default = data_dir, 
+    help='path to training data')
+
+parser.add_argument('--datatest', 
+    default="", 
+    help='path to data testing set')
+
+parser.add_argument('--object', 
+    default=obj, 
+    help='In the dataset which object of interest')
+
+parser.add_argument('--workers', 
+    type=int, 
+    default=12,
+    help='number of data loading workers')
+
+parser.add_argument('--batchsize', 
+    type=int, 
+    default=128, 
+    help='input batch size')
+
+parser.add_argument('--subbatchsize', 
+    type=int, 
+    default=24, 
+    help='input batch size')
+
+parser.add_argument('--imagesize', 
+    type=int, 
+    default=400, 
+    help='the height / width of the input image to network')
+
+parser.add_argument('--lr', 
+    type=float, 
+    default=0.0001,
+    help='learning rate, default=0.0001')
+
+parser.add_argument('--noise', 
+    type=float, 
+    default=2.0, 
+    help='gaussian noise added to the image')
+
+parser.add_argument('--net', 
+    default='', 
+    help="path to net (to continue training)")
+
+parser.add_argument('--namefile', 
+    default='epoch', 
+    help="name to put on the file of the save weights")
+
+parser.add_argument('--manualseed', 
+    type=int, 
+    help='manual seed')
+
+parser.add_argument('--epochs', 
+    type=int, 
+    default=60,
+    help="number of epochs to train")
+
+parser.add_argument('--loginterval', 
+    type=int, 
+    default=100)
+
+parser.add_argument('--gpuids',
+    nargs='+', 
+    type=int, 
+    default=gpuids, 
+    help='GPUs to use')
+
+parser.add_argument('--outf', 
+    default=model_dir, 
+    help='folder to output images and model checkpoints, it will \
+    add a train_ in front of the name')
+
+parser.add_argument('--sigma', 
+    default=4, 
+    help='keypoint creation size for sigma')
+
+parser.add_argument('--save', 
+    action="store_true", 
+    help='save a visual batch and quit, this is for\
+    debugging purposes')
+
+parser.add_argument("--pretrained",
+    default=True,
+    help='do you want to use vgg imagenet pretrained weights')
+
+parser.add_argument('--nbupdates', 
+    default=None, 
+    help='nb max update to network, overwrites the epoch number\
+    otherwise uses the number of epochs')
+
+parser.add_argument('--datasize', 
+    default=None, 
+    help='randomly sample that number of entries in the dataset folder') 
+
+parser.add_argument('-n', '--nodes', default=1,
+                        type=int, metavar='N')
+parser.add_argument('-g', '--gpus', default=1, type=int,
+                    help='number of gpus per node')
+parser.add_argument('-nr', '--nr', default=0, type=int,
+                    help='ranking within the nodes')
+
+# Read the config but do not overwrite the args written 
+args, remaining_argv = conf_parser.parse_known_args()
+defaults = { "option":"default" }
+
+if args.config:
+    config = configparser.SafeConfigParser()
+    config.read([args.config])
+    defaults.update(dict(config.items("defaults")))
+
+parser.set_defaults(**defaults)
+parser.add_argument("--option")
+opt = parser.parse_args(remaining_argv)
+
+if opt.pretrained in ['false', 'False']:
+	opt.pretrained = False
+
+if not "/" in opt.outf:
+    opt.outf = "/mnt/Data/DOPE_trainings/train_{}".format(opt.outf)
+
+try:
+    os.makedirs(opt.outf)
+except OSError:
+    pass
+
+if opt.manualseed is None:
+    opt.manualseed = random.randint(1, 10000)
+
+# save the hyper parameters passed
+with open (opt.outf+'/header.txt','w') as file: 
+    file.write(str(opt)+"\n")
+
+with open (opt.outf+'/header.txt','w') as file: 
+    file.write(str(opt))
+    file.write("seed: "+ str(opt.manualseed)+'\n')
+    with open (opt.outf+'/test_metric.csv','w') as file:
+        file.write("epoch, passed,total \n")
+
+# set the manual seed. 
+random.seed(opt.manualseed)
+torch.manual_seed(opt.manualseed)
+torch.cuda.manual_seed_all(opt.manualseed)
+
+# save 
+if not opt.save:
+    contrast = 0.2
+    brightness = 0.2
+    noise = 0.1
+    normal_imgs = [0.59,0.25]
+    transform = transforms.Compose([
+                               AddRandomContrast(contrast),
+                               AddRandomBrightness(brightness),
+                               transforms.Scale(opt.imagesize),
+                               ])
+else:
+    contrast = 0.00001
+    brightness = 0.00001
+    noise = 0.00001
+    normal_imgs = None
+    transform = transforms.Compose([
+                           transforms.Resize(opt.imagesize),
+                           transforms.ToTensor()])
+
+
+#load the dataset using the loader in utils_pose
+trainingdata = None
+if not opt.data == "":
+    train_dataset = MultipleVertexJson(
+        root = opt.data,
+        objectsofinterest=opt.object,
+        keep_orientation = True,
+        noise = opt.noise,
+        sigma = opt.sigma,
+        data_size = opt.datasize,
+        save = opt.save,
+        transform = transform,
+        normal = normal_imgs,
+        target_transform = transforms.Compose([
+                               transforms.Scale(opt.imagesize//8),
+            ]),
         )
-    conf_parser.add_argument("-c", "--config",
-                            help="Specify config file", metavar="FILE")
 
+    trainingdata = torch.utils.data.DataLoader(train_dataset,
+        batch_size = opt.subbatchsize, 
+        shuffle = True,
+        num_workers = opt.workers, 
+        pin_memory = True
+        )
 
-    parser = argparse.ArgumentParser()
+if opt.save:
+    for i in range(2):
+        images = iter(trainingdata).next()
+        if normal_imgs is None:
+            normal_imgs = [0,1]
+        save_image(images['img'],'{}/train_{}.png'.format( opt.outf,str(i).zfill(5)),mean=normal_imgs[0],std=normal_imgs[1])
 
-    parser.add_argument('train', 
-        default = '',
-    )
+        print (i)        
 
-    parser.add_argument('--hyperparameters', 
-        default = '',
-    )
+    print ('things are saved in {}'.format(opt.outf))
+    quit()
 
-    parser.add_argument('--data',  
-        default = data_dir, 
-        help='path to training data')
-
-    parser.add_argument('--datatest', 
-        default="", 
-        help='path to data testing set')
-
-    parser.add_argument('--object', 
-        default=obj, 
-        help='In the dataset which object of interest')
-
-    parser.add_argument('--workers', 
-        type=int, 
-        default=12,
-        help='number of data loading workers')
-
-    parser.add_argument('--batchsize', 
-        type=int, 
-        default=128, 
-        help='input batch size')
-
-    parser.add_argument('--subbatchsize', 
-        type=int, 
-        default=16, 
-        help='input batch size')
-
-    parser.add_argument('--imagesize', 
-        type=int, 
-        default=400, 
-        help='the height / width of the input image to network')
-
-    parser.add_argument('--lr', 
-        type=float, 
-        default=0.0001,
-        help='learning rate, default=0.0001')
-
-    parser.add_argument('--noise', 
-        type=float, 
-        default=2.0, 
-        help='gaussian noise added to the image')
-
-    parser.add_argument('--net', 
-        default='', 
-        help="path to net (to continue training)")
-
-    parser.add_argument('--namefile', 
-        default='epoch', 
-        help="name to put on the file of the save weights")
-
-    parser.add_argument('--manualseed', 
-        type=int, 
-        help='manual seed')
-
-    parser.add_argument('--epochs', 
-        type=int, 
-        default=60,
-        help="number of epochs to train")
-
-    parser.add_argument('--loginterval', 
-        type=int, 
-        default=100)
-
-    parser.add_argument('--gpuids',
-        nargs='+', 
-        type=int, 
-        default=gpuids, 
-        help='GPUs to use')
-
-    parser.add_argument('--outf', 
-        default=model_dir, 
-        help='folder to output images and model checkpoints, it will \
-        add a train_ in front of the name')
-
-    parser.add_argument('--sigma', 
-        default=4, 
-        help='keypoint creation size for sigma')
-
-    parser.add_argument('--save', 
-        action="store_true", 
-        help='save a visual batch and quit, this is for\
-        debugging purposes')
-
-    parser.add_argument("--pretrained",
-        default=True,
-        help='do you want to use vgg imagenet pretrained weights')
-
-    parser.add_argument('--nbupdates', 
-        default=None, 
-        help='nb max update to network, overwrites the epoch number\
-        otherwise uses the number of epochs')
-
-    parser.add_argument('--datasize', 
-        default=None, 
-        help='randomly sample that number of entries in the dataset folder') 
-
-    parser.add_argument('-n', '--nodes', default=1,
-                            type=int, metavar='N')
-    parser.add_argument('-g', '--gpus', default=1, type=int,
-                        help='number of gpus per node')
-    parser.add_argument('-nr', '--nr', default=0, type=int,
-                        help='ranking within the nodes')
-
-    # Read the config but do not overwrite the args written 
-    args, remaining_argv = conf_parser.parse_known_args()
-    defaults = { "option":"default" }
-
-    if args.config:
-        config = configparser.SafeConfigParser()
-        config.read([args.config])
-        defaults.update(dict(config.items("defaults")))
-
-    parser.set_defaults(**defaults)
-    parser.add_argument("--option")
-    opt = parser.parse_args(remaining_argv)
-
-    if opt.train:
-        print("Training ")
-
-    if opt.pretrained in ['false', 'False']:
-        opt.pretrained = False
-
-    if not "/" in opt.outf:
-        opt.outf = "/mnt/Data/DOPE_trainings/train_{}".format(opt.outf)
-
-    try:
-        os.makedirs(opt.outf)
-    except OSError:
-        pass
-
-    if opt.manualseed is None:
-        opt.manualseed = random.randint(1, 10000)
-
-    # save the hyper parameters passed
-    with open (opt.outf+'/header.txt','w') as file: 
-        file.write(str(opt)+"\n")
-
-    with open (opt.outf+'/header.txt','w') as file: 
-        file.write(str(opt))
-        file.write("seed: "+ str(opt.manualseed)+'\n')
-        with open (opt.outf+'/test_metric.csv','w') as file:
-            file.write("epoch, passed,total \n")
-
-    # set the manual seed. 
-    random.seed(opt.manualseed)
-    torch.manual_seed(opt.manualseed)
-    torch.cuda.manual_seed_all(opt.manualseed)
-
-    # save 
-    if not opt.save:
-        contrast = 0.2
-        brightness = 0.2
-        noise = 0.1
-        normal_imgs = [0.59,0.25]
-        transform = transforms.Compose([
-                                AddRandomContrast(contrast),
-                                AddRandomBrightness(brightness),
-                                transforms.Scale(opt.imagesize),
-                                ])
-    else:
-        contrast = 0.00001
-        brightness = 0.00001
-        noise = 0.00001
-        normal_imgs = None
-        transform = transforms.Compose([
-                            transforms.Resize(opt.imagesize),
-                            transforms.ToTensor()])
-
-
-    #load the dataset using the loader in utils_pose
-    trainingdata = None
-    if not opt.data == "":
-        train_dataset = MultipleVertexJson(
-            root = opt.data,
+testingdata = None
+if not opt.datatest == "": 
+    test_dataset = MultipleVertexJson(
+            root = opt.datatest,
             objectsofinterest=opt.object,
             keep_orientation = True,
             noise = opt.noise,
@@ -1283,164 +1300,128 @@ if __name__ == "__main__":
             transform = transform,
             normal = normal_imgs,
             target_transform = transforms.Compose([
-                                transforms.Scale(opt.imagesize//8),
+                                   transforms.Scale(opt.imagesize//8),
                 ]),
             )
 
-        trainingdata = torch.utils.data.DataLoader(train_dataset,
-            batch_size = opt.subbatchsize, 
-            shuffle = True,
-            num_workers = opt.workers, 
-            pin_memory = True
-            )
+    testingdata = torch.utils.data.DataLoader(
+        test_dataset,
+        batch_size = opt.subbatchsize // 2, 
+        shuffle = True,
+        num_workers = opt.workers, 
+        pin_memory = True)
 
-    if opt.save:
-        for i in range(2):
-            images = iter(trainingdata).next()
-            if normal_imgs is None:
-                normal_imgs = [0,1]
-            save_image(images['img'],'{}/train_{}.png'.format( opt.outf,str(i).zfill(5)),mean=normal_imgs[0],std=normal_imgs[1])
+if not trainingdata is None:
+    print('training data: {} batches'.format(len(trainingdata)))
+if not testingdata is None:
+    print ("testing data: {} batches".format(len(testingdata)))
+print('load models')
 
-            print (i)        
+net = DopeNetwork(pretrained=opt.pretrained).cuda()
+# net = torch.nn.DataParallel(net,device_ids=opt.gpuids).cuda()
 
-        print ('things are saved in {}'.format(opt.outf))
-        quit()
+if opt.net != '':
+    net.load_state_dict(torch.load(opt.net))
 
-    testingdata = None
-    if not opt.datatest == "": 
-        test_dataset = MultipleVertexJson(
-                root = opt.datatest,
-                objectsofinterest=opt.object,
-                keep_orientation = True,
-                noise = opt.noise,
-                sigma = opt.sigma,
-                data_size = opt.datasize,
-                save = opt.save,
-                transform = transform,
-                normal = normal_imgs,
-                target_transform = transforms.Compose([
-                                    transforms.Scale(opt.imagesize//8),
-                    ]),
-                )
+parameters = filter(lambda p: p.requires_grad, net.parameters())
+optimizer = optim.Adam(parameters,lr=opt.lr)
 
-        testingdata = torch.utils.data.DataLoader(
-            test_dataset,
-            batch_size = opt.subbatchsize // 2, 
-            shuffle = True,
-            num_workers = opt.workers, 
-            pin_memory = True)
+with open (opt.outf+'/loss_train.csv','w') as file: 
+    file.write('epoch,batchid,loss\n')
 
-    if not trainingdata is None:
-        print('training data: {} batches'.format(len(trainingdata)))
-    if not testingdata is None:
-        print ("testing data: {} batches".format(len(testingdata)))
-    print('load models')
+with open (opt.outf+'/loss_test.csv','w') as file: 
+    file.write('epoch,batchid,loss\n')
 
-    net = DopeNetwork(pretrained=opt.pretrained).cuda()
-    # net = torch.nn.DataParallel(net,device_ids=opt.gpuids).cuda()
+nb_update_network = 0
 
-    if opt.net != '':
-        net.load_state_dict(torch.load(opt.net))
+def _runnetwork(epoch, loader, train=True, scaler=None, pbar=None):
+    global nb_update_network
+    # net
+    if train:
+        net.train()
+    else:
+        net.eval()
 
-    parameters = filter(lambda p: p.requires_grad, net.parameters())
-    optimizer = optim.Adam(parameters,lr=opt.lr)
+    if train:
+        optimizer.zero_grad()
+    for batch_idx, targets in enumerate(loader):
 
-    with open (opt.outf+'/loss_train.csv','w') as file: 
-        file.write('epoch,batchid,loss\n')
+        data = Variable(targets['img'].cuda())
+        
+        with amp.autocast():
+            output_belief, output_affinities = net(data)
 
-    with open (opt.outf+'/loss_test.csv','w') as file: 
-        file.write('epoch,batchid,loss\n')
+            target_belief = Variable(targets['beliefs'].cuda())        
+            target_affinity = Variable(targets['affinities'].cuda())
 
-    nb_update_network = 0
-
-    def _runnetwork(epoch, loader, train=True, scaler=None, pbar=None):
-        global nb_update_network
-        # net
-        if train:
-            net.train()
-        else:
-            net.eval()
-
-        if train:
-            optimizer.zero_grad()
-        for batch_idx, targets in enumerate(loader):
-
-            data = Variable(targets['img'].cuda())
+            loss = None
             
-            with amp.autocast():
-                output_belief, output_affinities = net(data)
+            # Belief maps loss
+            for l in output_belief: #output, each belief map layers. 
+                if loss is None:
+                    loss = ((l - target_belief) * (l-target_belief)).mean()
+                else:
+                    loss_tmp = ((l - target_belief) * (l-target_belief)).mean()
+                    loss += loss_tmp
+            
+            # Affinities loss
+            for l in output_affinities: #output, each belief map layers. 
+                loss_tmp = ((l - target_affinity) * (l-target_affinity)).mean()
+                loss += loss_tmp 
 
-                target_belief = Variable(targets['beliefs'].cuda())        
-                target_affinity = Variable(targets['affinities'].cuda())
-
-                loss = None
-                
-                # Belief maps loss
-                for l in output_belief: #output, each belief map layers. 
-                    if loss is None:
-                        loss = ((l - target_belief) * (l-target_belief)).mean()
-                    else:
-                        loss_tmp = ((l - target_belief) * (l-target_belief)).mean()
-                        loss += loss_tmp
-                
-                # Affinities loss
-                for l in output_affinities: #output, each belief map layers. 
-                    loss_tmp = ((l - target_affinity) * (l-target_affinity)).mean()
-                    loss += loss_tmp 
-
-            if train:
-                scaler.scale(loss).backward()
-                if batch_idx % (opt.batchsize // opt.subbatchsize) == 0:
-                    if train:
-                        scaler.step(optimizer)
-                        scaler.update()
-                        nb_update_network+=1
-                        optimizer.zero_grad()
-
-            if train:
-                namefile = '/loss_train.csv'
-            else:
-                namefile = '/loss_test.csv'
-
-            with open (opt.outf+namefile,'a') as file:
-                s = '{}, {},{:.15f}\n'.format(
-                    epoch,batch_idx,loss.data.item()) 
-                # print (s)
-                file.write(s)
-
-            # break
-            if not opt.nbupdates is None and nb_update_network > int(opt.nbupdates):
-                torch.save(net.state_dict(), '{}/net_{}.pth'.format(opt.outf, opt.namefile))
-                break
-
-            if train:
-                if pbar is not None:
-                    pbar.set_description("Training loss: %0.4f (%d/%d)" % (loss.data.item(), batch_idx, len(loader)))
-            else:
-                if pbar is not None:
-                    pbar.set_description("Testing loss: %0.4f (%d/%d)" % (loss.data.item(), batch_idx, len(loader)))
         if train:
-            optimizer.zero_grad()
+            scaler.scale(loss).backward()
+            if batch_idx % (opt.batchsize // opt.subbatchsize) == 0:
+                if train:
+                    scaler.step(optimizer)
+                    scaler.update()
+                    nb_update_network+=1
+                    optimizer.zero_grad()
 
-    scaler = amp.GradScaler()
+        if train:
+            namefile = '/loss_train.csv'
+        else:
+            namefile = '/loss_test.csv'
 
-    pbar = tqdm(range(1, opt.epochs + 1))
+        with open (opt.outf+namefile,'a') as file:
+            s = '{}, {},{:.15f}\n'.format(
+                epoch,batch_idx,loss.data.item()) 
+            # print (s)
+            file.write(s)
 
-    for epoch in pbar:
-
-        if not trainingdata is None:
-            _runnetwork(epoch,trainingdata, scaler=scaler, pbar=pbar)
-
-        if not opt.datatest == "":
-            _runnetwork(epoch,testingdata, train=False, pbar=pbar)
-            if opt.data == "":
-                break # lets get out of this if we are only testing
-        try:
-            torch.save(net.state_dict(), '{}/net_{}_{}.pth'.format(opt.outf, opt.namefile ,epoch))
-        except:
-            pass
-
+        # break
         if not opt.nbupdates is None and nb_update_network > int(opt.nbupdates):
+            torch.save(net.state_dict(), '{}/net_{}.pth'.format(opt.outf, opt.namefile))
             break
 
-    print ("end:" , datetime.datetime.now().time())
+        if train:
+            if pbar is not None:
+                pbar.set_description("Training loss: %0.4f (%d/%d)" % (loss.data.item(), batch_idx, len(loader)))
+        else:
+            if pbar is not None:
+                pbar.set_description("Testing loss: %0.4f (%d/%d)" % (loss.data.item(), batch_idx, len(loader)))
+    if train:
+        optimizer.zero_grad()
+
+scaler = amp.GradScaler()
+
+pbar = tqdm(range(1, opt.epochs + 1))
+
+for epoch in pbar:
+
+    if not trainingdata is None:
+        _runnetwork(epoch,trainingdata, scaler=scaler, pbar=pbar)
+
+    if not opt.datatest == "":
+        _runnetwork(epoch,testingdata, train=False, pbar=pbar)
+        if opt.data == "":
+            break # lets get out of this if we are only testing
+    try:
+        torch.save(net.state_dict(), '{}/net_{}_{}.pth'.format(opt.outf, opt.namefile ,epoch))
+    except:
+        pass
+
+    if not opt.nbupdates is None and nb_update_network > int(opt.nbupdates):
+        break
+
+print ("end:" , datetime.datetime.now().time())

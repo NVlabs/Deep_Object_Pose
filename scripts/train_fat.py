@@ -21,32 +21,26 @@ tqdm==4.25.0
 pyrr==0.9.2
 Pillow==5.2.0
 torchvision==0.2.1
-PyYAML==3.13
+PyYAML==3.13a
 """
 
 ######################################################
 """
 HOW TO TRAIN DOPE
-
 This is the DOPE training code.  
 It is provided as a convenience for researchers, but it is otherwise unsupported.
-
 Please refer to `python3 train.py --help` for specific details about the 
 training code. 
-
 If you download the FAT dataset 
 (https://research.nvidia.com/publication/2018-06_Falling-Things)
 you can train a YCB object DOPE detector as follows: 
-
 ```
 python3 train.py --data path/to/FAT --object soup --outf soup 
 --gpuids 0 1 2 3 4 5 6 7 
 ```
-
 This will create a folder called `train_soup` where the weights will be saved 
 after each epoch. It will use the 8 gpus using pytorch data parallel. 
 """
-
 
 import argparse
 import configparser
@@ -62,6 +56,8 @@ import torchvision.transforms as transforms
 from torch.autograd import Variable
 import torch.utils.data as data
 import torchvision.models as models
+from torch.cuda import amp
+import torch.distributed as dist
 import datetime
 import json
 import glob
@@ -76,11 +72,11 @@ from math import sqrt
 from math import pi    
 
 from os.path import exists
+from shutil import copytree
 
 import cv2
-import colorsys
-
-from dope.utils import make_grid
+import colorsys,math
+from tqdm import tqdm
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -288,8 +284,9 @@ def loadjson(path, objectsofinterest, img):
         info = data['objects'][i_line]
         if not objectsofinterest is None and \
            not objectsofinterest in info['class'].lower():
-            continue 
-        
+           continue 
+
+        print("Object found", objectsofinterest)
         box = info['bounding_box']
         boxToAdd = []
 
@@ -482,19 +479,6 @@ class MultipleVertexJson(data.Dataset):
         matrix_camera[1,2] = cam['cy']
         matrix_camera[2,2] = 1
 
-        # Load the cuboid sizes
-        path_set = path.replace(name,'_object_settings.json')
-        with open(path_set) as data_file:    
-            data = json.load(data_file)
-
-        cuboid = torch.zeros(1)
-
-        if self.objectsofinterest is None:
-            cuboid = np.array(data['exported_objects'][0]['cuboid_dimensions'])
-        else:
-            for info in data["exported_objects"]:
-                if self.objectsofinterest in info['class']:
-                    cuboid = np.array(info['cuboid_dimensions'])
 
         img_original = img.copy()        
 
@@ -518,16 +502,10 @@ class MultipleVertexJson(data.Dataset):
             return new_cuboid
 
         # Random image manipulation, rotation and translation with zero padding
-    	# These create a bug, thank you to 
-	    # https://tanelp.github.io/posts/a-bug-that-plagues-thousands-of-open-source-ml-projects/
-	    # dx = round(np.random.normal(0, 2) * float(self.random_translation[0]))
-        # dy = round(np.random.normal(0, 2) * float(self.random_translation[1]))
-        # angle = round(np.random.normal(0, 1) * float(self.random_rotation))
+        dx = round(np.random.normal(0, 2) * float(self.random_translation[0]))
+        dy = round(np.random.normal(0, 2) * float(self.random_translation[1]))
+        angle = round(np.random.normal(0, 1) * float(self.random_rotation))
 
-        dx = round(float(torch.normal(torch.tensor(0.0), torch.tensor(2.0)) * float(self.random_translation[0])))
-        dy = round(float(torch.normal(torch.tensor(0.0), torch.tensor(2.0)) * float(self.random_translation[1])))
-        angle = round(float(torch.normal(torch.tensor(0.0), torch.tensor(1.0)) * float(self.random_rotation)))	
-	
         tm = np.float32([[1, 0, dx], [0, 1, dy]])
         rm = cv2.getRotationMatrix2D(
             (img.size[0]/2, img.size[1]/2), angle, 1)
@@ -623,7 +601,6 @@ class MultipleVertexJson(data.Dataset):
                 'pointsBelief':np.array(points_all[0]),
                 'matrix_camera':matrix_camera,
                 'img_original': np.array(img_original),
-                'cuboid': cuboid,
                 'file_name':name,
             }
 
@@ -730,7 +707,6 @@ def GenerateMapAffinity(img,nb_vertex,pointsInterest,objects_centroid,scale):
     """
     Function to create the affinity maps, 
     e.g., vector maps pointing toward the object center. 
-
     Args:
         img: PIL image
         nb_vertex: (int) number of points 
@@ -785,7 +761,6 @@ def getAfinityCenter(width, height, point, center, radius=7, img_affinity=None):
     """
     Function to create the affinity maps, 
     e.g., vector maps pointing toward the object center. 
-
     Args:
         width: image wight
         height: image height
@@ -927,6 +902,89 @@ class AddNoise(object):
         return t
 
 
+irange = range
+
+def make_grid(tensor, nrow=8, padding=2,
+              normalize=False, range=None, scale_each=False, pad_value=0):
+    """
+    Make a grid of images.
+    
+    Args:
+        tensor (Tensor or list): 4D mini-batch Tensor of shape (B x C x H x W)
+            or a list of images all of the same size.
+        nrow (int, optional): Number of images displayed in each row of the grid.
+            The Final grid size is (B / nrow, nrow). Default is 8.
+        padding (int, optional): amount of padding. Default is 2.
+        normalize (bool, optional): If True, shift the image to the range (0, 1),
+            by subtracting the minimum and dividing by the maximum pixel value.
+        range (tuple, optional): tuple (min, max) where min and max are numbers,
+            then these numbers are used to normalize the image. By default, min and max
+            are computed from the tensor.
+        scale_each (bool, optional): If True, scale each image in the batch of
+            images separately rather than the (min, max) over all images.
+        pad_value (float, optional): Value for the padded pixels.
+    """
+    if not (torch.is_tensor(tensor) or
+            (isinstance(tensor, list) and all(torch.is_tensor(t) for t in tensor))):
+        raise TypeError('tensor or list of tensors expected, got {}'.format(type(tensor)))
+
+    # if list of tensors, convert to a 4D mini-batch Tensor
+    if isinstance(tensor, list):
+        tensor = torch.stack(tensor, dim=0)
+
+    if tensor.dim() == 2:  # single image H x W
+        tensor = tensor.view(1, tensor.size(0), tensor.size(1))
+    if tensor.dim() == 3:  # single image
+        if tensor.size(0) == 1:  # if single-channel, convert to 3-channel
+            tensor = torch.cat((tensor, tensor, tensor), 0)
+        tensor = tensor.view(1, tensor.size(0), tensor.size(1), tensor.size(2))
+
+    if tensor.dim() == 4 and tensor.size(1) == 1:  # single-channel images
+        tensor = torch.cat((tensor, tensor, tensor), 1)
+
+    if normalize == True:
+        tensor = tensor.clone()  # avoid modifying tensor in-place
+        if range is not None:
+            assert isinstance(range, tuple), \
+                "range has to be a tuple (min, max) if specified. min and max are numbers"
+
+        def norm_ip(img, min, max):
+            img.clamp_(min=min, max=max)
+            img.add_(-min).div_(max - min + 1e-5)
+
+        def norm_range(t, range):
+            if range is not None:
+                norm_ip(t, range[0], range[1])
+            else:
+                norm_ip(t, float(t.min()), float(t.max()))
+
+        if scale_each == True:
+            for t in tensor:  # loop over mini-batch dimension
+                norm_range(t, range)
+        else:
+            norm_range(tensor, range)
+
+    if tensor.size(0) == 1:
+        return tensor.squeeze()
+
+    # make the mini-batch of images into a grid
+    nmaps = tensor.size(0)
+    xmaps = min(nrow, nmaps)
+    ymaps = int(math.ceil(float(nmaps) / xmaps))
+    height, width = int(tensor.size(2) + padding), int(tensor.size(3) + padding)
+    grid = tensor.new(3, height * ymaps + padding, width * xmaps + padding).fill_(pad_value)
+    k = 0
+    for y in irange(ymaps):
+        for x in irange(xmaps):
+            if k >= nmaps:
+                break
+            grid.narrow(1, y * height + padding, height - padding)\
+                .narrow(2, x * width + padding, width - padding)\
+                .copy_(tensor[k])
+            k = k + 1
+    return grid
+
+
 def save_image(tensor, filename, nrow=4, padding=2,mean=None, std=None):
     """
     Saves a given Tensor into an image file.
@@ -995,215 +1053,229 @@ def DrawCube(points, which_color = 0, color = None, draw = None):
 # TRAINING CODE MAIN STARTING HERE
 ##################################################
 
-print ("start:" , datetime.datetime.now().time())
+if __name__ == "__main__":
 
-conf_parser = argparse.ArgumentParser(
-    description=__doc__, # printed with -h/--help
-    # Don't mess with format of description
-    formatter_class=argparse.RawDescriptionHelpFormatter,
-    # Turn off help, so we print all options in response to -h
-    add_help=False
+    print ("start:" , datetime.datetime.now().time())
+
+    data_dir = "/opt/ml/input/data/channel1"
+    checkpoints_dir = "/opt/ml/checkpoints"
+    model_dir = "/opt/ml/model"
+    workspace_dir = "/workspace"
+    base_checkpoint = "/workspace/pre-trained-model/model.ckpt"
+    base_checkpoint_dir = "/workspace/pre-trained-model/"
+    hyperparameters_file = "/opt/ml/input/config/hyperparameters.json"
+
+    # hyperparameters
+    try:
+        with open(hyperparameters_file) as f:
+            hyperparameters = json.load(f)
+        gpus = hyperparameters["gpus"]
+        obj = hyperparameters["obj"]
+        gpuids = gpus.split(" ")
+    except:
+        gpuids = [0]
+        obj = ''
+    
+    print(f"Using {gpuids} GPUs")
+    print(f"Training {obj}")
+
+    conf_parser = argparse.ArgumentParser(
+        description=__doc__, # printed with -h/--help
+        # Don't mess with format of description
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        # Turn off help, so we print all options in response to -h
+        add_help=False
+        )
+    conf_parser.add_argument("-c", "--config",
+                            help="Specify config file", metavar="FILE")
+
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('train', 
+        default = '',
     )
-conf_parser.add_argument("-c", "--config",
-                        help="Specify config file", metavar="FILE")
 
-parser = argparse.ArgumentParser()
+    parser.add_argument('--hyperparameters', 
+        default = '',
+    )
 
-parser.add_argument('--data',  
-    default = "", 
-    help='path to training data')
+    parser.add_argument('--data',  
+        default = data_dir, 
+        help='path to training data')
 
-parser.add_argument('--datatest', 
-    default="", 
-    help='path to data testing set')
+    parser.add_argument('--datatest', 
+        default="", 
+        help='path to data testing set')
 
-parser.add_argument('--object', 
-    default=None, 
-    help='In the dataset which objet of interest')
+    parser.add_argument('--object', 
+        default=obj, 
+        help='In the dataset which object of interest')
 
-parser.add_argument('--workers', 
-    type=int, 
-    default=8,
-    help='number of data loading workers')
+    parser.add_argument('--workers', 
+        type=int, 
+        default=12,
+        help='number of data loading workers')
 
-parser.add_argument('--batchsize', 
-    type=int, 
-    default=32, 
-    help='input batch size')
+    parser.add_argument('--batchsize', 
+        type=int, 
+        default=128, 
+        help='input batch size')
 
-parser.add_argument('--imagesize', 
-    type=int, 
-    default=400, 
-    help='the height / width of the input image to network')
+    parser.add_argument('--subbatchsize', 
+        type=int, 
+        default=16, 
+        help='input batch size')
 
-parser.add_argument('--lr', 
-    type=float, 
-    default=0.0001, 
-    help='learning rate, default=0.001')
+    parser.add_argument('--imagesize', 
+        type=int, 
+        default=400, 
+        help='the height / width of the input image to network')
 
-parser.add_argument('--noise', 
-    type=float, 
-    default=2.0, 
-    help='gaussian noise added to the image')
+    parser.add_argument('--lr', 
+        type=float, 
+        default=0.0001,
+        help='learning rate, default=0.0001')
 
-parser.add_argument('--net', 
-    default='', 
-    help="path to net (to continue training)")
+    parser.add_argument('--noise', 
+        type=float, 
+        default=2.0, 
+        help='gaussian noise added to the image')
 
-parser.add_argument('--namefile', 
-    default='epoch', 
-    help="name to put on the file of the save weights")
+    parser.add_argument('--net', 
+        default='', 
+        help="path to net (to continue training)")
 
-parser.add_argument('--manualseed', 
-    type=int, 
-    help='manual seed')
+    parser.add_argument('--namefile', 
+        default='epoch', 
+        help="name to put on the file of the save weights")
 
-parser.add_argument('--epochs', 
-    type=int, 
-    default=60,
-    help="number of epochs to train")
+    parser.add_argument('--manualseed', 
+        type=int, 
+        help='manual seed')
 
-parser.add_argument('--loginterval', 
-    type=int, 
-    default=100)
+    parser.add_argument('--epochs', 
+        type=int, 
+        default=60,
+        help="number of epochs to train")
 
-parser.add_argument('--gpuids',
-    nargs='+', 
-    type=int, 
-    default=[0], 
-    help='GPUs to use')
+    parser.add_argument('--loginterval', 
+        type=int, 
+        default=100)
 
-parser.add_argument('--outf', 
-    default='tmp', 
-    help='folder to output images and model checkpoints, it will \
-    add a train_ in front of the name')
+    parser.add_argument('--gpuids',
+        nargs='+', 
+        type=int, 
+        default=gpuids, 
+        help='GPUs to use')
 
-parser.add_argument('--sigma', 
-    default=4, 
-    help='keypoint creation size for sigma')
+    parser.add_argument('--outf', 
+        default=model_dir, 
+        help='folder to output images and model checkpoints, it will \
+        add a train_ in front of the name')
 
-parser.add_argument('--save', 
-    action="store_true", 
-    help='save a visual batch and quit, this is for\
-    debugging purposes')
+    parser.add_argument('--sigma', 
+        default=4, 
+        help='keypoint creation size for sigma')
 
-parser.add_argument("--pretrained",
-    default=True,
-    help='do you want to use vgg imagenet pretrained weights')
+    parser.add_argument('--save', 
+        action="store_true", 
+        help='save a visual batch and quit, this is for\
+        debugging purposes')
 
-parser.add_argument('--nbupdates', 
-    default=None, 
-    help='nb max update to network, overwrites the epoch number\
-    otherwise uses the number of epochs')
+    parser.add_argument("--pretrained",
+        default=True,
+        help='do you want to use vgg imagenet pretrained weights')
 
-parser.add_argument('--datasize', 
-    default=None, 
-    help='randomly sample that number of entries in the dataset folder') 
+    parser.add_argument('--nbupdates', 
+        default=None, 
+        help='nb max update to network, overwrites the epoch number\
+        otherwise uses the number of epochs')
 
-# Read the config but do not overwrite the args written 
-args, remaining_argv = conf_parser.parse_known_args()
-defaults = { "option":"default" }
+    parser.add_argument('--datasize', 
+        default=None, 
+        help='randomly sample that number of entries in the dataset folder') 
 
-if args.config:
-    config = ConfigParser.SafeConfigParser()
-    config.read([args.config])
-    defaults.update(dict(config.items("defaults")))
+    parser.add_argument('-n', '--nodes', default=1,
+                            type=int, metavar='N')
+    parser.add_argument('-g', '--gpus', default=1, type=int,
+                        help='number of gpus per node')
+    parser.add_argument('-nr', '--nr', default=0, type=int,
+                        help='ranking within the nodes')
 
-parser.set_defaults(**defaults)
-parser.add_argument("--option")
-opt = parser.parse_args(remaining_argv)
+    # Read the config but do not overwrite the args written 
+    args, remaining_argv = conf_parser.parse_known_args()
+    defaults = { "option":"default" }
 
-if opt.pretrained in ['false', 'False']:
-	opt.pretrained = False
+    if args.config:
+        config = configparser.SafeConfigParser()
+        config.read([args.config])
+        defaults.update(dict(config.items("defaults")))
 
-if not "/" in opt.outf:
-    opt.outf = "train_{}".format(opt.outf)
+    parser.set_defaults(**defaults)
+    parser.add_argument("--option")
+    opt = parser.parse_args(remaining_argv)
 
-try:
-    os.makedirs(opt.outf)
-except OSError:
-    pass
+    if opt.serve:
+        print("Serving")
+    elif opt.train:
+        print("Training ")
 
-if opt.manualseed is None:
-    opt.manualseed = random.randint(1, 10000)
+    if opt.pretrained in ['false', 'False']:
+        opt.pretrained = False
 
-# save the hyper parameters passed
-with open (opt.outf+'/header.txt','w') as file: 
-    file.write(str(opt)+"\n")
+    if not "/" in opt.outf:
+        opt.outf = "/mnt/Data/DOPE_trainings/train_{}".format(opt.outf)
 
-with open (opt.outf+'/header.txt','w') as file: 
-    file.write(str(opt))
-    file.write("seed: "+ str(opt.manualseed)+'\n')
-    with open (opt.outf+'/test_metric.csv','w') as file:
-        file.write("epoch, passed,total \n")
+    try:
+        os.makedirs(opt.outf)
+    except OSError:
+        pass
 
-# set the manual seed. 
-random.seed(opt.manualseed)
-torch.manual_seed(opt.manualseed)
-torch.cuda.manual_seed_all(opt.manualseed)
+    if opt.manualseed is None:
+        opt.manualseed = random.randint(1, 10000)
 
-# save 
-if not opt.save:
-    contrast = 0.2
-    brightness = 0.2
-    noise = 0.1
-    normal_imgs = [0.59,0.25]
-    transform = transforms.Compose([
-                               AddRandomContrast(contrast),
-                               AddRandomBrightness(brightness),
-                               transforms.Scale(opt.imagesize),
-                               ])
-else:
-    contrast = 0.00001
-    brightness = 0.00001
-    noise = 0.00001
-    normal_imgs = None
-    transform = transforms.Compose([
-                           transforms.Resize(opt.imagesize),
-                           transforms.ToTensor()])
+    # save the hyper parameters passed
+    with open (opt.outf+'/header.txt','w') as file: 
+        file.write(str(opt)+"\n")
 
-print ("load data")
-#load the dataset using the loader in utils_pose
-trainingdata = None
-if not opt.data == "":
-    train_dataset = MultipleVertexJson(
-        root = opt.data,
-        objectsofinterest=opt.object,
-        keep_orientation = True,
-        noise = opt.noise,
-        sigma = opt.sigma,
-        data_size = opt.datasize,
-        save = opt.save,
-        transform = transform,
-        normal = normal_imgs,
-        target_transform = transforms.Compose([
-                               transforms.Scale(opt.imagesize//8),
-            ]),
-        )
-    trainingdata = torch.utils.data.DataLoader(train_dataset,
-        batch_size = opt.batchsize, 
-        shuffle = True,
-        num_workers = opt.workers, 
-        pin_memory = True
-        )
+    with open (opt.outf+'/header.txt','w') as file: 
+        file.write(str(opt))
+        file.write("seed: "+ str(opt.manualseed)+'\n')
+        with open (opt.outf+'/test_metric.csv','w') as file:
+            file.write("epoch, passed,total \n")
 
-if opt.save:
-    for i in range(2):
-        images = iter(trainingdata).next()
-        if normal_imgs is None:
-            normal_imgs = [0,1]
-        save_image(images['img'],'{}/train_{}.png'.format( opt.outf,str(i).zfill(5)),mean=normal_imgs[0],std=normal_imgs[1])
+    # set the manual seed. 
+    random.seed(opt.manualseed)
+    torch.manual_seed(opt.manualseed)
+    torch.cuda.manual_seed_all(opt.manualseed)
 
-        print (i)        
+    # save 
+    if not opt.save:
+        contrast = 0.2
+        brightness = 0.2
+        noise = 0.1
+        normal_imgs = [0.59,0.25]
+        transform = transforms.Compose([
+                                AddRandomContrast(contrast),
+                                AddRandomBrightness(brightness),
+                                transforms.Scale(opt.imagesize),
+                                ])
+    else:
+        contrast = 0.00001
+        brightness = 0.00001
+        noise = 0.00001
+        normal_imgs = None
+        transform = transforms.Compose([
+                            transforms.Resize(opt.imagesize),
+                            transforms.ToTensor()])
 
-    print ('things are saved in {}'.format(opt.outf))
-    quit()
 
-testingdata = None
-if not opt.datatest == "": 
-    testingdata = torch.utils.data.DataLoader(
-        MultipleVertexJson(
-            root = opt.datatest,
+    #load the dataset using the loader in utils_pose
+    trainingdata = None
+    if not opt.data == "":
+        train_dataset = MultipleVertexJson(
+            root = opt.data,
             objectsofinterest=opt.object,
             keep_orientation = True,
             noise = opt.noise,
@@ -1213,119 +1285,164 @@ if not opt.datatest == "":
             transform = transform,
             normal = normal_imgs,
             target_transform = transforms.Compose([
-                                   transforms.Scale(opt.imagesize//8),
+                                transforms.Scale(opt.imagesize//8),
                 ]),
-            ),
-        batch_size = opt.batchsize, 
-        shuffle = True,
-        num_workers = opt.workers, 
-        pin_memory = True)
+            )
 
-if not trainingdata is None:
-    print('training data: {} batches'.format(len(trainingdata)))
-if not testingdata is None:
-    print ("testing data: {} batches".format(len(testingdata)))
-print('load models')
+        trainingdata = torch.utils.data.DataLoader(train_dataset,
+            batch_size = opt.subbatchsize, 
+            shuffle = True,
+            num_workers = opt.workers, 
+            pin_memory = True
+            )
 
-net = DopeNetwork(pretrained=opt.pretrained).cuda()
-net = torch.nn.DataParallel(net,device_ids=opt.gpuids).cuda()
+    if opt.save:
+        for i in range(2):
+            images = iter(trainingdata).next()
+            if normal_imgs is None:
+                normal_imgs = [0,1]
+            save_image(images['img'],'{}/train_{}.png'.format( opt.outf,str(i).zfill(5)),mean=normal_imgs[0],std=normal_imgs[1])
 
-if opt.net != '':
-    net.load_state_dict(torch.load(opt.net))
+            print (i)        
 
-parameters = filter(lambda p: p.requires_grad, net.parameters())
-optimizer = optim.Adam(parameters,lr=opt.lr)
+        print ('things are saved in {}'.format(opt.outf))
+        quit()
 
-with open (opt.outf+'/loss_train.csv','w') as file: 
-    file.write('epoch,batchid,loss\n')
+    testingdata = None
+    if not opt.datatest == "": 
+        test_dataset = MultipleVertexJson(
+                root = opt.datatest,
+                objectsofinterest=opt.object,
+                keep_orientation = True,
+                noise = opt.noise,
+                sigma = opt.sigma,
+                data_size = opt.datasize,
+                save = opt.save,
+                transform = transform,
+                normal = normal_imgs,
+                target_transform = transforms.Compose([
+                                    transforms.Scale(opt.imagesize//8),
+                    ]),
+                )
 
-with open (opt.outf+'/loss_test.csv','w') as file: 
-    file.write('epoch,batchid,loss\n')
-
-nb_update_network = 0
-
-def _runnetwork(epoch, loader, train=True):
-    global nb_update_network
-    # net
-    if train:
-        net.train()
-    else:
-        net.eval()
-
-    for batch_idx, targets in enumerate(loader):
-
-        data = Variable(targets['img'].cuda())
-        
-        output_belief, output_affinities = net(data)
-                       
-        if train:
-            optimizer.zero_grad()
-        target_belief = Variable(targets['beliefs'].cuda())        
-        target_affinity = Variable(targets['affinities'].cuda())
-
-        loss = None
-        
-        # Belief maps loss
-        for l in output_belief: #output, each belief map layers. 
-            if loss is None:
-                loss = ((l - target_belief) * (l-target_belief)).mean()
-            else:
-                loss_tmp = ((l - target_belief) * (l-target_belief)).mean()
-                loss += loss_tmp
-        
-        # Affinities loss
-        for l in output_affinities: #output, each belief map layers. 
-            loss_tmp = ((l - target_affinity) * (l-target_affinity)).mean()
-            loss += loss_tmp 
-
-        if train:
-            loss.backward()
-            optimizer.step()
-            nb_update_network+=1
-
-        if train:
-            namefile = '/loss_train.csv'
-        else:
-            namefile = '/loss_test.csv'
-
-        with open (opt.outf+namefile,'a') as file:
-            s = '{}, {},{:.15f}\n'.format(
-                epoch,batch_idx,loss.data.item()) 
-            # print (s)
-            file.write(s)
-
-        if train:
-            if batch_idx % opt.loginterval == 0:
-                print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.15f}'.format(
-                    epoch, batch_idx * len(data), len(loader.dataset),
-                    100. * batch_idx / len(loader), loss.data.item()))
-        else:
-            if batch_idx % opt.loginterval == 0:
-                print('Test Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.15f}'.format(
-                    epoch, batch_idx * len(data), len(loader.dataset),
-                    100. * batch_idx / len(loader), loss.data.item()))
-
-        # break
-        if not opt.nbupdates is None and nb_update_network > int(opt.nbupdates):
-            torch.save(net.state_dict(), '{}/net_{}.pth'.format(opt.outf, opt.namefile))
-            break
-
-
-for epoch in range(1, opt.epochs + 1):
+        testingdata = torch.utils.data.DataLoader(
+            test_dataset,
+            batch_size = opt.subbatchsize // 2, 
+            shuffle = True,
+            num_workers = opt.workers, 
+            pin_memory = True)
 
     if not trainingdata is None:
-        _runnetwork(epoch,trainingdata)
+        print('training data: {} batches'.format(len(trainingdata)))
+    if not testingdata is None:
+        print ("testing data: {} batches".format(len(testingdata)))
+    print('load models')
 
-    if not opt.datatest == "":
-        _runnetwork(epoch,testingdata,train = False)
-        if opt.data == "":
-            break # lets get out of this if we are only testing
-    try:
-        torch.save(net.state_dict(), '{}/net_{}_{}.pth'.format(opt.outf, opt.namefile ,epoch))
-    except:
-        pass
+    net = DopeNetwork(pretrained=opt.pretrained).cuda()
+    # net = torch.nn.DataParallel(net,device_ids=opt.gpuids).cuda()
 
-    if not opt.nbupdates is None and nb_update_network > int(opt.nbupdates):
-        break
+    if opt.net != '':
+        net.load_state_dict(torch.load(opt.net))
 
-print ("end:" , datetime.datetime.now().time())
+    parameters = filter(lambda p: p.requires_grad, net.parameters())
+    optimizer = optim.Adam(parameters,lr=opt.lr)
+
+    with open (opt.outf+'/loss_train.csv','w') as file: 
+        file.write('epoch,batchid,loss\n')
+
+    with open (opt.outf+'/loss_test.csv','w') as file: 
+        file.write('epoch,batchid,loss\n')
+
+    nb_update_network = 0
+
+    def _runnetwork(epoch, loader, train=True, scaler=None, pbar=None):
+        global nb_update_network
+        # net
+        if train:
+            net.train()
+        else:
+            net.eval()
+
+        if train:
+            optimizer.zero_grad()
+        for batch_idx, targets in enumerate(loader):
+
+            data = Variable(targets['img'].cuda())
+            
+            with amp.autocast():
+                output_belief, output_affinities = net(data)
+
+                target_belief = Variable(targets['beliefs'].cuda())        
+                target_affinity = Variable(targets['affinities'].cuda())
+
+                loss = None
+                
+                # Belief maps loss
+                for l in output_belief: #output, each belief map layers. 
+                    if loss is None:
+                        loss = ((l - target_belief) * (l-target_belief)).mean()
+                    else:
+                        loss_tmp = ((l - target_belief) * (l-target_belief)).mean()
+                        loss += loss_tmp
+                
+                # Affinities loss
+                for l in output_affinities: #output, each belief map layers. 
+                    loss_tmp = ((l - target_affinity) * (l-target_affinity)).mean()
+                    loss += loss_tmp 
+
+            if train:
+                scaler.scale(loss).backward()
+                if batch_idx % (opt.batchsize // opt.subbatchsize) == 0:
+                    if train:
+                        scaler.step(optimizer)
+                        scaler.update()
+                        nb_update_network+=1
+                        optimizer.zero_grad()
+
+            if train:
+                namefile = '/loss_train.csv'
+            else:
+                namefile = '/loss_test.csv'
+
+            with open (opt.outf+namefile,'a') as file:
+                s = '{}, {},{:.15f}\n'.format(
+                    epoch,batch_idx,loss.data.item()) 
+                # print (s)
+                file.write(s)
+
+            # break
+            if not opt.nbupdates is None and nb_update_network > int(opt.nbupdates):
+                torch.save(net.state_dict(), '{}/net_{}.pth'.format(opt.outf, opt.namefile))
+                break
+
+            if train:
+                if pbar is not None:
+                    pbar.set_description("Training loss: %0.4f (%d/%d)" % (loss.data.item(), batch_idx, len(loader)))
+            else:
+                if pbar is not None:
+                    pbar.set_description("Testing loss: %0.4f (%d/%d)" % (loss.data.item(), batch_idx, len(loader)))
+        if train:
+            optimizer.zero_grad()
+
+    scaler = amp.GradScaler()
+
+    pbar = tqdm(range(1, opt.epochs + 1))
+
+    for epoch in pbar:
+
+        if not trainingdata is None:
+            _runnetwork(epoch,trainingdata, scaler=scaler, pbar=pbar)
+
+        if not opt.datatest == "":
+            _runnetwork(epoch,testingdata, train=False, pbar=pbar)
+            if opt.data == "":
+                break # lets get out of this if we are only testing
+        try:
+            torch.save(net.state_dict(), '{}/net_{}_{}.pth'.format(opt.outf, opt.namefile ,epoch))
+        except:
+            pass
+
+        if not opt.nbupdates is None and nb_update_network > int(opt.nbupdates):
+            break
+
+    print ("end:" , datetime.datetime.now().time())

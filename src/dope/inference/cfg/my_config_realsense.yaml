@@ -1,0 +1,59 @@
+# This configuration file is not for running on rospy. Its for running as normal python script.
+
+# Comment any of these lines to prevent detection / pose estimation of that object
+weights: {
+    #"cracker":"cracker_60.pth",
+    # "gelatin":"gelatin_60.pth",
+    "meat":"meat_20.pth"
+    # "mustard":"mustard_60.pth",
+    # "soup":"soup_60.pth",
+    #"sugar":"sugar_60.pth",
+    #"cautery":"net_epoch_217.pth" # The 48 hour model
+#    "cautery":"cautery_s6_60.pth"
+#     "cautery_hand":"net_hand_cautery_60.pth"
+     #"face":"net_face_60.pth"
+}
+
+# Cuboid dimension in cm x,y,z
+dimensions: {
+    "cracker": [16.403600692749023,21.343700408935547,7.179999828338623],
+    "gelatin": [8.918299674987793, 7.311500072479248, 2.9983000755310059],
+    "meat": [10.164673805236816,8.3542995452880859,5.7600898742675781],
+    "mustard": [9.6024150848388672,19.130100250244141,5.824894905090332],
+    "soup": [6.7659378051757813,10.185500144958496,6.771425724029541],
+    "sugar": [9.267730712890625,17.625339508056641,4.5134143829345703],
+    "cautery": [ 1.2000000476837158, 22.200000762939453, 1.2000000476837158 ],
+    "cautery_hand": [ 12, 25, 14 ],
+    "face": [ 18.582099914550781, 22.743499755859375, 16.583499908447266 ]
+
+}
+
+draw_colors: {
+    "cracker": [13, 255, 128],  # green
+    "gelatin": [255, 255, 255],  # while
+    "meat": [0, 104, 255],  # blue
+    "mustard": [217,12, 232],  # magenta
+    "soup": [255, 101, 0],  # orange
+    "sugar": [232, 222, 12],  # yellow
+    "cautery": [232, 222, 12],  # yellow
+    "cautery_hand": [232, 222, 12],  # yellow
+    "face": [232, 222, 12]  # yellow
+}
+
+# Camera intrinsics 
+#(Intel RealSense D435i for 640x480 only)
+camera_settings: {
+    "name": "Intel RealSense D435i (640x480)",
+    "width": 640,
+    "height": 480,
+    "fx": 611.538,
+    "fy": 611.281,
+    "cx": 316.72,
+    "cy": 242.415
+}
+
+# Config params for DOPE
+thresh_angle: 0.5
+thresh_map: 0.01
+sigma: 3
+thresh_points: 0.01
