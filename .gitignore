@@ -5,3 +5,8 @@
 __pycache__
 venv
 .idea
+
+
+src/dope/inference/weights/
+scripts/train/
+scripts/train1/
