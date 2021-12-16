@@ -244,10 +244,10 @@ class DopeNode(object):
             with open(f"{output_folder}/{img_name.replace('png','json')}", 'w') as fp:  
                 json.dump(dict_out, fp)
         
-        open_cv_image = np.array(im)
-        open_cv_image = cv2.cvtColor(open_cv_image, cv2.COLOR_RGB2BGR)
-        cv2.imshow('Open_cv_image', open_cv_image)
-        cv2.waitKey(1)
+        #open_cv_image = np.array(im)
+        #open_cv_image = cv2.cvtColor(open_cv_image, cv2.COLOR_RGB2BGR)
+        #cv2.imshow('Open_cv_image', open_cv_image)
+        #cv2.waitKey(1)
 
 def rotate_vector(vector, quaternion):
     q_conj = tf.transformations.quaternion_conjugate(quaternion)
@@ -306,6 +306,7 @@ if __name__ == "__main__":
     if opt.realsense:
         import pyrealsense2 as rs
         # Configure depth and color streams
+        print("Realsense")
         pipeline = rs.pipeline()
         config = rs.config()
         config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)

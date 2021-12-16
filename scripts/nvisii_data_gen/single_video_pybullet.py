@@ -127,19 +127,20 @@ parser.add_argument(
 opt = parser.parse_args()
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
-if os.path.isdir("output"):
+outp = "/opt/ml/input/data/channel1"
+if os.path.isdir(outp):
     print(f'folder {"output"}/ exists')
 else:
-    os.mkdir("output")
+    os.mkdir(outp)
     print(f'created folder {"output"}/')
 
-if os.path.isdir(f'output/{opt.outf}'):
+if os.path.isdir(f'{outp}/{opt.outf}'):
     print(f'folder output/{opt.outf}/ exists')
 else:
-    os.mkdir(f'output/{opt.outf}')
+    os.mkdir(f'{outp}/{opt.outf}')
     print(f'created folder output/{opt.outf}/')
 
-opt.outf = f'output/{opt.outf}'
+opt.outf = f'{outp}/{opt.outf}'
 
 if not opt.seed is None:
     random.seed(int(opt.seed)) 
@@ -225,11 +226,10 @@ if opt.interactive:
 else:
     physicsClient = p.connect(p.DIRECT) # non-graphical version
 
-
 visii_pybullet = []
 names_to_export = []
 
-def adding_mesh_object(name, obj_to_load,texture_to_load,scale=1):
+def adding_mesh_object(name, obj_to_load,scale=1):
     global mesh_loaded, visii_pybullet, names_to_export
     # obj_to_load = toy_to_load + "/meshes/model.obj"
     # texture_to_load = toy_to_load + "/materials/textures/texture.png"
@@ -250,9 +250,9 @@ def adding_mesh_object(name, obj_to_load,texture_to_load,scale=1):
     )
 
 
-    toy_rgb_tex = visii.texture.create_from_file(name,texture_to_load)
-    toy.get_material().set_base_color_texture(toy_rgb_tex) 
-    toy.get_material().set_roughness(random.uniform(0.1,0.5))
+    #toy_rgb_tex = visii.texture.create_from_file(name,texture_to_load)
+    #toy.get_material().set_base_color_texture(toy_rgb_tex) 
+    #toy.get_material().set_roughness(random.uniform(0.1,0.5))
 
     toy.get_transform().set_scale(visii.vec3(scale))
     toy.get_transform().set_position(
@@ -317,10 +317,10 @@ for i_obj in range(int(opt.nb_objects)):
 
     toy_to_load = google_content_folder[random.randint(0,len(google_content_folder)-1)]
 
-    obj_to_load = toy_to_load + "/google_16k/textured.obj"
-    texture_to_load = toy_to_load + "/google_16k/texture_map.png"
+    obj_to_load = toy_to_load + "/google_16k/SharpTip.obj"
+    #texture_to_load = toy_to_load + "/google_16k/texture_map.png"
     name = "hope_" + toy_to_load.split('/')[-2] + f"_{i_obj}"
-    adding_mesh_object(name,obj_to_load,texture_to_load,scale=0.01)
+    adding_mesh_object(name,obj_to_load,scale=0.01)
 
     # p.applyExternalTorque(id_pybullet,-1,
     #     [   random.uniform(-force_rand,force_rand),
@@ -329,7 +329,6 @@ for i_obj in range(int(opt.nb_objects)):
     #     [0,0,0],
     #     flags=p.WORLD_FRAME
     # )
-
 
 camera_pybullet_col = p.createCollisionShape(p.GEOM_SPHERE,0.05)
 camera_pybullet = p.createMultiBody(
@@ -506,10 +505,10 @@ while condition:
             file_path = f"{opt.outf}/{str(i_render).zfill(5)}.depth.exr"
         )
 
-# subprocess.call(['ffmpeg', '-y',\
-#     '-framerate', '30', "-hide_banner", "-loglevel", \
-#     "panic",'-pattern_type', 'glob', '-i',\
-#     f"{opt.outf}/*.png", f"{opt.outf}/video.mp4"]) 
+subprocess.call(['ffmpeg', '-y',\
+    '-framerate', '30', "-hide_banner", "-loglevel", \
+    "panic",'-pattern_type', 'glob', '-i',\
+    f"{opt.outf}/*.png", f"{opt.outf}/video.mp4"]) 
 
 visii.deinitialize()
 

@@ -2,8 +2,9 @@ import random
 import subprocess
 
 
-# 20 000 images
-num_loop = 5#40
+
+num_loop = 5#40  # num_loop * nb_frames images
+
 
 for i in range(0,num_loop):
 	to_call = [

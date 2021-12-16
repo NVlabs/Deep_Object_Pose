@@ -65,6 +65,26 @@ torch.backends.cudnn.benchmark = True
 # os.environ["CUDA_VISIBLE_DEVICES"]="0,1,2,3"
 # os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
+import random 
+import subprocess
+
+
+
+num_loop = 10 #40  # num_loop * nb_frames images
+
+
+for i in range(0,num_loop):
+	to_call = [
+		"python",'/workspace/dope/scripts/nvisii_data_gen/single_video_pybullet.py',
+		'--spp','10',
+		'--nb_frames', '200',
+		'--nb_objects',str(int(random.uniform(50,75))),
+		'--static_camera',
+		'--outf',f"dataset/{str(i).zfill(3)}",
+	]
+	subprocess.call(to_call)
+	subprocess.call(['mv',f'dataset/{str(i).zfill(3)}/video.mp4',f"dataset/{str(i).zfill(3)}.mp4"])
+
 data_dir = ["/opt/ml/input/data/channel1"]
 model_dir = "/opt/ml/model"
 hyperparameters_file = "/opt/ml/input/config/hyperparameters.json"

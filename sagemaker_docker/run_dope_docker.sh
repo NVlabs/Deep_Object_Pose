@@ -13,7 +13,7 @@ fi
 # a different directory
 HOST_DIR=$2
 if [[ -z "${HOST_DIR}" ]]; then
-    HOST_DIR=`realpath ${PWD}/..`
+    HOST_DIR=`realpath ${PWD}/`
 fi
 
 CONTAINER_DIR=$3
@@ -28,7 +28,7 @@ DOPE_ID=`docker ps -aqf "name=^/${CONTAINER_NAME}$"`
 if [ -z "${DOPE_ID}" ]; then
     echo "Creating new DOPE docker container."
     xhost +local:root
-    docker run --gpus all -it --privileged --network=host -v ${HOST_DIR}:${CONTAINER_DIR}:rw -v /tmp/.X11-unix:/tmp/.X11-unix:rw --env="DISPLAY" --name=${CONTAINER_NAME} nvidia-dope:test-v2
+    nvidia-docker run --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 --gpus all -it --privileged --network=host -v /tmp/.X11-unix:/tmp/.X11-unix:rw --env="DISPLAY" --name=${CONTAINER_NAME} nvidia-dope:test-sage2
 else
     echo "Found DOPE docker container: ${DOPE_ID}."
     # Check if the container is already running and start if necessary.
