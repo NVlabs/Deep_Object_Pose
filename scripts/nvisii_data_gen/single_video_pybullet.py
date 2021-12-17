@@ -18,6 +18,8 @@ from utils import *
 
 parser = argparse.ArgumentParser()
 
+data_gen_root = "/workspace/dope/scripts/nvisii_data_gen"
+
 parser.add_argument(
     '--spp', 
     default=4000,
@@ -39,17 +41,17 @@ parser.add_argument(
 # TODO: change for an array
 parser.add_argument(
     '--objs_folder_distrators',
-    default='google_scanned_models/',
+    default=f'{data_gen_root}/google_scanned_models/',
     help = "object to load folder"
 )
 parser.add_argument(
     '--objs_folder',
-    default='models/',
+    default=f'{data_gen_root}/models/',
     help = "object to load folder"
 )
 parser.add_argument(
     '--skyboxes_folder',
-    default='dome_hdri_haven/',
+    default=f'{data_gen_root}/dome_hdri_haven/',
     help = "dome light hdr"
 )
 parser.add_argument(

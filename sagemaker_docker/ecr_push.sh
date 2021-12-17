@@ -1,5 +1,5 @@
 # The name of our algorithm
-algorithm_name=sagemaker-pytorch-dope2
+algorithm_name=sagemaker-pytorch-dope3
 
 #cd container
 
@@ -31,7 +31,7 @@ docker login -u AWS -p $(aws ecr get-login-password --region ${region}) 97184330
 # Build the docker image locally with the image name and then push it to ECR
 # with the full name.
 
-docker build  -t ${algorithm_name} ./sagemaker_docker
+docker build  -t ${algorithm_name} -f Dockerfile.sage .
 docker tag ${algorithm_name} ${fullname}
 
 docker push ${fullname}
