@@ -151,6 +151,7 @@ class DopeNode(object):
         img_name = "00000.png", # this is the name of the img file to save, it needs the .png at the end
         output_folder = 'out_inference', # folder where to put the output
         save=False,
+        showVideo = True,
         ):
         img_name = str(img_name).zfill(5)
         """Image callback"""
@@ -244,10 +245,11 @@ class DopeNode(object):
             with open(f"{output_folder}/{img_name.replace('png','json')}", 'w') as fp:  
                 json.dump(dict_out, fp)
         
-        #open_cv_image = np.array(im)
-        #open_cv_image = cv2.cvtColor(open_cv_image, cv2.COLOR_RGB2BGR)
-        #cv2.imshow('Open_cv_image', open_cv_image)
-        #cv2.waitKey(1)
+        if showVideo:
+            open_cv_image = np.array(im)
+            open_cv_image = cv2.cvtColor(open_cv_image, cv2.COLOR_RGB2BGR)
+            cv2.imshow('Open_cv_image', open_cv_image)
+            cv2.waitKey(1)
 
 def rotate_vector(vector, quaternion):
     q_conj = tf.transformations.quaternion_conjugate(quaternion)
@@ -289,6 +291,9 @@ if __name__ == "__main__":
     parser.add_argument('--realsense',
         action='store_true',
         help='use the realsense camera')
+    parser.add_argument('--showvideo',
+        default=True,
+        help='do imshow')
     parser.add_argument('--save',
         action='store_true',
         help='save?')
@@ -375,9 +380,15 @@ if __name__ == "__main__":
         frame = frame[...,::-1].copy()
         
         # call the inference node
+        import time
+        start = time.time()
         dope_node.image_callback(
             frame, 
             camera_info,
             img_name = img_name,
             output_folder = opt.outf,
-            save=opt.save)
+            save=opt.save,
+            showVideo = opt.showvideo)
+        elapsed = time.time() - start
+
+        print(f'Time elapsed {elapsed}')

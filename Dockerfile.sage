@@ -64,4 +64,6 @@ ENV QT_X11_NO_MITSHM 1
 ENV SAGEMAKER_PROGRAM train.py
 
 # Specify train.py parameters
+COPY ./docker-entrypoint.sh /
+#ENTRYPOINT ["/docker-entrypoint.sh"]
 #ENTRYPOINT ["python", "-m", "torch.distributed.launch", "/opt/ml/code/train.py"]

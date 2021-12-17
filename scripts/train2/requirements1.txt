@@ -13,3 +13,4 @@ torchvision
 PyYAML
 tensorboardX
 albumentations
+opencv-contrib-python

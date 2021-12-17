@@ -16,12 +16,13 @@ total_count = 0
 # Iterate over the pages
 # while next_url:
 downloaded = {}
+start = 467
 
 subprocess.call(['mkdir','google_scanned_models/'])
 
 
 
-for i in range(1,1100):
+for i in range(start,1100):
     print(count)
     # Get the contents of the current page.
     try:

@@ -70,7 +70,7 @@ import subprocess
 
 
 
-num_loop = 10 #40  # num_loop * nb_frames images
+num_loop = 50 # num of images = num_loop * nb_frames
 
 
 for i in range(0,num_loop):

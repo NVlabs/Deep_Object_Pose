@@ -81,7 +81,7 @@ parser.add_argument(
 )
 parser.add_argument(
     '--outf',
-    default='output_example/',
+    default='dataset/',
     help = "output filename inside output/"
 )
 parser.add_argument('--seed',
@@ -128,17 +128,18 @@ opt = parser.parse_args()
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
 outp = "/opt/ml/input/data/channel1"
+
 if os.path.isdir(outp):
-    print(f'folder {"output"}/ exists')
+    print(f'folder {outp}/ exists')
 else:
-    os.mkdir(outp)
-    print(f'created folder {"output"}/')
+    os.makedirs(outp)
+    print(f'created folder {outp}/')
 
 if os.path.isdir(f'{outp}/{opt.outf}'):
-    print(f'folder output/{opt.outf}/ exists')
+    print(f'folder {outp}/{opt.outf}/ exists')
 else:
-    os.mkdir(f'{outp}/{opt.outf}')
-    print(f'created folder output/{opt.outf}/')
+    os.makedirs(f'{outp}/{opt.outf}')
+    print(f'created folder {outp}/{opt.outf}/')
 
 opt.outf = f'{outp}/{opt.outf}'
 
@@ -229,7 +230,7 @@ else:
 visii_pybullet = []
 names_to_export = []
 
-def adding_mesh_object(name, obj_to_load,scale=1):
+def adding_mesh_object(name, obj_to_load,texture_to_load,scale=1):
     global mesh_loaded, visii_pybullet, names_to_export
     # obj_to_load = toy_to_load + "/meshes/model.obj"
     # texture_to_load = toy_to_load + "/materials/textures/texture.png"
@@ -250,9 +251,9 @@ def adding_mesh_object(name, obj_to_load,scale=1):
     )
 
 
-    #toy_rgb_tex = visii.texture.create_from_file(name,texture_to_load)
-    #toy.get_material().set_base_color_texture(toy_rgb_tex) 
-    #toy.get_material().set_roughness(random.uniform(0.1,0.5))
+    toy_rgb_tex = visii.texture.create_from_file(name,texture_to_load)
+    toy.get_material().set_base_color_texture(toy_rgb_tex) 
+    toy.get_material().set_roughness(random.uniform(0.1,0.5))
 
     toy.get_transform().set_scale(visii.vec3(scale))
     toy.get_transform().set_position(
@@ -311,16 +312,16 @@ for i_obj in range(int(opt.nb_distractors)):
     adding_mesh_object(name,obj_to_load,texture_to_load)
 
 
-google_content_folder = glob.glob(opt.objs_folder + "*/")
+google_content_folder = glob.glob(opt.objs_folder + "listerine")
 
 for i_obj in range(int(opt.nb_objects)):
 
     toy_to_load = google_content_folder[random.randint(0,len(google_content_folder)-1)]
 
-    obj_to_load = toy_to_load + "/google_16k/SharpTip.obj"
-    #texture_to_load = toy_to_load + "/google_16k/texture_map.png"
+    obj_to_load = toy_to_load + "/listerine.obj"
+    texture_to_load = toy_to_load + "/Blue Listerine-1_30-09-2021-17-26-42.jpg"
     name = "hope_" + toy_to_load.split('/')[-2] + f"_{i_obj}"
-    adding_mesh_object(name,obj_to_load,scale=0.01)
+    adding_mesh_object(name,obj_to_load,texture_to_load,scale=1)
 
     # p.applyExternalTorque(id_pybullet,-1,
     #     [   random.uniform(-force_rand,force_rand),
