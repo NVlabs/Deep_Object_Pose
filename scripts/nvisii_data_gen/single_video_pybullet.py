@@ -17,8 +17,11 @@ from math import pi
 from utils import *
 
 parser = argparse.ArgumentParser()
+sage = 0
+data_gen_root = "../nvisii_data_gen"
+if sage:
+    data_gen_root = "/workspace/dope/scripts/nvisii_data_gen"
 
-data_gen_root = "/workspace/dope/scripts/nvisii_data_gen"
 
 parser.add_argument(
     '--spp', 
@@ -129,7 +132,10 @@ parser.add_argument(
 opt = parser.parse_args()
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
-outp = "/opt/ml/input/data/channel1"
+sage = 0
+outp = "./output/"
+if sage:
+    outp = "/opt/ml/input/data/channel1"
 
 if os.path.isdir(outp):
     print(f'folder {outp}/ exists')
@@ -262,7 +268,7 @@ def adding_mesh_object(name, obj_to_load,texture_to_load,scale=1):
         visii.vec3(
             random.uniform(0.1,2),
             random.uniform(-1,1),
-            random.uniform(-1,1),
+            random.uniform(-1,2),
             )
         )
     toy.get_transform().set_rotation(
@@ -322,7 +328,7 @@ for i_obj in range(int(opt.nb_objects)):
 
     obj_to_load = toy_to_load + "/listerine.obj"
     texture_to_load = toy_to_load + "/Blue Listerine-1_30-09-2021-17-26-42.jpg"
-    name = "hope_" + toy_to_load.split('/')[-2] + f"_{i_obj}"
+    name = "listerine" + toy_to_load.split('/')[-2] + f"_{i_obj}"
     adding_mesh_object(name,obj_to_load,texture_to_load,scale=1)
 
     # p.applyExternalTorque(id_pybullet,-1,
@@ -508,10 +514,10 @@ while condition:
             file_path = f"{opt.outf}/{str(i_render).zfill(5)}.depth.exr"
         )
 
-subprocess.call(['ffmpeg', '-y',\
-    '-framerate', '30', "-hide_banner", "-loglevel", \
-    "panic",'-pattern_type', 'glob', '-i',\
-    f"{opt.outf}/*.png", f"{opt.outf}/video.mp4"]) 
+#subprocess.call(['ffmpeg', '-y',\
+#    '-framerate', '30', "-hide_banner", "-loglevel", \
+#    "panic",'-pattern_type', 'glob', '-i',\
+#    f"{opt.outf}/*.png", f"{opt.outf}/video.mp4"]) 
 
 visii.deinitialize()
 

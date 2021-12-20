@@ -16,13 +16,12 @@ total_count = 0
 # Iterate over the pages
 # while next_url:
 downloaded = {}
-start = 467
 
 subprocess.call(['mkdir','google_scanned_models/'])
 
 
 
-for i in range(start,1100):
+for i in range(1,1100):
     print(count)
     # Get the contents of the current page.
     try:
@@ -55,6 +54,9 @@ for i in range(start,1100):
         if model_name not in downloaded:
             downloaded[model_name] = 1
             count+=1
+            if count < 470:
+                print("Skipped")
+                continue
             print ('Downloading (%d/%d) %s' %    (count, total_count, model_name))
             download = requests.get(download_url+model_name+'.zip', stream=True)
             with open("google_scanned_models/"+model_name+'.zip', 'wb') as fd:
@@ -63,5 +65,3 @@ for i in range(start,1100):
 
         subprocess.call(['unzip',"google_scanned_models/"+model_name+'.zip','-d', "google_scanned_models/"+model_name])
         subprocess.call(['rm',"google_scanned_models/"+model_name+'.zip'])
-
-
