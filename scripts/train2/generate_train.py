@@ -68,13 +68,36 @@ torch.backends.cudnn.benchmark = True
 import random 
 import subprocess
 
+sage = 0
+data_dir = ["./output/dataset1"]
+model_dir = "/opt/ml/model"
+hyperparameters_file = "../hyperparameters.json"
+data_gen_root = "../nvisii_data_gen"
+if sage:
+    data_dir = ["/opt/ml/input/data/channel1"]
+    model_dir = "/opt/ml/model"
+    hyperparameters_file = "/opt/ml/input/config/hyperparameters.json"
+    data_gen_root = "/workspace/dope/scripts/nvisii_data_gen"
 
+# hyperparameters
+with open(hyperparameters_file) as f:
+   hyperparameters = json.load(f)
+gpus = hyperparameters["gpus"]
+obj = hyperparameters["obj"]
+imgs = int(hyperparameters["imgs"])
+epochs = int(hyperparameters["epochs"])
+gpuids = gpus.split(" ")
+print(f"Using {gpuids} GPUs")
+print(f"Training {obj}")
+print(f"Training for {epochs} epochs")
+print(f"Training with {imgs} images")
 
-num_loop = 50 # num of images = num_loop * nb_frames
+num_loop = imgs // 200 # num of images = num_loop * nb_frames
 
+# Synthetic data generation
 for i in range(0,num_loop):
 	to_call = [
-		"python",'/workspace/dope/scripts/nvisii_data_gen/single_video_pybullet.py',
+		"python",f'{data_gen_root}/single_video_pybullet.py',
 		'--spp','10',
 		'--nb_frames', '200',
 		'--nb_objects',str(int(random.uniform(50,75))),
@@ -82,20 +105,6 @@ for i in range(0,num_loop):
 		'--outf',f"dataset/{str(i).zfill(3)}",
 	]
 	subprocess.call(to_call)
-	subprocess.call(['mv',f'dataset/{str(i).zfill(3)}/video.mp4',f"dataset/{str(i).zfill(3)}.mp4"])
-
-data_dir = ["/opt/ml/input/data/channel1"]
-model_dir = "/opt/ml/model"
-hyperparameters_file = "/opt/ml/input/config/hyperparameters.json"
-
-# hyperparameters
-with open(hyperparameters_file) as f:
-   hyperparameters = json.load(f)
-gpus = hyperparameters["gpus"]
-obj = hyperparameters["obj"]
-gpuids = gpus.split(" ")
-print(f"Using {gpuids} GPUs")
-print(f"Training {obj}")
 
 print ("start:" , datetime.datetime.now().time())
 
@@ -617,7 +626,7 @@ def _runnetwork(epoch,train_loader,train=True,syn=False):
             writer.add_scalar('loss/test_aff',np.mean(loss_avg_to_log["loss_affinities"]),epoch)
             writer.add_scalar('loss/test_bel',np.mean(loss_avg_to_log["loss_belief"]),epoch)
 
-for epoch in range(1, opt.epochs + 1):
+for epoch in range(1, epochs + 1):
 
     if not trainingdata is None and not opt.testonly:
         _runnetwork(epoch,trainingdata)

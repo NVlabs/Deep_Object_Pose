@@ -8,7 +8,7 @@ downscale_height: 500      # if the input image is larger than this, scale it do
 weights: {
     # "cracker":"package://dope/weights/cracker_60.pth",
     # "gelatin":"package://dope/weights/gelatin_60.pth",
-    "meat":"../../weights/meat_20.pth",
+    #"meat":"../../weights/meat_20.pth",
     # "mustard":"package://dope/weights/mustard_60.pth",
     # "soup":"package://dope/weights/soup_60.pth",
     # 'peg_hole': "package://dope/weights/peg_box_40.pth",
@@ -18,6 +18,7 @@ weights: {
     # 'pudding':"weights_dope/pudding.pth"
     # 'pudding':"weights_dope/dope_network/net_epoch_60.pth"
     #'alphabet_soup':"weights_dope/resnet_simple/alphabe_soup.pth"
+    'listerine' : "../../weights/net_epoch_60.pth"
 }
 
 # Type of neural network architecture
@@ -25,6 +26,7 @@ architectures: {
     'pudding':"dope",
     "meat" : "dope",
     'alphabet_soup':'resnet_simple',   
+    'listerine' : 'dope',
 }
 
 
@@ -40,8 +42,8 @@ dimensions: {
     "peg_hole": [12.6,3.9,12.6],
     'cube_red':[5,5,5],
     'pudding':[49.47199821472168, 29.923000335693359, 83.498001098632812],
-    'alphabet_soup':[8.3555002212524414, 7.1121001243591309, 6.6055998802185059]
-
+    'alphabet_soup':[8.3555002212524414, 7.1121001243591309, 6.6055998802185059],
+    'listerine' : [26.7, 11.2, 6.8],
 }
 
 class_ids: {
@@ -56,6 +58,7 @@ class_ids: {
     "cube_red": 9,
     'pudding': 10,
     'alphabet_soup': 12,
+    'listerine' : 13,
 }
 
 draw_colors: {
@@ -69,6 +72,7 @@ draw_colors: {
     "peg_hole": [232, 222, 12],  # yellow
     "cube_red": [255,0,0],
     "pudding": [255,0,0],
+    "listerine": [13, 255, 128],
 }
 
 # optional: provide a transform that is applied to the pose returned by DOPE
@@ -101,6 +105,7 @@ mesh_scales: {
     "soup":    0.01,
     "sugar":   0.01,
     "bleach":  0.01,
+    "listerine" : 0.01,
 }
 
 # Config params for DOPE

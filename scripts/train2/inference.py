@@ -148,6 +148,7 @@ class DopeNode(object):
     def image_callback(self, 
         img, 
         camera_info, 
+        vid_writer,
         img_name = "00000.png", # this is the name of the img file to save, it needs the .png at the end
         output_folder = 'out_inference', # folder where to put the output
         save=False,
@@ -213,6 +214,7 @@ class DopeNode(object):
                 ori = result["quaternion"]
                 
                 print(loc)
+                #print(ori)
 
                 dict_out['objects'].append({
                     'class':m,
@@ -238,16 +240,18 @@ class DopeNode(object):
                     for pair in result['projected_points']:
                         points2d.append(tuple(pair))
                     draw.draw_cube(points2d, self.draw_colors[m])
+        open_cv_image = np.array(im)
+        open_cv_image = cv2.cvtColor(open_cv_image, cv2.COLOR_RGB2BGR)
         # save the output of the image. 
         if save:
-            im.save(f"{output_folder}/{img_name}.png")
+            vid_writer.write(open_cv_image)
+            print('saving frame')
+            #im.save(f"{output_folder}/{img_name}.png")
             # save the json files 
-            with open(f"{output_folder}/{img_name.replace('png','json')}", 'w') as fp:  
-                json.dump(dict_out, fp)
+            #with open(f"{output_folder}/{img_name.replace('png','json')}", 'w') as fp:  
+            #    json.dump(dict_out, fp)
         
         if showVideo:
-            open_cv_image = np.array(im)
-            open_cv_image = cv2.cvtColor(open_cv_image, cv2.COLOR_RGB2BGR)
             cv2.imshow('Open_cv_image', open_cv_image)
             cv2.waitKey(1)
 
@@ -314,11 +318,12 @@ if __name__ == "__main__":
         print("Realsense")
         pipeline = rs.pipeline()
         config = rs.config()
-        config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
+        #config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
         config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
 
         # Start streaming
         pipeline.start(config)
+        vid_writer = cv2.VideoWriter('./output/vid1.mp4', cv2.VideoWriter_fourcc(*"mp4v"), 10, (640,480))
 
 
     # create the output folder
@@ -388,7 +393,9 @@ if __name__ == "__main__":
             img_name = img_name,
             output_folder = opt.outf,
             save=opt.save,
-            showVideo = opt.showvideo)
+            showVideo = opt.showvideo,
+            vid_writer=vid_writer)
         elapsed = time.time() - start
 
         print(f'Time elapsed {elapsed}')
+    vid_writer.release()
