@@ -16,7 +16,9 @@ import numpy as np
 from PIL import Image
 from PIL import ImageDraw
 
-import sys 
+import sys
+
+from nvisii import camera 
 sys.path.append("inference")
 from cuboid import Cuboid3d
 from cuboid_pnp_solver import CuboidPNPSolver
@@ -309,7 +311,7 @@ if __name__ == "__main__":
     with open(opt.config) as f:
         pose_config = yaml.load(f, Loader=yaml.FullLoader)
     with open(opt.camera) as f:
-        camera_info = yaml.load(f, Loader=yaml.FullLoader)
+        rs_camera_info = yaml.load(f, Loader=yaml.FullLoader)
     
     # setup the realsense
     if opt.realsense:
@@ -318,11 +320,12 @@ if __name__ == "__main__":
         print("Realsense")
         pipeline = rs.pipeline()
         config = rs.config()
-        #config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
+        config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
         config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
 
         # Start streaming
-        pipeline.start(config)
+        profile = pipeline.start(config)
+
         vid_writer = cv2.VideoWriter('./output/vid1.mp4', cv2.VideoWriter_fourcc(*"mp4v"), 10, (640,480))
 
 
@@ -361,7 +364,7 @@ if __name__ == "__main__":
 
     while True:
         i_image+=1
-        
+        import time        
         # Capture frame-by-frame
 
         if not opt.data:
@@ -370,6 +373,8 @@ if __name__ == "__main__":
                 depth_frame = frames.get_depth_frame()
                 color_frame = frames.get_color_frame()
                 frame = np.asanyarray(color_frame.get_data())
+                intr = profile.get_stream(rs.stream.depth).as_video_stream_profile().get_intrinsics()
+                camera_info = {'camera_matrix' : {'data' : [intr.fx, 0, intr.ppx, 0, intr.fy, intr.ppy, 0 ,0 ,1]}}
             else:
                 ret, frame = cap.read()
 
@@ -385,7 +390,6 @@ if __name__ == "__main__":
         frame = frame[...,::-1].copy()
         
         # call the inference node
-        import time
         start = time.time()
         dope_node.image_callback(
             frame, 
@@ -394,7 +398,7 @@ if __name__ == "__main__":
             output_folder = opt.outf,
             save=opt.save,
             showVideo = opt.showvideo,
-            vid_writer=vid_writer)
+            vid_writer=vid_writer,)
         elapsed = time.time() - start
 
         print(f'Time elapsed {elapsed}')
