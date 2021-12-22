@@ -2,5 +2,5 @@
     "obj" : "listerine",
     "gpus" : "0",
     "epochs" : "30",
-    "imgs" : "1000"   
+    "imgs" : "50000"  
 }

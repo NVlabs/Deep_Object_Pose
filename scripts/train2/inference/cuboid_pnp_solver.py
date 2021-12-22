@@ -110,7 +110,7 @@ class CuboidPNPSolver(object):
 
                 rot_matrix = np.array([[1, 0 ,0], [0,-1,0], [0,0,-1]])
                 rvec = rot_matrix * rvec
-                print(rvec)
+                #print(rvec)
                 points = np.float32([[10, 0, 0], [0, 10, 0], [0, 0, 10], [0, 0, 0]]).reshape(-1, 3)
                 axisPoints, _ = cv2.projectPoints(points, rvec, tvec, self._camera_intrinsic_matrix, self._dist_coeffs)
                 

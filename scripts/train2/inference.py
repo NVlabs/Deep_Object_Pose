@@ -221,8 +221,8 @@ class DopeNode(object):
                 ori = result["quaternion"]
                 axis = result["axis"]
                 
-                print(loc)
-                #print(ori)
+                #print(loc)
+                print(ori)
 
                 dict_out['objects'].append({
                     'class':m,
@@ -383,7 +383,7 @@ if __name__ == "__main__":
                 frame = np.asanyarray(color_frame.get_data())
                 #intr = profile.get_stream(rs.stream.depth).as_video_stream_profile().get_intrinsics()
                 intr = depth_frame.profile.as_video_stream_profile().intrinsics
-                print(intr)
+                #print(intr)
                 camera_info = {'camera_matrix' : {'data' : [intr.fx, 0, intr.ppx, 0, intr.fy, intr.ppy, 0,1 ,0]}}
             else:
                 ret, frame = cap.read()
@@ -412,4 +412,6 @@ if __name__ == "__main__":
         elapsed = time.time() - start
 
         print(f'Time elapsed {elapsed}')
+
     vid_writer.release()
+        

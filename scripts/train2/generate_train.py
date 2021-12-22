@@ -68,44 +68,6 @@ torch.backends.cudnn.benchmark = True
 import random 
 import subprocess
 
-sage = 0
-data_dir = ["./output/dataset1"]
-model_dir = "/opt/ml/model"
-hyperparameters_file = "../hyperparameters.json"
-data_gen_root = "../nvisii_data_gen"
-if sage:
-    data_dir = ["/opt/ml/input/data/channel1"]
-    model_dir = "/opt/ml/model"
-    hyperparameters_file = "/opt/ml/input/config/hyperparameters.json"
-    data_gen_root = "/workspace/dope/scripts/nvisii_data_gen"
-
-# hyperparameters
-with open(hyperparameters_file) as f:
-   hyperparameters = json.load(f)
-gpus = hyperparameters["gpus"]
-obj = hyperparameters["obj"]
-imgs = int(hyperparameters["imgs"])
-epochs = int(hyperparameters["epochs"])
-gpuids = gpus.split(" ")
-print(f"Using {gpuids} GPUs")
-print(f"Training {obj}")
-print(f"Training for {epochs} epochs")
-print(f"Training with {imgs} images")
-
-num_loop = imgs // 200 # num of images = num_loop * nb_frames
-
-# Synthetic data generation
-for i in range(0,num_loop):
-	to_call = [
-		"python",f'{data_gen_root}/single_video_pybullet.py',
-		'--spp','10',
-		'--nb_frames', '200',
-		'--nb_objects',str(int(random.uniform(50,75))),
-		'--static_camera',
-		'--outf',f"dataset/{str(i).zfill(3)}",
-	]
-	subprocess.call(to_call)
-
 print ("start:" , datetime.datetime.now().time())
 
 conf_parser = argparse.ArgumentParser(
@@ -120,7 +82,7 @@ conf_parser.add_argument("-c", "--config",
 
 parser = argparse.ArgumentParser()
 parser.add_argument('train', default='train', help="train?")
-parser.add_argument('--data', nargs='+', default=data_dir, help='path to training data')
+parser.add_argument('--data', nargs='+', default="./output/dataset/", help='path to training data')
 parser.add_argument('--datatest', default="", help='path to data testing set')
 parser.add_argument('--testonly', action='store_true', help='only run inference') 
 parser.add_argument('--testbatchsize', default=1,type=int, help='size of the batchsize for testing')
@@ -149,7 +111,7 @@ parser.add_argument('--loginterval', type=int, default=100)
 parser.add_argument('--gpuids',nargs='+', type=int, default=[0], help='GPUs to use')
 parser.add_argument('--extensions',nargs='+', type=str, default=["png"], 
     help='Extensions to use, you can have multiple entries seperated by space, e.g., png jpeg. ')
-parser.add_argument('--outf', default=model_dir, help='folder to output images and model checkpoints')
+parser.add_argument('--outf', default="./output/models", help='folder to output images and model checkpoints')
 parser.add_argument('--sigma', default=4, help='keypoint creation sigma')
 parser.add_argument('--keypoints', default=None, 
     help='list of keypoints to load from the json files.')
@@ -175,11 +137,11 @@ parser.add_argument('--data2', default=None, help='path to dataset2')
 parser.add_argument('--size1', default=None, help='size of dataset1 in percentage (0,1)')
 parser.add_argument('--size2', default=None, help='size of dataset2 in percentage (0,1)')
 parser.add_argument("--local_rank", default=0, type=int)
+parser.add_argument("--sage", action="store_true", default=False, help="Use sagemaker?")
 
 # Read the config but do not overwrite the args written 
 args, remaining_argv = conf_parser.parse_known_args()
 defaults = { "option":"default" }
-
 if args.config:
     config = configparser.SafeConfigParser()
     config.read([args.config])
@@ -188,6 +150,50 @@ if args.config:
 parser.set_defaults(**defaults)
 parser.add_argument("--option")
 opt = parser.parse_args(remaining_argv)
+
+if opt.sage:
+    print(f"Using sagemaker directories")
+    opt.data = ["/opt/ml/input/data/channel1"]
+    opt.outf = "/opt/ml/model"
+    hyperparameters_file = "/opt/ml/input/config/hyperparameters.json"
+    data_gen_root = "/workspace/dope/scripts/nvisii_data_gen"
+else:
+    print(f"Using local directories")
+    data_gen_root = "../nvisii_data_gen"
+    hyperparameters_file = "../hyperparameters.json"
+
+# hyperparameters
+with open(hyperparameters_file) as f:
+   hyperparameters = json.load(f)
+obj = hyperparameters["obj"]
+imgs = int(hyperparameters["imgs"])
+opt.epochs = int(hyperparameters["epochs"])
+opt.gpuids = hyperparameters["gpus"].split(" ")
+print(f"Training with {opt.gpuids} GPUs, on {obj}, for {opt.epochs} epochs, {imgs} images")
+
+num_loop = imgs // 200 # num of images = num_loop * nb_frames
+
+# Synthetic data generation
+for i in range(0,num_loop):
+    to_call = [
+		"python",f'{data_gen_root}/single_video_pybullet.py',
+		'--spp','10',
+		'--nb_frames', '200',
+		'--nb_objects',str(int(random.uniform(50,75))),
+		'--static_camera',
+		'--outf',f"dataset/{str(i).zfill(3)}",
+	]
+    if opt.sage:
+        to_call.append("--sage")
+        to_call.append("--skyboxes_folder")
+        to_call.append("/workspace/dope/scripts/nvisii_data_gen/dome_hdri_haven/")
+        to_call.append("--objs_folder")
+        to_call.append("/workspace/dope/scripts/nvisii_data_gen_/models/")
+        to_call.append("--objs_folder_distrators")
+        to_call.append("/workspace/dope/scripts/nvisii_data_gen_/google_scanned_models/")
+    subprocess.call(to_call)
+
+print("Commence training ---------------------------------------------------------------------------------------------------")
 
 if opt.keypoints:
     opt.keypoints = eval(opt.keypoints)
@@ -433,11 +439,13 @@ def _runnetwork(epoch,train_loader,train=True,syn=False):
         # todo opt.model path to the 3d model
 
         #Create the folders for output
-        # try:
-        #     namefile = '/test_{}.csv'.format(epoch)
-        #     with open (opt.outf+namefile,'w') as file:
-        #         file.write("img, trans_gu, trans_gt, agg_error \n")
-        #     os.makedirs(opt.outf+"/test/{}/".format(str(epoch).zfill(3)))
+        try:
+            namefile = '/test_{}.csv'.format(epoch)
+            with open (opt.outf+namefile,'w') as file:
+                file.write("img, trans_gu, trans_gt, agg_error \n")
+            os.makedirs(opt.outf+"/test/{}/".format(str(epoch).zfill(3)))
+        except Exception as e:
+            print(e)
         all_data_to_save = []   
 
     loss_avg_to_log = {}
@@ -580,11 +588,11 @@ def _runnetwork(epoch,train_loader,train=True,syn=False):
             nb_update_network+=1
             
             
-            # namefile = '/loss_train.txt'
-            # with open (opt.outf+namefile,'a') as file:
-            #     s = '{}, {},{:.15f}\n'.format(
-            #         epoch,batch_idx,loss.item()) 
-            #     file.write(s)
+            namefile = '/loss_train.txt'
+            with open (opt.outf+namefile,'a') as file:
+                s = '{}, {},{:.15f}\n'.format(
+                    epoch,batch_idx,loss.item()) 
+                file.write(s)
         
         # log the loss
         loss_avg_to_log["loss"].append(loss.item())
@@ -626,7 +634,7 @@ def _runnetwork(epoch,train_loader,train=True,syn=False):
             writer.add_scalar('loss/test_aff',np.mean(loss_avg_to_log["loss_affinities"]),epoch)
             writer.add_scalar('loss/test_bel',np.mean(loss_avg_to_log["loss_belief"]),epoch)
 
-for epoch in range(1, epochs + 1):
+for epoch in range(1, opt.epochs + 1):
 
     if not trainingdata is None and not opt.testonly:
         _runnetwork(epoch,trainingdata)

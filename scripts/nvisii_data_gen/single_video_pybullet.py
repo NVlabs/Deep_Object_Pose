@@ -17,11 +17,6 @@ from math import pi
 from utils import *
 
 parser = argparse.ArgumentParser()
-sage = 0
-data_gen_root = "../nvisii_data_gen"
-if sage:
-    data_gen_root = "/workspace/dope/scripts/nvisii_data_gen"
-
 
 parser.add_argument(
     '--spp', 
@@ -44,17 +39,17 @@ parser.add_argument(
 # TODO: change for an array
 parser.add_argument(
     '--objs_folder_distrators',
-    default=f'{data_gen_root}/google_scanned_models/',
+    default=f'../nvisii_data_gen/google_scanned_models/',
     help = "object to load folder"
 )
 parser.add_argument(
     '--objs_folder',
-    default=f'{data_gen_root}/models/',
+    default=f'../nvisii_data_gen/models/',
     help = "object to load folder"
 )
 parser.add_argument(
     '--skyboxes_folder',
-    default=f'{data_gen_root}/dome_hdri_haven/',
+    default=f'../nvisii_data_gen/dome_hdri_haven/',
     help = "dome light hdr"
 )
 parser.add_argument(
@@ -129,13 +124,20 @@ parser.add_argument(
     help = "make the object movement easier"
 )
 
+parser.add_argument(
+    '--sage',
+    action='store_true',
+    default=False,
+    help = "run on sagemaker"
+)
+
 opt = parser.parse_args()
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
-sage = 0
-outp = "./output/"
-if sage:
+outp = './output/'
+if opt.sage:
     outp = "/opt/ml/input/data/channel1"
+    print(f"Output folder {outp}")
 
 if os.path.isdir(outp):
     print(f'folder {outp}/ exists')
