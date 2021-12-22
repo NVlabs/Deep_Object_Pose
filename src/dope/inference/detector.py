@@ -313,7 +313,7 @@ class ObjectDetector(object):
             # Run PNP
             points = obj[1] + [(obj[0][0]*8, obj[0][1]*8)]
             cuboid2d = np.copy(points)
-            location, quaternion, projected_points = pnp_solver.solve_pnp(points)
+            location, quaternion, projected_points, axisPoints = pnp_solver.solve_pnp(points)
 
             # Save results
             detected_objects.append({
@@ -323,6 +323,7 @@ class ObjectDetector(object):
                 'cuboid2d': cuboid2d,
                 'projected_points': projected_points,
                 'score': obj[-1],
+                'axis' : axisPoints,
             })
 
         return detected_objects

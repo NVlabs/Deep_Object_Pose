@@ -481,7 +481,7 @@ class ObjectDetector(object):
             # Run PNP
             points = obj[1] + [(obj[0][0]*scale_factor, obj[0][1]*scale_factor)]
             cuboid2d = np.copy(points)
-            location, quaternion, projected_points = pnp_solver.solve_pnp(points)
+            location, quaternion, projected_points, axisPoints = pnp_solver.solve_pnp(points)
 
             # run multiple sample
             if run_sampling:
@@ -535,7 +535,8 @@ class ObjectDetector(object):
                     'cuboid2d': cuboid2d,
                     'projected_points': projected_points,
                     'confidence': obj[-1],
-                    'raw_points': points               
+                    'raw_points': points,
+                    'axis' : axisPoints               
                 })
 
             #print("find_object_poses:  points = ", type(points), points)

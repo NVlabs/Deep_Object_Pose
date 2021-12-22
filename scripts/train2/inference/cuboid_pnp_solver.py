@@ -68,6 +68,7 @@ class CuboidPNPSolver(object):
         location = None
         quaternion = None
         projected_points = cuboid2d_points
+        axisPoints = None
 
         cuboid3d_points = np.array(self._cuboid3d.get_vertices())
         obj_2d_points = []
@@ -101,10 +102,17 @@ class CuboidPNPSolver(object):
 
             if ret:
                 location = list(x[0] for x in tvec)
+                loc = np.array(location)
                 quaternion = self.convert_rvec_to_quaternion(rvec)
                 
                 projected_points, _ = cv2.projectPoints(cuboid3d_points, rvec, tvec, self._camera_intrinsic_matrix, self._dist_coeffs)
                 projected_points = np.squeeze(projected_points)
+
+                rot_matrix = np.array([[1, 0 ,0], [0,-1,0], [0,0,-1]])
+                rvec = rot_matrix * rvec
+                print(rvec)
+                points = np.float32([[10, 0, 0], [0, 10, 0], [0, 0, 10], [0, 0, 0]]).reshape(-1, 3)
+                axisPoints, _ = cv2.projectPoints(points, rvec, tvec, self._camera_intrinsic_matrix, self._dist_coeffs)
                 
                 # If the location.Z is negative or object is behind the camera then flip both location and rotation
                 x, y, z = location
@@ -117,7 +125,7 @@ class CuboidPNPSolver(object):
                     rotate_quaternion = Quaternion.from_axis_rotation(location, rotate_angle)
                     quaternion = rotate_quaternion.cross(quaternion)
 
-        return location, quaternion, projected_points
+        return location, quaternion, projected_points, axisPoints
 
     def convert_rvec_to_quaternion(self, rvec):
         '''Convert rvec (which is log quaternion) to quaternion'''

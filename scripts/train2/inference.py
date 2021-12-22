@@ -34,6 +34,11 @@ class Draw(object):
         :param im: The image to draw in.
         """
         self.draw = ImageDraw.Draw(im)
+    
+    def draw_axis(self, t):
+        self.draw_line(tuple(t[3].ravel()), tuple(t[0].ravel()), (255,0,0) , 3)
+        self.draw_line(tuple(t[3].ravel()), tuple(t[1].ravel()), (0,255,0) , 3)
+        self.draw_line(tuple(t[3].ravel()), tuple(t[2].ravel()), (0,0,255) , 3)
 
     def draw_line(self, point1, point2, line_color, line_width=2):
         """Draws line on image"""
@@ -214,6 +219,7 @@ class DopeNode(object):
                 # print(result)
                 loc = result["location"]
                 ori = result["quaternion"]
+                axis = result["axis"]
                 
                 print(loc)
                 #print(ori)
@@ -242,6 +248,8 @@ class DopeNode(object):
                     for pair in result['projected_points']:
                         points2d.append(tuple(pair))
                     draw.draw_cube(points2d, self.draw_colors[m])
+                    draw.draw_axis(axis)
+
         open_cv_image = np.array(im)
         open_cv_image = cv2.cvtColor(open_cv_image, cv2.COLOR_RGB2BGR)
         # save the output of the image. 
@@ -326,7 +334,7 @@ if __name__ == "__main__":
         # Start streaming
         profile = pipeline.start(config)
 
-        vid_writer = cv2.VideoWriter('./output/vid1.mp4', cv2.VideoWriter_fourcc(*"mp4v"), 10, (640,480))
+        vid_writer = cv2.VideoWriter('./output/vid1.mp4', cv2.VideoWriter_fourcc(*"mp4v"), 5, (640,480))
 
 
     # create the output folder
@@ -373,8 +381,10 @@ if __name__ == "__main__":
                 depth_frame = frames.get_depth_frame()
                 color_frame = frames.get_color_frame()
                 frame = np.asanyarray(color_frame.get_data())
-                intr = profile.get_stream(rs.stream.depth).as_video_stream_profile().get_intrinsics()
-                camera_info = {'camera_matrix' : {'data' : [intr.fx, 0, intr.ppx, 0, intr.fy, intr.ppy, 0 ,0 ,1]}}
+                #intr = profile.get_stream(rs.stream.depth).as_video_stream_profile().get_intrinsics()
+                intr = depth_frame.profile.as_video_stream_profile().intrinsics
+                print(intr)
+                camera_info = {'camera_matrix' : {'data' : [intr.fx, 0, intr.ppx, 0, intr.fy, intr.ppy, 0,1 ,0]}}
             else:
                 ret, frame = cap.read()
 
