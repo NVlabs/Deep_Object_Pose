@@ -14,5 +14,6 @@ scripts/train1/
 scripts/nvisii_data_gen/dome_hdri_haven/
 scripts/nvisii_data_gen/google_scanned_models/
 scripts/nvisii_data_gen/output/
+scripts/train2/output/
 .DS_Store
 ._.DS_Store
