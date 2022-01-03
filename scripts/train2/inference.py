@@ -160,7 +160,7 @@ class DopeNode(object):
 
         # Update camera matrix and distortion coefficients
         if self.input_is_rectified:
-            P = np.matrix(camera_info['camera_matrix']['data'], dtype='float64').copy()
+            P = np.matrix(camera_info['projection_matrix']['data'], dtype='float64').copy()
             P.resize((3, 4))
             camera_matrix = P[:, :3]
             dist_coeffs = np.zeros((4, 1))
