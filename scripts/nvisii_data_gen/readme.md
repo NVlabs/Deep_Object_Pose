@@ -1,3 +1,13 @@
+# UPDATES
+
+- 11/01/2022: Added the possility to load a single object with `--path_single_obj`. Just give the direct path to the object. 
+This function uses [nvisii.import_scene()](https://nvisii.com/nvisii.html#nvisii.import_scene). 
+If the obj file is complex, it will break the object into sub components, 
+so you might not have the projected cuboid, and you will get each pose of the different components with the cuboid. 
+Be careful using this one, make sure your understand the implications. 
+TODO: track the cuboid of the import_scene from nvisii.    
+
+
 # Description
 
 This uses [NViSII](https://github.com/owl-project/NVISII) to generate synthetic data for training DOPE. 
@@ -50,6 +60,10 @@ The major ones are as follow,
 - `--nb_distractors` how many objects to add as distractor, this uses 3d models from google scanned. 
 
 # Adding your own 3d models 
+
+You can simply use `--path_single_obj` to load your own 3d model. But there are some limitations for exporting the meta data if the obj is complex. Try to have it as a single obj, e.g., not multiple textures, similar to the provided one in the repo. 
+
+## Modifying the code to load your object
 
 The script loads 3d models that are expressed in the format that was introduced by YCB dataset. 
 But it is fairly easy to change the script to load your own 3d model, [NViSII](https://github.com/owl-project/NVISII) allows you to load different format 

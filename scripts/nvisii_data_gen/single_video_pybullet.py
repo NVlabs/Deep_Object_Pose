@@ -48,6 +48,12 @@ parser.add_argument(
     help = "object to load folder"
 )
 parser.add_argument(
+    '--path_single_obj',
+    default=None,
+    help='If you have a single obj file, path to the \
+    obj directly.'
+)
+parser.add_argument(
     '--skyboxes_folder',
     default='dome_hdri_haven/',
     help = "dome light hdr"
@@ -236,67 +242,120 @@ def adding_mesh_object(name, obj_to_load,texture_to_load,scale=1):
 
     print("loading:",obj_to_load)
 
-    if obj_to_load in mesh_loaded:
-        toy_mesh = mesh_loaded[obj_to_load] 
-    else:
-        toy_mesh = visii.mesh.create_from_file(name,obj_to_load)
-        mesh_loaded[obj_to_load] = toy_mesh
+    if texture_to_load is None:
+        toys = load_obj_scene(obj_to_load)
 
-    toy = visii.entity.create(
-        name = name,
-        transform = visii.transform.create(name),
-        mesh = toy_mesh,
-        material = visii.material.create(name)
-    )
-
-
-    toy_rgb_tex = visii.texture.create_from_file(name,texture_to_load)
-    toy.get_material().set_base_color_texture(toy_rgb_tex) 
-    toy.get_material().set_roughness(random.uniform(0.1,0.5))
-
-    toy.get_transform().set_scale(visii.vec3(scale))
-    toy.get_transform().set_position(
-        visii.vec3(
-            random.uniform(0.1,2),
-            random.uniform(-1,1),
-            random.uniform(-1,1),
+        toy_parent_transform = visii.entity.get(toys[0]).get_transform().get_parent()
+        toy_parent_transform.set_scale(visii.vec3(scale))
+        toy_parent_transform.set_position(
+            visii.vec3(
+                random.uniform(0.1,2),
+                random.uniform(-1,1),
+                random.uniform(-1,1),
+                )
+            )
+        toy_parent_transform.set_rotation(
+            visii.quat(
+                random.uniform(0, 1),
+                random.uniform(0, 1),
+                random.uniform(0, 1),
+                random.uniform(0, 1),
             )
         )
-    toy.get_transform().set_rotation(
-        visii.quat(
-            random.uniform(0, 1),
-            random.uniform(0, 1),
-            random.uniform(0, 1),
-            random.uniform(0, 1),
+        name = toys[0]
+
+        id_pybullet = create_physics(name, mass = np.random.rand()*5)
+
+        visii_pybullet.append(
+            {
+                'visii_id':name,
+                'bullet_id':id_pybullet,
+                'base_rot':None,
+            }
         )
-    )
+        gemPos, gemOrn = p.getBasePositionAndOrientation(id_pybullet)
+        force_rand = 10
+        object_position = 0.01
+        p.applyExternalForce(
+            id_pybullet,
+            -1,
+            [   random.uniform(-force_rand,force_rand),
+                random.uniform(-force_rand,force_rand),
+                random.uniform(-force_rand,force_rand)],
+            [   random.uniform(-object_position,object_position),
+                random.uniform(-object_position,object_position),
+                random.uniform(-object_position,object_position)],
+            flags=p.WORLD_FRAME
+        )
 
-    id_pybullet = create_physics(name, mass = np.random.rand()*5)
+        for entity_name in toys:
+            names_to_export.append(entity_name)
+            cuboid = add_cuboid(entity_name, debug=False)
+        names_to_export.append(toy_parent_transform.get_name())
 
-    visii_pybullet.append(
-        {
-            'visii_id':name,
-            'bullet_id':id_pybullet,
-            'base_rot':None,
-        }
-    )
-    gemPos, gemOrn = p.getBasePositionAndOrientation(id_pybullet)
-    force_rand = 10
-    object_position = 0.01
-    p.applyExternalForce(
-        id_pybullet,
-        -1,
-        [   random.uniform(-force_rand,force_rand),
-            random.uniform(-force_rand,force_rand),
-            random.uniform(-force_rand,force_rand)],
-        [   random.uniform(-object_position,object_position),
-            random.uniform(-object_position,object_position),
-            random.uniform(-object_position,object_position)],
-        flags=p.WORLD_FRAME
-    )
-    names_to_export.append(name)
+    else:
+        if obj_to_load in mesh_loaded:
+            toy_mesh = mesh_loaded[obj_to_load] 
+        else:
+            toy_mesh = visii.mesh.create_from_file(name,obj_to_load)
+            mesh_loaded[obj_to_load] = toy_mesh
 
-    cuboid = add_cuboid(name, debug=False)
+        toy = visii.entity.create(
+            name = name,
+            transform = visii.transform.create(name),
+            mesh = toy_mesh,
+            material = visii.material.create(name)
+        )
+
+        toy_rgb_tex = visii.texture.create_from_file(name,texture_to_load)
+        toy.get_material().set_base_color_texture(toy_rgb_tex) 
+        toy.get_material().set_roughness(random.uniform(0.1,0.5))
+
+
+
+        toy.get_transform().set_scale(visii.vec3(scale))
+        toy.get_transform().set_position(
+            visii.vec3(
+                random.uniform(0.1,2),
+                random.uniform(-1,1),
+                random.uniform(-1,1),
+                )
+            )
+        toy.get_transform().set_rotation(
+            visii.quat(
+                random.uniform(0, 1),
+                random.uniform(0, 1),
+                random.uniform(0, 1),
+                random.uniform(0, 1),
+            )
+        )
+
+        id_pybullet = create_physics(name, mass = np.random.rand()*5)
+
+        visii_pybullet.append(
+            {
+                'visii_id':name,
+                'bullet_id':id_pybullet,
+                'base_rot':None,
+            }
+        )
+        gemPos, gemOrn = p.getBasePositionAndOrientation(id_pybullet)
+        force_rand = 10
+        object_position = 0.01
+        p.applyExternalForce(
+            id_pybullet,
+            -1,
+            [   random.uniform(-force_rand,force_rand),
+                random.uniform(-force_rand,force_rand),
+                random.uniform(-force_rand,force_rand)],
+            [   random.uniform(-object_position,object_position),
+                random.uniform(-object_position,object_position),
+                random.uniform(-object_position,object_position)],
+            flags=p.WORLD_FRAME
+        )
+        names_to_export.append(name)
+
+        cuboid = add_cuboid(name, debug=False)
 
 google_content_folder = glob.glob(opt.objs_folder_distrators + "*/")
 
@@ -310,25 +369,35 @@ for i_obj in range(int(opt.nb_distractors)):
 
     adding_mesh_object(name,obj_to_load,texture_to_load)
 
+if opt.path_single_obj is not None:
 
-google_content_folder = glob.glob(opt.objs_folder + "*/")
 
-for i_obj in range(int(opt.nb_objects)):
+    adding_mesh_object("single_obj",
+                        opt.path_single_obj,
+                        None,
+                        scale=0.6)
 
-    toy_to_load = google_content_folder[random.randint(0,len(google_content_folder)-1)]
 
-    obj_to_load = toy_to_load + "/google_16k/textured.obj"
-    texture_to_load = toy_to_load + "/google_16k/texture_map_flat.png"
-    name = "hope_" + toy_to_load.split('/')[-2] + f"_{i_obj}"
-    adding_mesh_object(name,obj_to_load,texture_to_load,scale=0.01)
+else:
+    google_content_folder = glob.glob(opt.objs_folder + "*/")
 
-    # p.applyExternalTorque(id_pybullet,-1,
-    #     [   random.uniform(-force_rand,force_rand),
-    #         random.uniform(-force_rand,force_rand),
-    #         random.uniform(-force_rand,force_rand)],
-    #     [0,0,0],
-    #     flags=p.WORLD_FRAME
-    # )
+    for i_obj in range(int(opt.nb_objects)):
+
+        toy_to_load = google_content_folder[random.randint(0,len(google_content_folder)-1)]
+
+        obj_to_load = toy_to_load + "/google_16k/textured.obj"
+        texture_to_load = toy_to_load + "/google_16k/texture_map_flat.png"
+        name = "hope_" + toy_to_load.split('/')[-2] + f"_{i_obj}"
+
+        adding_mesh_object(name,obj_to_load,texture_to_load,scale=0.01)
+
+        # p.applyExternalTorque(id_pybullet,-1,
+        #     [   random.uniform(-force_rand,force_rand),
+        #         random.uniform(-force_rand,force_rand),
+        #         random.uniform(-force_rand,force_rand)],
+        #     [0,0,0],
+        #     flags=p.WORLD_FRAME
+        # )
 
 
 camera_pybullet_col = p.createCollisionShape(p.GEOM_SPHERE,0.05)
@@ -416,30 +485,59 @@ while condition:
     # update the position from pybullet
     for i_entry, entry in enumerate(visii_pybullet):
         # print('update',entry)
-        visii.entity.get(entry['visii_id']).get_transform().set_position(
-            visii.entity.get(entry['visii_id']).get_transform().get_position(),
-            previous = True
-        )
-        visii.entity.get(entry['visii_id']).get_transform().set_rotation(
-            visii.entity.get(entry['visii_id']).get_transform().get_rotation(),
-            previous = True
-        )
 
-        update_pose(entry)
-        if random.random() > 0.99:
-            force_rand = 10
-            object_position = 0.01
-            p.applyExternalForce(
-                entry['bullet_id'],
-                -1,
-                [   random.uniform(-force_rand,force_rand),
-                    random.uniform(-force_rand,force_rand),
-                    random.uniform(-force_rand,force_rand)],
-                [   random.uniform(-object_position,object_position),
-                    random.uniform(-object_position,object_position),
-                    random.uniform(-object_position,object_position)],
-                flags=p.WORLD_FRAME
+        if opt.path_single_obj is None:
+            visii.entity.get(entry['visii_id']).get_transform().set_position(
+                visii.entity.get(entry['visii_id']).get_transform().get_position(),
+                previous = True
             )
+            visii.entity.get(entry['visii_id']).get_transform().set_rotation(
+                visii.entity.get(entry['visii_id']).get_transform().get_rotation(),
+                previous = True
+            )
+
+            update_pose(entry)
+            if random.random() > 0.99:
+                force_rand = 10
+                object_position = 0.01
+                p.applyExternalForce(
+                    entry['bullet_id'],
+                    -1,
+                    [   random.uniform(-force_rand,force_rand),
+                        random.uniform(-force_rand,force_rand),
+                        random.uniform(-force_rand,force_rand)],
+                    [   random.uniform(-object_position,object_position),
+                        random.uniform(-object_position,object_position),
+                        random.uniform(-object_position,object_position)],
+                    flags=p.WORLD_FRAME
+                )
+        else:
+            
+            visii.entity.get(entry['visii_id']).get_transform().get_parent().set_position(
+                visii.entity.get(entry['visii_id']).get_transform().get_parent().get_position(),
+                previous = True
+            )
+            visii.entity.get(entry['visii_id']).get_transform().get_parent().set_rotation(
+                visii.entity.get(entry['visii_id']).get_transform().get_parent().get_rotation(),
+                previous = True
+            )
+
+            update_pose(entry,parent=True)
+            if random.random() > 0.99:
+                force_rand = 1
+                object_position = 0.01
+                p.applyExternalForce(
+                    entry['bullet_id'],
+                    -1,
+                    [   random.uniform(-force_rand,force_rand),
+                        random.uniform(-force_rand,force_rand),
+                        random.uniform(-force_rand,force_rand)],
+                    [   random.uniform(-object_position,object_position),
+                        random.uniform(-object_position,object_position),
+                        random.uniform(-object_position,object_position)],
+                    flags=p.WORLD_FRAME
+                )
+            break
     if i_frame == 0: 
         continue
 

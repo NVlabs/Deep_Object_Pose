@@ -964,6 +964,8 @@ def get_cuboid_image_space(obj_id, camera_name = 'my_camera'):
     points_cam = []
     for i_t in range(9):
         trans = visii.transform.get(f"{obj_id}_cuboid_{i_t}")
+        if trans is None: 
+            return None,None
         mat_trans = trans.get_local_to_world_matrix()
         pos_m = visii.vec4(
             mat_trans[3][0],
@@ -1076,14 +1078,20 @@ def export_to_ndds_file(
     for obj_name in obj_names: 
 
         projected_keypoints, _ = get_cuboid_image_space(obj_name, camera_name=camera_name)
-
-        # put them in the image space. 
-        for i_p, p in enumerate(projected_keypoints):
-            projected_keypoints[i_p] = [p[0]*width, p[1]*height]
+        
+        if projected_keypoints is not None:                
+            # put them in the image space. 
+            for i_p, p in enumerate(projected_keypoints):
+                projected_keypoints[i_p] = [p[0]*width, p[1]*height]
 
         # Get the location and rotation of the object in the camera frame 
 
         trans = visii.transform.get(obj_name)
+        if trans is None:
+            trans = visii.entity.get(obj_name).get_transform()
+            if trans is None: 
+                continue
+
         quaternion_xyzw = visii.inverse(cam_world_quaternion) * trans.get_rotation()
 
         object_world = visii.vec4(
@@ -1093,7 +1101,8 @@ def export_to_ndds_file(
             1
         ) 
         pos_camera_frame = cam_matrix * object_world
- 
+
+
         if not cuboids is None:
             cuboid = cuboids[obj_name]
         else:
@@ -1103,7 +1112,7 @@ def export_to_ndds_file(
         visibility = -1
         bounding_box = [-1,-1,-1,-1]
 
-        if segmentation_mask is None:
+        if segmentation_mask is None and projected_keypoints is not None:
             segmentation_mask = visii.render_data(
                 width=int(width), 
                 height=int(height), 
@@ -1114,48 +1123,48 @@ def export_to_ndds_file(
             )
             segmentation_mask = np.array(segmentation_mask).reshape(width,height,4)[:,:,0]
             
-        if visibility_percentage == True and int(id_keys_map [obj_name]) in np.unique(segmentation_mask.astype(int)): 
-            transforms_to_keep = {}
-            
-            for name in id_keys_map.keys():
-                if 'camera' in name.lower() or obj_name in name:
-                    continue
-                trans_to_keep = visii.entity.get(name).get_transform()
-                transforms_to_keep[name]=trans_to_keep
-                visii.entity.get(name).clear_transform()
+            if visibility_percentage == True and int(id_keys_map [obj_name]) in np.unique(segmentation_mask.astype(int)): 
+                transforms_to_keep = {}
+                
+                for name in id_keys_map.keys():
+                    if 'camera' in name.lower() or obj_name in name:
+                        continue
+                    trans_to_keep = visii.entity.get(name).get_transform()
+                    transforms_to_keep[name]=trans_to_keep
+                    visii.entity.get(name).clear_transform()
 
-            # Percentatge visibility through full segmentation mask. 
-            segmentation_unique_mask = visii.render_data(
-                width=int(width), 
-                height=int(height), 
-                start_frame=0,
-                frame_count=1,
-                bounce=int(0),
-                options="entity_id",
-            )
+                # Percentatge visibility through full segmentation mask. 
+                segmentation_unique_mask = visii.render_data(
+                    width=int(width), 
+                    height=int(height), 
+                    start_frame=0,
+                    frame_count=1,
+                    bounce=int(0),
+                    options="entity_id",
+                )
 
-            segmentation_unique_mask = np.array(segmentation_unique_mask).reshape(width,height,4)[:,:,0]
+                segmentation_unique_mask = np.array(segmentation_unique_mask).reshape(width,height,4)[:,:,0]
 
-            values_segmentation = np.where(segmentation_mask == int(id_keys_map[obj_name]))[0]
-            values_segmentation_full = np.where(segmentation_unique_mask == int(id_keys_map[obj_name]))[0]
-            visibility = len(values_segmentation)/float(len(values_segmentation_full))
-            
-            # bounding box calculation
+                values_segmentation = np.where(segmentation_mask == int(id_keys_map[obj_name]))[0]
+                values_segmentation_full = np.where(segmentation_unique_mask == int(id_keys_map[obj_name]))[0]
+                visibility = len(values_segmentation)/float(len(values_segmentation_full))
+                
+                # bounding box calculation
 
-            # set back the objects from remove
-            for entity_name in transforms_to_keep.keys():
-                visii.entity.get(entity_name).set_transform(transforms_to_keep[entity_name])
-        else:
-            # print(np.unique(segmentation_mask.astype(int)))
-            # print(np.isin(np.unique(segmentation_mask).astype(int),
-            #         [int(name_to_id[obj_name])]))
-            if int(id_keys_map[obj_name]) in np.unique(segmentation_mask.astype(int)): 
-                #
-                visibility = 1
-                y,x = np.where(segmentation_mask == int(id_keys_map[obj_name]))
-                bounding_box = [int(min(x)),int(max(x)),height-int(max(y)),height-int(min(y))]
+                # set back the objects from remove
+                for entity_name in transforms_to_keep.keys():
+                    visii.entity.get(entity_name).set_transform(transforms_to_keep[entity_name])
             else:
-                visibility = 0
+                # print(np.unique(segmentation_mask.astype(int)))
+                # print(np.isin(np.unique(segmentation_mask).astype(int),
+                #         [int(name_to_id[obj_name])]))
+                if int(id_keys_map[obj_name]) in np.unique(segmentation_mask.astype(int)): 
+                    #
+                    visibility = 1
+                    y,x = np.where(segmentation_mask == int(id_keys_map[obj_name]))
+                    bounding_box = [int(min(x)),int(max(x)),height-int(max(y)),height-int(min(y))]
+                else:
+                    visibility = 0
 
 
         tran_matrix = trans.get_local_to_world_matrix()
@@ -1165,10 +1174,19 @@ def export_to_ndds_file(
             trans_matrix_export.append([row[0],row[1],row[2],row[3]])
 
         # Final export
+        try:
+            class_name = obj_name.split('_')[1]
+        except:
+            class_name = obj_name
+        try:
+            seg_id = id_keys_map[obj_name]
+        except :
+            seg_id = -1
+
         dict_out['objects'].append({
-            'class':obj_name.split('_')[1],
+            'class':class_name,
             'name':obj_name,
-            'provenance':'visii',
+            'provenance':'nvisii',
             # TODO check the location
             'location': [
                 pos_camera_frame[0],
@@ -1194,7 +1212,7 @@ def export_to_ndds_file(
             ],
             'local_to_world_matrix':trans_matrix_export,
             'projected_cuboid':projected_keypoints,
-            'segmentation_id':id_keys_map[obj_name],
+            'segmentation_id':seg_id,
             'local_cuboid': cuboid,
             'visibility':visibility,
             'bounding_box_minx_maxx_miny_maxy':bounding_box
@@ -1218,7 +1236,36 @@ def change_image_extension(path,extension="jpg"):
 
 #################### BULLET THINGS ##############################
 
+def load_obj_scene(path):
+    """
+        This loads a single entity low poly from turbosquid. 
 
+        return: a list of visii entity names
+    """
+    
+    obj_to_load = path    
+    name_model = path
+
+    # print("loading:",name_model)
+    name = path.split('/')[-2]
+
+    toys = visii.import_scene(obj_to_load,
+        visii.vec3(0,0,0),
+        visii.vec3(1,1,1), # the scale
+        visii.angleAxis(1.57, visii.vec3(1,0,0))
+        )
+    for material in toys.materials:
+        # print(material.get_name())
+        if 'Glass' in material.get_name():
+            # print('changing')
+            # material.set_transmission(0.7)
+            material.set_metallic(0.7)
+            material.set_roughness(0)
+    entity_names = []
+    for entity in toys.entities:
+        entity_names.append(entity.get_name())
+
+    return entity_names
 
 
 
@@ -1339,17 +1386,26 @@ def create_physics(
     return obj_id
 
 
-def update_pose(obj_dict):
+def update_pose(obj_dict,parent=False):
     pos, rot = p.getBasePositionAndOrientation(obj_dict['bullet_id'])
     # print(pos)
 
     obj_entity = visii.entity.get(obj_dict['visii_id'])
-    obj_entity.get_transform().set_position(visii.vec3(
+    if parent:
+        obj_entity.get_transform().get_parent().set_position(visii.vec3(
                                             pos[0],
                                             pos[1],
                                             pos[2]
                                             )
                                         )
+    else:
+        obj_entity.get_transform().set_position(visii.vec3(
+                                            pos[0],
+                                            pos[1],
+                                            pos[2]
+                                            )
+                                        )
+
     if not obj_dict['base_rot'] is None: 
         obj_entity.get_transform().set_rotation(visii.quat(
                                                 rot[3],
@@ -1359,13 +1415,22 @@ def update_pose(obj_dict):
                                                 ) * obj_dict['base_rot']   
                                             )
     else:
-        obj_entity.get_transform().set_rotation(visii.quat(
+        if parent:
+            obj_entity.get_transform().get_parent().set_rotation(visii.quat(
                                                 rot[3],
                                                 rot[0],
                                                 rot[1],
                                                 rot[2]
                                                 )   
                                             )
+        else:
+            obj_entity.get_transform().set_rotation(visii.quat(
+                                    rot[3],
+                                    rot[0],
+                                    rot[1],
+                                    rot[2]
+                                    )   
+                                )
 
 
 import os 
