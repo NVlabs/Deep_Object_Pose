@@ -470,27 +470,27 @@ def _runnetwork(epoch,train_loader,train=True,syn=False):
             # print(stage[0].shape)
             # print(target_affinity_map.shape)
             # raise()
-            # loss_tmp = (( - target_affinity_map) * (stage[0]-target_affinity_map)).mean()/opt.batchsize
+            # loss_tmp = (( - target_affinity_map) * (stage[0]-target_affinity_map)).mean()
 
 
 
-            loss_affinities += ((output_aff[stage] - target_affinities)*(output_aff[stage] - target_affinities)).mean()/opt.batchsize
+            loss_affinities += ((output_aff[stage] - target_affinities)*(output_aff[stage] - target_affinities)).mean()
             
             # print(output_belief[stage].shape)
             # print(target_belief.shape)
 
-            loss_belief += ((output_belief[stage] - target_belief)*(output_belief[stage] - target_belief)).mean()/opt.batchsize
+            loss_belief += ((output_belief[stage] - target_belief)*(output_belief[stage] - target_belief)).mean()
 
-            # loss_tmp = ((stage[1] - target_affinities) * (stage[1]-target_affinities)).mean()/opt.batchsize
+            # loss_tmp = ((stage[1] - target_affinities) * (stage[1]-target_affinities)).mean()
             # loss_affinities += loss_tmp 
 
-            # loss_tmp = ((stage[2] - target_segmentation) * (stage[2]-target_segmentation)).mean()/opt.batchsize
+            # loss_tmp = ((stage[2] - target_segmentation) * (stage[2]-target_segmentation)).mean()
             # loss_segmentation += loss_tmp
 
         # loss = loss_belief + loss_affinities * 0.9 + loss_segmentation * 0.00001
 
         # compute classification loss 
-        # loss_class = ((target_classification.flatten(1) - output_classification) * (target_classification.flatten(1) - output_classification)).mean()/opt.batchsize
+        # loss_class = ((target_classification.flatten(1) - output_classification) * (target_classification.flatten(1) - output_classification)).mean()
         # print(loss_class.item(),loss_belief.item(),loss_affinities.item() )
         loss = loss_affinities + loss_belief
 
