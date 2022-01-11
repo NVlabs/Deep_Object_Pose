@@ -84,7 +84,7 @@ conf_parser.add_argument("-c", "--config",
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--data', nargs='+', help='path to training data')
-parser.add_argument('--datatest', default="", help='path to data testing set')
+parser.add_argument('--datatest', nargs='+', default="", help='path to data testing set')
 parser.add_argument('--testonly', action='store_true', help='only run inference') 
 parser.add_argument('--testbatchsize', default=1,type=int, help='size of the batchsize for testing')
 parser.add_argument('--freeze', action='store_true', help='use affinity maps for training')
@@ -316,6 +316,7 @@ else:
 
 
 print (f"load data: {opt.data}")
+print (f"load data: {opt.datatest}")
 #load the dataset using the loader in utils_pose
 trainingdata = None
 
@@ -333,9 +334,26 @@ if not opt.data == "":
         pin_memory = True
         )
 
+testingdata = None
+
+if not opt.datatest == "":
+    test_dataset = CleanVisiiDopeLoader(
+        opt.datatest,
+        sigma = opt.sigma,
+        output_size = output_size,
+        objects = opt.objects
+        )
+    testingdata = torch.utils.data.DataLoader(test_dataset,
+        batch_size = opt.testbatchsize, 
+        shuffle = True,
+        num_workers = opt.workers, 
+        pin_memory = True
+        )
 
 if not trainingdata is None:
     print('training data: {} batches'.format(len(trainingdata)))
+if not testingdata is None:
+    print('testing data: {} batches'.format(len(testingdata)))
 print('load models')
 
 # Might want to modfify to include the cropped features from 
@@ -452,27 +470,27 @@ def _runnetwork(epoch,train_loader,train=True,syn=False):
             # print(stage[0].shape)
             # print(target_affinity_map.shape)
             # raise()
-            # loss_tmp = (( - target_affinity_map) * (stage[0]-target_affinity_map)).mean()/opt.batchsize
+            # loss_tmp = (( - target_affinity_map) * (stage[0]-target_affinity_map)).mean()
 
 
 
-            loss_affinities += ((output_aff[stage] - target_affinities)*(output_aff[stage] - target_affinities)).mean()/opt.batchsize
+            loss_affinities += ((output_aff[stage] - target_affinities)*(output_aff[stage] - target_affinities)).mean()
             
             # print(output_belief[stage].shape)
             # print(target_belief.shape)
 
-            loss_belief += ((output_belief[stage] - target_belief)*(output_belief[stage] - target_belief)).mean()/opt.batchsize
+            loss_belief += ((output_belief[stage] - target_belief)*(output_belief[stage] - target_belief)).mean()
 
-            # loss_tmp = ((stage[1] - target_affinities) * (stage[1]-target_affinities)).mean()/opt.batchsize
+            # loss_tmp = ((stage[1] - target_affinities) * (stage[1]-target_affinities)).mean()
             # loss_affinities += loss_tmp 
 
-            # loss_tmp = ((stage[2] - target_segmentation) * (stage[2]-target_segmentation)).mean()/opt.batchsize
+            # loss_tmp = ((stage[2] - target_segmentation) * (stage[2]-target_segmentation)).mean()
             # loss_segmentation += loss_tmp
 
         # loss = loss_belief + loss_affinities * 0.9 + loss_segmentation * 0.00001
 
         # compute classification loss 
-        # loss_class = ((target_classification.flatten(1) - output_classification) * (target_classification.flatten(1) - output_classification)).mean()/opt.batchsize
+        # loss_class = ((target_classification.flatten(1) - output_classification) * (target_classification.flatten(1) - output_classification)).mean()
         # print(loss_class.item(),loss_belief.item(),loss_affinities.item() )
         loss = loss_affinities + loss_belief
 
