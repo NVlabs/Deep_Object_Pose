@@ -1342,11 +1342,14 @@ def create_physics(
         vertices.append([float(v[0]),float(v[1]),float(v[2])])
 
     # get the position of the object
-    pos = obj.get_transform().get_position()
+    trans = obj.get_transform().get_parent()
+    if trans is None:
+        trans = obj.get_transform()
+    pos = trans.get_position()
     pos = [pos[0],pos[1],pos[2]]
-    scale = obj.get_transform().get_scale()
+    scale = trans.get_scale()
     scale = [scale[0],scale[1],scale[2]]
-    rot = obj.get_transform().get_rotation()
+    rot = trans.get_rotation()
     rot = [rot[0],rot[1],rot[2],rot[3]]
 
     # create a collision shape that is a convez hull

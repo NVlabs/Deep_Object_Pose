@@ -54,6 +54,13 @@ parser.add_argument(
     obj directly.'
 )
 parser.add_argument(
+    '--scale_single_obj',
+    default=1,
+    type=float,
+    help='change the scale of the path_single_obj loaded.'
+)
+
+parser.add_argument(
     '--skyboxes_folder',
     default='dome_hdri_haven/',
     help = "dome light hdr"
@@ -61,6 +68,7 @@ parser.add_argument(
 parser.add_argument(
     '--nb_objects',
     default=28,
+    type = int,
     help = "how many objects"
 )
 parser.add_argument(
@@ -262,6 +270,7 @@ def adding_mesh_object(name, obj_to_load,texture_to_load,scale=1):
                 random.uniform(0, 1),
             )
         )
+        
         name = toys[0]
 
         id_pybullet = create_physics(name, mass = np.random.rand()*5)
@@ -371,11 +380,11 @@ for i_obj in range(int(opt.nb_distractors)):
 
 if opt.path_single_obj is not None:
 
-
-    adding_mesh_object("single_obj",
-                        opt.path_single_obj,
-                        None,
-                        scale=0.6)
+    for i_object in range(opt.nb_objects):
+        adding_mesh_object(f"single_obj_{i_object}",
+                            opt.path_single_obj,
+                            None,
+                            scale=opt.scale_single_obj)
 
 
 else:
@@ -524,7 +533,7 @@ while condition:
 
             update_pose(entry,parent=True)
             if random.random() > 0.99:
-                force_rand = 1
+                force_rand = 10
                 object_position = 0.01
                 p.applyExternalForce(
                     entry['bullet_id'],
@@ -537,7 +546,7 @@ while condition:
                         random.uniform(-object_position,object_position)],
                     flags=p.WORLD_FRAME
                 )
-            break
+            # break
     if i_frame == 0: 
         continue
 
