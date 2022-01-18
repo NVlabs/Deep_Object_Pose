@@ -12,26 +12,26 @@ import colorsys
 import subprocess
 from math import acos
 from math import sqrt
-from math import pi    
+from math import pi
 
 from utils import *
 
 parser = argparse.ArgumentParser()
 
 parser.add_argument(
-    '--spp', 
+    '--spp',
     default=4000,
     type=int,
     help = "number of sample per pixel, higher the more costly"
 )
 parser.add_argument(
-    '--width', 
+    '--width',
     default=500,
     type=int,
     help = 'image output width'
 )
 parser.add_argument(
-    '--height', 
+    '--height',
     default=500,
     type=int,
     help = 'image output height'
@@ -99,7 +99,7 @@ parser.add_argument(
     help = "output filename inside output/"
 )
 parser.add_argument('--seed',
-    default = None, 
+    default = None,
     help = 'seed for random selection'
 )
 
@@ -156,7 +156,7 @@ else:
 opt.outf = f'output/{opt.outf}'
 
 if not opt.seed is None:
-    random.seed(int(opt.seed)) 
+    random.seed(int(opt.seed))
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -170,7 +170,7 @@ if not opt.motionblur:
     visii.sample_time_interval((1,1))
 
 visii.sample_pixel_area(
-    x_sample_interval = (.5,.5), 
+    x_sample_interval = (.5,.5),
     y_sample_interval = (.5, .5))
 
 # visii.set_max_bounce_depth(1)
@@ -182,8 +182,8 @@ camera = visii.entity.create(
     name = "camera",
     transform = visii.transform.create("camera"),
     camera = visii.camera.create_perspective_from_fov(
-        name = "camera", 
-        field_of_view = 0.785398, 
+        name = "camera",
+        field_of_view = 0.785398,
         aspect = float(opt.width)/float(opt.height)
     )
 )
@@ -205,8 +205,8 @@ visii.set_camera_entity(camera)
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
 
-# lets turn off the ambiant lights 
-# load a random skybox 
+# lets turn off the ambiant lights
+# load a random skybox
 skyboxes = glob.glob(f'{opt.skyboxes_folder}/*.hdr')
 skybox_random_selection = skyboxes[random.randint(0,len(skyboxes)-1)]
 
@@ -270,7 +270,7 @@ def adding_mesh_object(name, obj_to_load,texture_to_load,scale=1):
                 random.uniform(0, 1),
             )
         )
-        
+
         name = toys[0]
 
         id_pybullet = create_physics(name, mass = np.random.rand()*5)
@@ -304,7 +304,7 @@ def adding_mesh_object(name, obj_to_load,texture_to_load,scale=1):
 
     else:
         if obj_to_load in mesh_loaded:
-            toy_mesh = mesh_loaded[obj_to_load] 
+            toy_mesh = mesh_loaded[obj_to_load]
         else:
             toy_mesh = visii.mesh.create_from_file(name,obj_to_load)
             mesh_loaded[obj_to_load] = toy_mesh
@@ -317,7 +317,7 @@ def adding_mesh_object(name, obj_to_load,texture_to_load,scale=1):
         )
 
         toy_rgb_tex = visii.texture.create_from_file(name,texture_to_load)
-        toy.get_material().set_base_color_texture(toy_rgb_tex) 
+        toy.get_material().set_base_color_texture(toy_rgb_tex)
         toy.get_material().set_roughness(random.uniform(0.1,0.5))
 
 
@@ -414,7 +414,7 @@ camera_pybullet = p.createMultiBody(
     baseCollisionShapeIndex = camera_pybullet_col,
     basePosition = camera.get_transform().get_position(),
     # baseOrientation= rot,
-)    
+)
 
 # print('simulate')
 # for i in range (10000):
@@ -430,7 +430,7 @@ plane1_body = p.createMultiBody(
     baseCollisionShapeIndex = plane1,
     basePosition = [0,0,-box_position],
     baseOrientation= [rot1[3],rot1[0],rot1[1],rot1[2]],
-)    
+)
 
 plane1 = p.createCollisionShape(p.GEOM_PLANE,planeNormal = [0,0,1])
 rot1 = visii.angleAxis(visii.pi()/16,visii.vec3(0,1,0))
@@ -438,7 +438,7 @@ plane2_body = p.createMultiBody(
     baseCollisionShapeIndex = plane1,
     basePosition = [0,0,box_position],
     baseOrientation= [rot1[3],rot1[0],rot1[1],rot1[2]],
-)    
+)
 
 
 plane1 = p.createCollisionShape(p.GEOM_PLANE,planeNormal = [0,1,0])
@@ -447,7 +447,7 @@ plane3_body = p.createMultiBody(
     baseCollisionShapeIndex = plane1,
     basePosition = [0,+box_position,0],
     baseOrientation= [rot1[3],rot1[0],rot1[1],rot1[2]],
-)    
+)
 
 plane1 = p.createCollisionShape(p.GEOM_PLANE,planeNormal = [0,-1,0])
 rot1 = visii.angleAxis(-visii.pi()/16,visii.vec3(1,0,0))
@@ -455,7 +455,7 @@ plane4_body = p.createMultiBody(
     baseCollisionShapeIndex = plane1,
     basePosition = [0,-box_position,0],
     baseOrientation= [rot1[3],rot1[0],rot1[1],rot1[2]],
-)    
+)
 
 
 plane1 = p.createCollisionShape(p.GEOM_PLANE,planeNormal = [-1,0,0])
@@ -463,14 +463,14 @@ plane5_body = p.createMultiBody(
     baseCollisionShapeIndex = plane1,
     basePosition = [2,0,0],
     # baseOrientation= [rot1[3],rot1[0],rot1[1],rot1[2]],
-)    
+)
 
 plane1 = p.createCollisionShape(p.GEOM_PLANE,planeNormal = [1,0,0])
 plane6_body = p.createMultiBody(
     baseCollisionShapeIndex = plane1,
     basePosition = [0.1,0,0],
     # baseOrientation= [rot1[3],rot1[0],rot1[1],rot1[2]],
-)    
+)
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -481,11 +481,11 @@ i_frame = -1
 i_render = 0
 condition = True
 
-while condition: 
+while condition:
     p.stepSimulation()
     ### add skip updates here.
 
-    i_frame += 1  
+    i_frame += 1
 
 
     if i_render >= int(opt.nb_frames) and not opt.interactive:
@@ -494,90 +494,62 @@ while condition:
     # update the position from pybullet
     for i_entry, entry in enumerate(visii_pybullet):
         # print('update',entry)
+        visii.entity.get(entry['visii_id']).get_transform().set_position(
+            visii.entity.get(entry['visii_id']).get_transform().get_position(),
+            previous = True
+        )
+        visii.entity.get(entry['visii_id']).get_transform().set_rotation(
+            visii.entity.get(entry['visii_id']).get_transform().get_rotation(),
+            previous = True
+        )
 
-        if opt.path_single_obj is None:
-            visii.entity.get(entry['visii_id']).get_transform().set_position(
-                visii.entity.get(entry['visii_id']).get_transform().get_position(),
-                previous = True
+        update_pose(entry)
+        if random.random() > 0.99:
+            force_rand = 10
+            object_position = 0.01
+            p.applyExternalForce(
+                entry['bullet_id'],
+                -1,
+                [   random.uniform(-force_rand,force_rand),
+                    random.uniform(-force_rand,force_rand),
+                    random.uniform(-force_rand,force_rand)],
+                [   random.uniform(-object_position,object_position),
+                    random.uniform(-object_position,object_position),
+                    random.uniform(-object_position,object_position)],
+                flags=p.WORLD_FRAME
             )
-            visii.entity.get(entry['visii_id']).get_transform().set_rotation(
-                visii.entity.get(entry['visii_id']).get_transform().get_rotation(),
-                previous = True
-            )
-
-            update_pose(entry)
-            if random.random() > 0.99:
-                force_rand = 10
-                object_position = 0.01
-                p.applyExternalForce(
-                    entry['bullet_id'],
-                    -1,
-                    [   random.uniform(-force_rand,force_rand),
-                        random.uniform(-force_rand,force_rand),
-                        random.uniform(-force_rand,force_rand)],
-                    [   random.uniform(-object_position,object_position),
-                        random.uniform(-object_position,object_position),
-                        random.uniform(-object_position,object_position)],
-                    flags=p.WORLD_FRAME
-                )
-        else:
-            
-            visii.entity.get(entry['visii_id']).get_transform().get_parent().set_position(
-                visii.entity.get(entry['visii_id']).get_transform().get_parent().get_position(),
-                previous = True
-            )
-            visii.entity.get(entry['visii_id']).get_transform().get_parent().set_rotation(
-                visii.entity.get(entry['visii_id']).get_transform().get_parent().get_rotation(),
-                previous = True
-            )
-
-            update_pose(entry,parent=True)
-            if random.random() > 0.99:
-                force_rand = 10
-                object_position = 0.01
-                p.applyExternalForce(
-                    entry['bullet_id'],
-                    -1,
-                    [   random.uniform(-force_rand,force_rand),
-                        random.uniform(-force_rand,force_rand),
-                        random.uniform(-force_rand,force_rand)],
-                    [   random.uniform(-object_position,object_position),
-                        random.uniform(-object_position,object_position),
-                        random.uniform(-object_position,object_position)],
-                    flags=p.WORLD_FRAME
-                )
             # break
-    if i_frame == 0: 
+    if i_frame == 0:
         continue
 
     if not opt.interactive:
-        
+
         if not i_frame % int(opt.skip_frame) == 0:
             continue
 
         print(f"{str(i_render).zfill(5)}/{str(opt.nb_frames).zfill(5)}")
-        
+
         i_render +=1
 
         visii.sample_pixel_area(
-            x_sample_interval = (0,1), 
+            x_sample_interval = (0,1),
             y_sample_interval = (0,1))
 
         visii.render_to_file(
-            width=int(opt.width), 
-            height=int(opt.height), 
+            width=int(opt.width),
+            height=int(opt.height),
             samples_per_pixel=int(opt.spp),
-            file_path=f"{opt.outf}/{str(i_render).zfill(5)}.png"    
+            file_path=f"{opt.outf}/{str(i_render).zfill(5)}.png"
         )
         visii.sample_pixel_area(
-            x_sample_interval = (.5,.5), 
+            x_sample_interval = (.5,.5),
             y_sample_interval = (.5,.5))
 
         visii.sample_time_interval((1,1))
 
         visii.render_data_to_file(
-            width=opt.width, 
-            height=opt.height, 
+            width=opt.width,
+            height=opt.height,
             start_frame=0,
             frame_count=1,
             bounce=int(0),
@@ -585,13 +557,13 @@ while condition:
             file_path = f"{opt.outf}/{str(i_render).zfill(5)}.seg.exr"
         )
         segmentation_array = visii.render_data(
-            width=int(opt.width), 
-            height=int(opt.height), 
+            width=int(opt.width),
+            height=int(opt.height),
             start_frame=0,
             frame_count=1,
             bounce=int(0),
             options="entity_id",
-        )        
+        )
         export_to_ndds_file(
             f"{opt.outf}/{str(i_render).zfill(5)}.json",
             obj_names = names_to_export,
@@ -604,8 +576,8 @@ while condition:
             visibility_percentage = False,
         )
         visii.render_data_to_file(
-            width=opt.width, 
-            height=opt.height, 
+            width=opt.width,
+            height=opt.height,
             start_frame=0,
             frame_count=1,
             bounce=int(0),
@@ -616,7 +588,6 @@ while condition:
 # subprocess.call(['ffmpeg', '-y',\
 #     '-framerate', '30', "-hide_banner", "-loglevel", \
 #     "panic",'-pattern_type', 'glob', '-i',\
-#     f"{opt.outf}/*.png", f"{opt.outf}/video.mp4"]) 
+#     f"{opt.outf}/*.png", f"{opt.outf}/video.mp4"])
 
 visii.deinitialize()
-
