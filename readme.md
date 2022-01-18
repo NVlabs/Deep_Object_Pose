@@ -11,7 +11,7 @@ This is the official DOPE ROS package for detection and 6-DoF pose estimation of
 ## Updates
 2021/12/13 - Added a NViSII script to generate synthetic data for training DOPE. See this [readme](https://github.com/NVlabs/Deep_Object_Pose/tree/master/scripts/nvisii_data_gen) for more details. We also added the update training and inference (without ROS) scripts for the NViSII paper [here](https://github.com/NVlabs/Deep_Object_Pose/tree/master/scripts/train2). 
 
-2021/10/20 - Added ROS2 Foxy inference support through [Isaac ROS DOPE package](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_dnn_inference/tree/main/isaac_ros_dope) for Jetson and x86+CUDA-capable GPU.
+2021/10/20 - Added ROS2 Foxy inference support through [Isaac ROS DOPE package](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_pose_estimation) for Jetson and x86+CUDA-capable GPU.
 
 2021/08/07 - Added publishing belief maps. Thank you to Martin Günther. 
 
