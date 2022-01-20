@@ -167,12 +167,6 @@ try:
 except:
     pass 
 
-try: 
-    if isinstance(opt.gpus, str):
-        opt.gpuids = eval(opt.gpus)
-except:
-    pass
-
 train_sampler = None
 if opt.horovod:
     import horovod.torch as hvd
