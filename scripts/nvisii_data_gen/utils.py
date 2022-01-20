@@ -1074,11 +1074,11 @@ def export_to_ndds_file(
 
     # Segmentation id to export
     id_keys_map = visii.entity.get_name_to_id_map()
-
+    # print(obj_names)
     for obj_name in obj_names: 
 
         projected_keypoints, _ = get_cuboid_image_space(obj_name, camera_name=camera_name)
-        
+
         if projected_keypoints is not None:                
             # put them in the image space. 
             for i_p, p in enumerate(projected_keypoints):
@@ -1111,7 +1111,9 @@ def export_to_ndds_file(
         #check if the object is visible
         visibility = -1
         bounding_box = [-1,-1,-1,-1]
-
+        # print("---")
+        # print(segmentation_mask)
+        # print(projected_keypoints)
         if segmentation_mask is None and projected_keypoints is not None:
             segmentation_mask = visii.render_data(
                 width=int(width), 
@@ -1123,41 +1125,42 @@ def export_to_ndds_file(
             )
             segmentation_mask = np.array(segmentation_mask).reshape(width,height,4)[:,:,0]
             
-            if visibility_percentage == True and int(id_keys_map [obj_name]) in np.unique(segmentation_mask.astype(int)): 
-                transforms_to_keep = {}
-                
-                for name in id_keys_map.keys():
-                    if 'camera' in name.lower() or obj_name in name:
-                        continue
-                    trans_to_keep = visii.entity.get(name).get_transform()
-                    transforms_to_keep[name]=trans_to_keep
-                    visii.entity.get(name).clear_transform()
+        if visibility_percentage == True and int(id_keys_map[obj_name]) in np.unique(segmentation_mask.astype(int)): 
+            transforms_to_keep = {}
+            
+            for name in id_keys_map.keys():
+                if 'camera' in name.lower() or obj_name in name:
+                    continue
+                trans_to_keep = visii.entity.get(name).get_transform()
+                transforms_to_keep[name]=trans_to_keep
+                visii.entity.get(name).clear_transform()
 
-                # Percentatge visibility through full segmentation mask. 
-                segmentation_unique_mask = visii.render_data(
-                    width=int(width), 
-                    height=int(height), 
-                    start_frame=0,
-                    frame_count=1,
-                    bounce=int(0),
-                    options="entity_id",
-                )
+            # Percentatge visibility through full segmentation mask. 
+            segmentation_unique_mask = visii.render_data(
+                width=int(width), 
+                height=int(height), 
+                start_frame=0,
+                frame_count=1,
+                bounce=int(0),
+                options="entity_id",
+            )
 
-                segmentation_unique_mask = np.array(segmentation_unique_mask).reshape(width,height,4)[:,:,0]
+            segmentation_unique_mask = np.array(segmentation_unique_mask).reshape(width,height,4)[:,:,0]
 
-                values_segmentation = np.where(segmentation_mask == int(id_keys_map[obj_name]))[0]
-                values_segmentation_full = np.where(segmentation_unique_mask == int(id_keys_map[obj_name]))[0]
-                visibility = len(values_segmentation)/float(len(values_segmentation_full))
-                
-                # bounding box calculation
+            values_segmentation = np.where(segmentation_mask == int(id_keys_map[obj_name]))[0]
+            values_segmentation_full = np.where(segmentation_unique_mask == int(id_keys_map[obj_name]))[0]
+            visibility = len(values_segmentation)/float(len(values_segmentation_full))
+            
+            # bounding box calculation
 
-                # set back the objects from remove
-                for entity_name in transforms_to_keep.keys():
-                    visii.entity.get(entity_name).set_transform(transforms_to_keep[entity_name])
-            else:
-                # print(np.unique(segmentation_mask.astype(int)))
-                # print(np.isin(np.unique(segmentation_mask).astype(int),
-                #         [int(name_to_id[obj_name])]))
+            # set back the objects from remove
+            for entity_name in transforms_to_keep.keys():
+                visii.entity.get(entity_name).set_transform(transforms_to_keep[entity_name])
+        else:
+            # print(np.unique(segmentation_mask.astype(int)))
+            # print(np.isin(np.unique(segmentation_mask).astype(int),
+            #         [int(name_to_id[obj_name])]))
+            try:
                 if int(id_keys_map[obj_name]) in np.unique(segmentation_mask.astype(int)): 
                     #
                     visibility = 1
@@ -1165,7 +1168,8 @@ def export_to_ndds_file(
                     bounding_box = [int(min(x)),int(max(x)),height-int(max(y)),height-int(min(y))]
                 else:
                     visibility = 0
-
+            except:
+                pass
 
         tran_matrix = trans.get_local_to_world_matrix()
     
