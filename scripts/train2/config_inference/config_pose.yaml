@@ -2,7 +2,7 @@ topic_camera: "/dope/webcam/image_raw"
 topic_camera_info: "/dope/webcam/camera_info"
 topic_publishing: "dope"
 input_is_rectified: True   # Whether the input image is rectified (strongly suggested!)
-downscale_height: 500      # if the input image is larger than this, scale it down to this pixel height
+downscale_height: 400      # if the input image is larger than this, scale it down to this pixel height
 
 # Comment any of these lines to prevent detection / pose estimation of that object
 weights: {
