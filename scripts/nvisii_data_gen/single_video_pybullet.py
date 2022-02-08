@@ -141,16 +141,10 @@ parser.add_argument(
 opt = parser.parse_args()
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
-if os.path.isdir("output"):
-    print(f'folder {"output"}/ exists')
-else:
-    os.mkdir("output")
-    print(f'created folder {"output"}/')
-
 if os.path.isdir(f'output/{opt.outf}'):
     print(f'folder output/{opt.outf}/ exists')
 else:
-    os.mkdir(f'output/{opt.outf}')
+    os.makedirs(f'output/{opt.outf}')
     print(f'created folder output/{opt.outf}/')
 
 opt.outf = f'output/{opt.outf}'
