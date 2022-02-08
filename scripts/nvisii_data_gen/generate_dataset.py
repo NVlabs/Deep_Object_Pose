@@ -10,6 +10,7 @@ for i in range(0, 100):
 		'--spp','10',
 		'--nb_frames', '200',
 		'--nb_objects',str(int(random.uniform(50,75))),
+		'--scale', '0.01',
 		'--static_camera',
 		'--outf',f"dataset/{str(i).zfill(3)}",
 	]

@@ -44,7 +44,7 @@ If you do *not* want to use the distractors, use the following argument when run
 If you downloaded everything from the previous steps, _e.g._, a single HDRI map and some distractors from Google scanned objects, you can run the following command:
 
 ```
-python single_video_pybullet.py --nb_frames 1
+python single_video_pybullet.py --nb_frames 1 --scale 0.01
 ```
 
 This will generate a single frame example in `output/output_example/`. The image should be similar to the following: 
