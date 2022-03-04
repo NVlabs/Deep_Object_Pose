@@ -111,24 +111,10 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    '--motion',
-    action='store_true',
-    default=False,
-    help = "show motion images."
-)
-
-parser.add_argument(
     '--motionblur',
     action='store_true',
     default=False,
     help = "use motion blur to generate images"
-)
-
-parser.add_argument(
-    '--static_camera',
-    action='store_true',
-    default=False,
-    help = "make the camera static"
 )
 
 parser.add_argument(
@@ -169,8 +155,8 @@ visii.sample_pixel_area(
 
 # visii.set_max_bounce_depth(1)
 
-visii.enable_denoiser()
-
+if not opt.noise:
+    visii.enable_denoiser()
 
 camera = visii.entity.create(
     name = "camera",
