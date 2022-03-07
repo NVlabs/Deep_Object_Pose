@@ -935,6 +935,18 @@ def add_cuboid(name, scale=1, debug=False):
                 cuboid[5],cuboid[4],cuboid[1],
                 cuboid[6],cuboid[7],cuboid[-1]]
 
+    # same colors as nvdu_viz
+    cuboid_colors = [
+        visii.vec3(0.0, 0.0, 1.0),  # blue
+        visii.vec3(0.0, 0.0, 1.0),  # blue
+        visii.vec3(1.0, 0.0, 1.0),  # magenta
+        visii.vec3(1.0, 0.0, 1.0),  # magenta
+        visii.vec3(0.0, 1.0, 0.0),  # green
+        visii.vec3(0.0, 1.0, 0.0),  # green
+        visii.vec3(1.0, 1.0, 0.0),  # yellow
+        visii.vec3(1.0, 1.0, 0.0),  # yellow
+        visii.vec3(1.0, 1.0, 1.0),  # centroid: white
+    ]
 
     for i_p, p in enumerate(cuboid):
         child_transform = visii.transform.create(f"{name}_cuboid_{i_p}")
@@ -945,7 +957,7 @@ def add_cuboid(name, scale=1, debug=False):
                 name = f"{name}_cuboid_{i_p}",
                 mesh = visii.mesh.create_sphere(f"{name}_cuboid_{i_p}", radius=(0.006 / scale)),
                 transform = child_transform, 
-                material = visii.material.create(f"{name}_cuboid_{i_p}")
+                material = visii.material.create(f"{name}_cuboid_{i_p}", base_color=cuboid_colors[i_p])
             )
     
     for i_v, v in enumerate(cuboid):
