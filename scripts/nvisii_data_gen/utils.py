@@ -919,21 +919,16 @@ def add_cuboid(name, scale=1, debug=False):
 
 
     cuboid = [
-        visii.vec3(max_obj[0], max_obj[1], max_obj[2]),
-        visii.vec3(min_obj[0], max_obj[1], max_obj[2]),
         visii.vec3(max_obj[0], min_obj[1], max_obj[2]),
+        visii.vec3(max_obj[0], max_obj[1], max_obj[2]),
         visii.vec3(max_obj[0], max_obj[1], min_obj[2]),
-        visii.vec3(min_obj[0], min_obj[1], max_obj[2]),
         visii.vec3(max_obj[0], min_obj[1], min_obj[2]),
+        visii.vec3(min_obj[0], min_obj[1], max_obj[2]),
+        visii.vec3(min_obj[0], max_obj[1], max_obj[2]),
         visii.vec3(min_obj[0], max_obj[1], min_obj[2]),
         visii.vec3(min_obj[0], min_obj[1], min_obj[2]),
         visii.vec3(centroid_obj[0], centroid_obj[1], centroid_obj[2]), 
     ]
-
-    # change the ids to be like ndds / DOPE
-    cuboid = [  cuboid[2],cuboid[0],cuboid[3],
-                cuboid[5],cuboid[4],cuboid[1],
-                cuboid[6],cuboid[7],cuboid[-1]]
 
     # same colors as nvdu_viz
     cuboid_colors = [
