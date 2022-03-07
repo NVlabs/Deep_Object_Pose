@@ -935,8 +935,7 @@ def add_cuboid(name, scale=1, debug=False):
                 cuboid[5],cuboid[4],cuboid[1],
                 cuboid[6],cuboid[7],cuboid[-1]]
 
-    cuboid.append(visii.vec3(centroid_obj[0], centroid_obj[1], centroid_obj[2]))
-        
+
     for i_p, p in enumerate(cuboid):
         child_transform = visii.transform.create(f"{name}_cuboid_{i_p}")
         child_transform.set_position(p)
