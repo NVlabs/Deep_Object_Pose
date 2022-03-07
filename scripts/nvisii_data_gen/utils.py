@@ -907,7 +907,7 @@ random_texture_material.textures = []
 
 ######## NDDS ##########
 
-def add_cuboid(name, debug=False):
+def add_cuboid(name, scale=1, debug=False):
     obj = visii.entity.get(name)
 
     min_obj = obj.get_mesh().get_min_aabb_corner()
@@ -937,12 +937,11 @@ def add_cuboid(name, debug=False):
     for i_p, p in enumerate(cuboid):
         child_transform = visii.transform.create(f"{name}_cuboid_{i_p}")
         child_transform.set_position(p)
-        child_transform.set_scale(visii.vec3(0.3))
         child_transform.set_parent(obj.get_transform())
         if debug: 
             visii.entity.create(
                 name = f"{name}_cuboid_{i_p}",
-                mesh = visii.mesh.create_sphere(f"{name}_cuboid_{i_p}"),
+                mesh = visii.mesh.create_sphere(f"{name}_cuboid_{i_p}", radius=(0.006 / scale)),
                 transform = child_transform, 
                 material = visii.material.create(f"{name}_cuboid_{i_p}")
             )

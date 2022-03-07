@@ -287,7 +287,7 @@ def adding_mesh_object(name, obj_to_load, texture_to_load, scale=1, debug=False)
 
         for entity_name in toys:
             names_to_export.append(entity_name)
-            add_cuboid(entity_name, debug=debug)
+            add_cuboid(entity_name, scale=scale, debug=debug)
         names_to_export.append(toy_parent_transform.get_name())
 
     else:
@@ -352,7 +352,7 @@ def adding_mesh_object(name, obj_to_load, texture_to_load, scale=1, debug=False)
         )
         names_to_export.append(name)
 
-        add_cuboid(name, debug=debug)
+        add_cuboid(name, scale=scale, debug=debug)
 
 google_content_folder = glob.glob(opt.objs_folder_distrators + "*/")
 
