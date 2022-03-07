@@ -361,8 +361,7 @@ def loadimages(root):
         if len(folders)>0:
             for path_entry in folders:                
                 explore(path_entry)
-        else:
-            add_json_files(path)
+        add_json_files(path)
 
     explore(root)
 
