@@ -50,14 +50,14 @@ parser.add_argument(
 parser.add_argument(
     '--path_single_obj',
     default=None,
-    help='If you have a single obj file, path to the \
-    obj directly.'
+    help='If you have a single obj file, path to the obj directly.'
 )
 parser.add_argument(
-    '--scale_single_obj',
+    '--scale',
     default=1,
     type=float,
-    help='change the scale of the path_single_obj loaded.'
+    help='Specify the scale of the target object(s). If the obj mesh is in '
+         'meters -> scale=1; if it is in cm -> scale=0.01.'
 )
 
 parser.add_argument(
@@ -111,24 +111,10 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    '--motion',
-    action='store_true',
-    default=False,
-    help = "show motion images."
-)
-
-parser.add_argument(
     '--motionblur',
     action='store_true',
     default=False,
     help = "use motion blur to generate images"
-)
-
-parser.add_argument(
-    '--static_camera',
-    action='store_true',
-    default=False,
-    help = "make the camera static"
 )
 
 parser.add_argument(
@@ -138,19 +124,20 @@ parser.add_argument(
     help = "make the object movement easier"
 )
 
+parser.add_argument(
+    '--debug',
+    action='store_true',
+    default=False,
+    help="Render the cuboid corners as small spheres. Only for debugging purposes, do not use for training!"
+)
+
 opt = parser.parse_args()
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
-if os.path.isdir("output"):
-    print(f'folder {"output"}/ exists')
-else:
-    os.mkdir("output")
-    print(f'created folder {"output"}/')
-
 if os.path.isdir(f'output/{opt.outf}'):
     print(f'folder output/{opt.outf}/ exists')
 else:
-    os.mkdir(f'output/{opt.outf}')
+    os.makedirs(f'output/{opt.outf}')
     print(f'created folder output/{opt.outf}/')
 
 opt.outf = f'output/{opt.outf}'
@@ -175,8 +162,8 @@ visii.sample_pixel_area(
 
 # visii.set_max_bounce_depth(1)
 
-visii.enable_denoiser()
-
+if not opt.noise:
+    visii.enable_denoiser()
 
 camera = visii.entity.create(
     name = "camera",
@@ -243,7 +230,8 @@ else:
 visii_pybullet = []
 names_to_export = []
 
-def adding_mesh_object(name, obj_to_load,texture_to_load,scale=1):
+
+def adding_mesh_object(name, obj_to_load, texture_to_load, scale=1, debug=False):
     global mesh_loaded, visii_pybullet, names_to_export
     # obj_to_load = toy_to_load + "/meshes/model.obj"
     # texture_to_load = toy_to_load + "/materials/textures/texture.png"
@@ -299,7 +287,7 @@ def adding_mesh_object(name, obj_to_load,texture_to_load,scale=1):
 
         for entity_name in toys:
             names_to_export.append(entity_name)
-            cuboid = add_cuboid(entity_name, debug=False)
+            add_cuboid(entity_name, scale=scale, debug=debug)
         names_to_export.append(toy_parent_transform.get_name())
 
     else:
@@ -364,7 +352,7 @@ def adding_mesh_object(name, obj_to_load,texture_to_load,scale=1):
         )
         names_to_export.append(name)
 
-        cuboid = add_cuboid(name, debug=False)
+        add_cuboid(name, scale=scale, debug=debug)
 
 google_content_folder = glob.glob(opt.objs_folder_distrators + "*/")
 
@@ -376,15 +364,16 @@ for i_obj in range(int(opt.nb_distractors)):
     texture_to_load = toy_to_load + "/materials/textures/texture.png"
     name = "google_"+toy_to_load.split('/')[-2] + f"_{i_obj}"
 
-    adding_mesh_object(name,obj_to_load,texture_to_load)
+    adding_mesh_object(name, obj_to_load, texture_to_load, debug=opt.debug)
 
 if opt.path_single_obj is not None:
 
     for i_object in range(opt.nb_objects):
         adding_mesh_object(f"single_obj_{i_object}",
-                            opt.path_single_obj,
-                            None,
-                            scale=opt.scale_single_obj)
+                           opt.path_single_obj,
+                           None,
+                           scale=opt.scale,
+                           debug=opt.debug)
 
 
 else:
@@ -398,7 +387,7 @@ else:
         texture_to_load = toy_to_load + "/google_16k/texture_map_flat.png"
         name = "hope_" + toy_to_load.split('/')[-2] + f"_{i_obj}"
 
-        adding_mesh_object(name,obj_to_load,texture_to_load,scale=0.01)
+        adding_mesh_object(name, obj_to_load, texture_to_load, scale=opt.scale, debug=opt.debug)
 
         # p.applyExternalTorque(id_pybullet,-1,
         #     [   random.uniform(-force_rand,force_rand),

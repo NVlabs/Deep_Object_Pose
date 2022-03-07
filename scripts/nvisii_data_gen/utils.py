@@ -1,11 +1,20 @@
-import random 
-import nvisii as visii
-import randomcolor
-import math 
 import colorsys
-import glob 
-import os 
+import glob
+import math
+import os
+import random
+import subprocess
+import warnings
+
+import cv2
 import numpy as np
+import nvisii as visii
+import pybullet as p
+import randomcolor
+import simplejson as json
+from PIL import Image
+from pyquaternion import Quaternion
+
 
 def add_random_obj(name = "name",
     x_lim = [-1,1],
@@ -328,7 +337,6 @@ def random_material(
             tex = visii.texture.create_from_image(texture['base'],texture['base'])
             
             # load metallic and roughness 
-            from PIL import Image
             im = np.array(Image.open(texture['orm']))            
             
             im_r = np.concatenate(
@@ -521,7 +529,6 @@ def random_rotation(obj_id,
     strenght = 1,
     ):
     # return
-    from pyquaternion import Quaternion
 
     trans = visii.transform.get(str(obj_id))    
 
@@ -721,7 +728,6 @@ def random_texture_material(entity):
     if len(textures) == 0: 
         "load the textures"
         path = 'content/materials_omniverse/'
-        import glob, os
         for folder in glob.glob(path + "/*/"):
             for folder_in in glob.glob(folder+"/*/"):
                 name = folder_in.replace(folder,'').replace('/','').replace('\\', '')
@@ -840,7 +846,6 @@ def random_texture_material(entity):
             ))
 
     else:
-        import numpy as np
         print(texture['base'])
         tex = visii.texture.get(texture['base'])
         tex_r = visii.texture.get(texture['base']+"_r")
@@ -850,7 +855,6 @@ def random_texture_material(entity):
             tex = visii.texture.create_from_image(texture['base'],texture['base'])
             
             # load metallic and roughness 
-            from PIL import Image
             im = np.array(Image.open(texture['orm']))            
             
             im_r = np.concatenate(
@@ -885,7 +889,6 @@ def random_texture_material(entity):
             im_m = Image.fromarray(im_m)
             im_m.save('tmp.png')
             tex_m = visii.texture.create_from_image(texture['base']+'_m',"tmp.png")
-            import os
             if os.path.exists(texture['normal']):
                 tex_n = visii.texture.create_from_image(
                     texture['normal'],
@@ -907,7 +910,7 @@ random_texture_material.textures = []
 
 ######## NDDS ##########
 
-def add_cuboid(name, debug=False):
+def add_cuboid(name, scale=1, debug=False):
     obj = visii.entity.get(name)
 
     min_obj = obj.get_mesh().get_min_aabb_corner()
@@ -932,19 +935,29 @@ def add_cuboid(name, debug=False):
                 cuboid[5],cuboid[4],cuboid[1],
                 cuboid[6],cuboid[7],cuboid[-1]]
 
-    cuboid.append(visii.vec3(centroid_obj[0], centroid_obj[1], centroid_obj[2]))
-        
+    # same colors as nvdu_viz
+    cuboid_colors = [
+        visii.vec3(0.0, 0.0, 1.0),  # blue
+        visii.vec3(0.0, 0.0, 1.0),  # blue
+        visii.vec3(1.0, 0.0, 1.0),  # magenta
+        visii.vec3(1.0, 0.0, 1.0),  # magenta
+        visii.vec3(0.0, 1.0, 0.0),  # green
+        visii.vec3(0.0, 1.0, 0.0),  # green
+        visii.vec3(1.0, 1.0, 0.0),  # yellow
+        visii.vec3(1.0, 1.0, 0.0),  # yellow
+        visii.vec3(1.0, 1.0, 1.0),  # centroid: white
+    ]
+
     for i_p, p in enumerate(cuboid):
         child_transform = visii.transform.create(f"{name}_cuboid_{i_p}")
         child_transform.set_position(p)
-        child_transform.set_scale(visii.vec3(0.3))
         child_transform.set_parent(obj.get_transform())
         if debug: 
             visii.entity.create(
                 name = f"{name}_cuboid_{i_p}",
-                mesh = visii.mesh.create_sphere(f"{name}_cuboid_{i_p}"),
+                mesh = visii.mesh.create_sphere(f"{name}_cuboid_{i_p}", radius=(0.006 / scale)),
                 transform = child_transform, 
-                material = visii.material.create(f"{name}_cuboid_{i_p}")
+                material = visii.material.create(f"{name}_cuboid_{i_p}", base_color=cuboid_colors[i_p])
             )
     
     for i_v, v in enumerate(cuboid):
@@ -997,8 +1010,6 @@ def export_to_ndds_file(
     visibility_percentage = False, 
     ):
     # To do export things in the camera frame, e.g., pose and quaternion
-
-    import simplejson as json
 
     # assume we only use the view camera
     cam_matrix = visii.entity.get(camera_name).get_transform().get_world_to_local_matrix()
@@ -1228,8 +1239,6 @@ def export_to_ndds_file(
 
 
 def change_image_extension(path,extension="jpg"):
-    import cv2
-    import subprocess
     im = cv2.imread(path)
     cv2.imwrite(path.replace("png",extension),im)
     subprocess.call(['rm',path])
@@ -1270,10 +1279,6 @@ def load_obj_scene(path):
         entity_names.append(entity.get_name())
 
     return entity_names
-
-
-
-import pybullet as p
 
 
 def create_obj(
@@ -1439,10 +1444,6 @@ def update_pose(obj_dict,parent=False):
                                     )   
                                 )
 
-
-import os 
-import warnings
-import simplejson as json
 
 def material_from_json(path_json, randomize = False):
     """Load a json file visii material definition. 
