@@ -911,23 +911,64 @@ random_texture_material.textures = []
 ######## NDDS ##########
 
 def add_cuboid(name, scale=1, debug=False):
+    """
+    Computes the 3D bounding cuboid for object `name` and the centroid, adds the
+    corresponding child transforms to the object (which will later be used in
+    `get_cuboid_image_space`), and optionally adds small spheres as debug markers
+    to the scene.
+
+    The order of the indexes is the same as NVidia Deep learning Dataset Synthesizer (NDDS),
+    nvdu_viz from NVidia Dataset Utilities and DOPE.
+
+    The indexes of the 3D bounding cuboid are in the following order:
+
+    - `FrontTopRight` [0]
+    - `FrontTopLeft` [1]
+    - `FrontBottomLeft` [2]
+    - `FrontBottomRight` [3]
+    - `RearTopRight` [4]
+    - `RearTopLeft` [5]
+    - `RearBottomLeft` [6]
+    - `RearBottomRight` [7]
+
+    The XYZ coordinate frames are attached to each object as if the object were a
+    camera facing the world through the front.  In other words, from the point of
+    view of viewing the front from inside the object, the X axis points to the
+    right, the Y axis points down, and the Z axis points forward toward the world.
+    Alternatively, from the point of view of viewing the front of the object from
+    the outside (shown below), the X axis points left, the Y axis points down, and
+    the Z axis points out of the page toward the viewer (right-hand coordinate
+    system).
+
+          4 +-----------------+ 5
+           /     TOP         /|
+          /                 / |
+       0 +-----------------+ 1|
+         |      FRONT      |  |
+         |                 |  |
+         |  x <--+         |  |
+         |       |         |  |
+         |       v         |  + 6
+         |        y        | /
+         |                 |/
+       3 +-----------------+ 2
+    """
     obj = visii.entity.get(name)
 
     min_obj = obj.get_mesh().get_min_aabb_corner()
     max_obj = obj.get_mesh().get_max_aabb_corner()
     centroid_obj = obj.get_mesh().get_aabb_center()
 
-
     cuboid = [
         visii.vec3(max_obj[0], min_obj[1], max_obj[2]),
-        visii.vec3(max_obj[0], max_obj[1], max_obj[2]),
-        visii.vec3(max_obj[0], max_obj[1], min_obj[2]),
-        visii.vec3(max_obj[0], min_obj[1], min_obj[2]),
         visii.vec3(min_obj[0], min_obj[1], max_obj[2]),
         visii.vec3(min_obj[0], max_obj[1], max_obj[2]),
-        visii.vec3(min_obj[0], max_obj[1], min_obj[2]),
+        visii.vec3(max_obj[0], max_obj[1], max_obj[2]),
+        visii.vec3(max_obj[0], min_obj[1], min_obj[2]),
         visii.vec3(min_obj[0], min_obj[1], min_obj[2]),
-        visii.vec3(centroid_obj[0], centroid_obj[1], centroid_obj[2]), 
+        visii.vec3(min_obj[0], max_obj[1], min_obj[2]),
+        visii.vec3(max_obj[0], max_obj[1], min_obj[2]),
+        visii.vec3(centroid_obj[0], centroid_obj[1], centroid_obj[2]),
     ]
 
     # same colors as nvdu_viz
@@ -958,8 +999,6 @@ def add_cuboid(name, scale=1, debug=False):
     for i_v, v in enumerate(cuboid):
         cuboid[i_v]=[v[0], v[1], v[2]]
 
-
-     
     return cuboid
 
 def get_cuboid_image_space(obj_id, camera_name = 'my_camera'):
