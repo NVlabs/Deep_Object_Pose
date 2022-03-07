@@ -124,6 +124,13 @@ parser.add_argument(
     help = "make the object movement easier"
 )
 
+parser.add_argument(
+    '--debug',
+    action='store_true',
+    default=False,
+    help="Render the cuboid corners as small spheres. Only for debugging purposes, do not use for training!"
+)
+
 opt = parser.parse_args()
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -223,7 +230,8 @@ else:
 visii_pybullet = []
 names_to_export = []
 
-def adding_mesh_object(name, obj_to_load,texture_to_load,scale=1):
+
+def adding_mesh_object(name, obj_to_load, texture_to_load, scale=1, debug=False):
     global mesh_loaded, visii_pybullet, names_to_export
     # obj_to_load = toy_to_load + "/meshes/model.obj"
     # texture_to_load = toy_to_load + "/materials/textures/texture.png"
@@ -279,7 +287,7 @@ def adding_mesh_object(name, obj_to_load,texture_to_load,scale=1):
 
         for entity_name in toys:
             names_to_export.append(entity_name)
-            cuboid = add_cuboid(entity_name, debug=False)
+            add_cuboid(entity_name, debug=debug)
         names_to_export.append(toy_parent_transform.get_name())
 
     else:
@@ -344,7 +352,7 @@ def adding_mesh_object(name, obj_to_load,texture_to_load,scale=1):
         )
         names_to_export.append(name)
 
-        cuboid = add_cuboid(name, debug=False)
+        add_cuboid(name, debug=debug)
 
 google_content_folder = glob.glob(opt.objs_folder_distrators + "*/")
 
@@ -356,15 +364,16 @@ for i_obj in range(int(opt.nb_distractors)):
     texture_to_load = toy_to_load + "/materials/textures/texture.png"
     name = "google_"+toy_to_load.split('/')[-2] + f"_{i_obj}"
 
-    adding_mesh_object(name,obj_to_load,texture_to_load)
+    adding_mesh_object(name, obj_to_load, texture_to_load, debug=opt.debug)
 
 if opt.path_single_obj is not None:
 
     for i_object in range(opt.nb_objects):
         adding_mesh_object(f"single_obj_{i_object}",
-                            opt.path_single_obj,
-                            None,
-                            scale=opt.scale)
+                           opt.path_single_obj,
+                           None,
+                           scale=opt.scale,
+                           debug=opt.debug)
 
 
 else:
@@ -378,7 +387,7 @@ else:
         texture_to_load = toy_to_load + "/google_16k/texture_map_flat.png"
         name = "hope_" + toy_to_load.split('/')[-2] + f"_{i_obj}"
 
-        adding_mesh_object(name,obj_to_load,texture_to_load, scale=opt.scale)
+        adding_mesh_object(name, obj_to_load, texture_to_load, scale=opt.scale, debug=opt.debug)
 
         # p.applyExternalTorque(id_pybullet,-1,
         #     [   random.uniform(-force_rand,force_rand),
