@@ -468,17 +468,14 @@ plane6_body = p.createMultiBody(
 
 i_frame = -1
 i_render = 0
-condition = True
 
-while condition:
+while True:
     p.stepSimulation()
-    ### add skip updates here.
 
     i_frame += 1
 
-
     if i_render >= int(opt.nb_frames) and not opt.interactive:
-        condition = False
+        break
 
     # update the position from pybullet
     for i_entry, entry in enumerate(visii_pybullet):
@@ -512,13 +509,10 @@ while condition:
         continue
 
     if not opt.interactive:
-
         if not i_frame % int(opt.skip_frame) == 0:
             continue
 
         print(f"{str(i_render).zfill(5)}/{str(opt.nb_frames).zfill(5)}")
-
-        i_render +=1
 
         visii.sample_pixel_area(
             x_sample_interval = (0,1),
@@ -573,6 +567,8 @@ while condition:
             options="depth",
             file_path = f"{opt.outf}/{str(i_render).zfill(5)}.depth.exr"
         )
+
+        i_render +=1
 
 # subprocess.call(['ffmpeg', '-y',\
 #     '-framerate', '30', "-hide_banner", "-loglevel", \
