@@ -265,7 +265,7 @@ visii_pybullet = []
 names_to_export = []
 
 
-def adding_mesh_object(name, obj_to_load, texture_to_load, scale=1, debug=False):
+def adding_mesh_object(name, obj_to_load, texture_to_load, model_info_path=None, scale=1, debug=False):
     global mesh_loaded, visii_pybullet, names_to_export
     # obj_to_load = toy_to_load + "/meshes/model.obj"
     # texture_to_load = toy_to_load + "/materials/textures/texture.png"
@@ -316,13 +316,31 @@ def adding_mesh_object(name, obj_to_load, texture_to_load, scale=1, debug=False)
         )
     )
 
+    # add symmetry_corrected transform
+    child_transform = visii.transform.create(f"{toy_transform.get_name()}_symmetry_corrected")
+    child_transform.set_parent(toy_transform)
+
+    # store symmetry transforms for later use.
+    symmetry_transforms = get_symmetry_transformations(model_info_path)
+
+    # create physics for object
     id_pybullet = create_physics(name, mass=(np.random.rand() * 5))
 
+    if model_info_path is not None:
+        try:
+            with open(model_info_path) as json_file:
+                model_info = json.load(json_file)
+        except FileNotFoundError:
+            model_info = {}
+    else:
+        model_info = {}
     visii_pybullet.append(
         {
             'visii_id': name,
             'bullet_id': id_pybullet,
             'base_rot': None,
+            'model_info': model_info,
+            'symmetry_transforms': symmetry_transforms
         }
     )
     gemPos, gemOrn = p.getBasePositionAndOrientation(id_pybullet)
@@ -357,27 +375,26 @@ for i_obj in range(int(opt.nb_distractors)):
     adding_mesh_object(name, obj_to_load, texture_to_load, debug=opt.debug)
 
 if opt.path_single_obj is not None:
-
     for i_object in range(opt.nb_objects):
+        model_info_path = os.path.dirname(opt.path_single_obj) + '/model_info.json'
         adding_mesh_object(f"single_obj_{i_object}",
                            opt.path_single_obj,
                            None,
+                           model_info_path,
                            scale=opt.scale,
                            debug=opt.debug)
-
-
 else:
     google_content_folder = glob.glob(opt.objs_folder + "*/")
 
     for i_obj in range(int(opt.nb_objects)):
-
-        toy_to_load = google_content_folder[random.randint(0,len(google_content_folder)-1)]
+        toy_to_load = google_content_folder[random.randint(0, len(google_content_folder) - 1)]
 
         obj_to_load = toy_to_load + "/google_16k/textured.obj"
         texture_to_load = toy_to_load + "/google_16k/texture_map_flat.png"
+        model_info_path = toy_to_load + "/google_16k/model_info.json"
         name = "hope_" + toy_to_load.split('/')[-2] + f"_{i_obj}"
 
-        adding_mesh_object(name, obj_to_load, texture_to_load, scale=opt.scale, debug=opt.debug)
+        adding_mesh_object(name, obj_to_load, texture_to_load, model_info_path, scale=opt.scale, debug=opt.debug)
 
         # p.applyExternalTorque(id_pybullet,-1,
         #     [   random.uniform(-force_rand,force_rand),
