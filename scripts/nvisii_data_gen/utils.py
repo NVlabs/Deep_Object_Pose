@@ -986,12 +986,16 @@ def get_cuboid_image_space(obj_id, camera_name = 'my_camera'):
             mat_trans[3][2],
             1)
         
-        p_cam = cam_matrix * pos_m 
+        p_cam = cam_matrix * pos_m
 
-        p_image = cam_proj_matrix * (cam_matrix * pos_m) 
-        p_image = visii.vec2(p_image) / p_image.w
-        p_image = p_image * visii.vec2(1,-1)
-        p_image = (p_image + visii.vec2(1,1)) * 0.5
+        # The nvisii pixel coordinates have the origin in the middle of the image,
+        # with X going right, Y going up and range [-1..1].
+        # We want to transform it so that the origin is at the top left of the image,
+        # with X going right, Y going down and range [0..1].
+        p_image = cam_proj_matrix * (cam_matrix * pos_m)
+        p_image = visii.vec2(p_image) / p_image.w  # normalize
+        p_image = p_image * visii.vec2(1, -1)  # flip Y
+        p_image = (p_image + visii.vec2(1, 1)) * 0.5  # shift origin to top left corner and divide by 2
 
         points.append([p_image[0],p_image[1]])
         points_cam.append([p_cam[0],p_cam[1],p_cam[2]])
