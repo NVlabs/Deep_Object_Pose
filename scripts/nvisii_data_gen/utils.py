@@ -1190,7 +1190,8 @@ def export_to_ndds_file(
 
         # Final export
         try:
-            class_name = obj_name.split('_')[1]
+            # strip off part before first '_' ('hope_') and after last '_' ('_1234')
+            class_name = obj_name.split('_', 1)[1].rsplit('_', 1)[0]
         except:
             class_name = obj_name
         try:
