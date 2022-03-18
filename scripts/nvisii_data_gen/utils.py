@@ -920,38 +920,26 @@ def add_cuboid(name, scale=1, debug=False):
     The order of the indexes is the same as NVidia Deep learning Dataset Synthesizer (NDDS),
     nvdu_viz from NVidia Dataset Utilities and DOPE.
 
-    The indexes of the 3D bounding cuboid are in the following order:
+    The indexes of the 3D bounding cuboid are in the order shown in the sketch
+    below (0..7), with the object being in its neutral orientation (X axis pointing
+    forward, Y left, Z up).
 
-    - `FrontTopRight` [0]
-    - `FrontTopLeft` [1]
-    - `FrontBottomLeft` [2]
-    - `FrontBottomRight` [3]
-    - `RearTopRight` [4]
-    - `RearTopLeft` [5]
-    - `RearBottomLeft` [6]
-    - `RearBottomRight` [7]
+       (m) 3 +-----------------+ 0 (b)
+            /                 /|
+           /                 / |
+    (m) 2 +-----------------+ 1| (b)
+          |                 |  |
+          |       ^ z       |  |
+          |       |         |  |
+          |  y <--x         |  |
+      (y) |                 |  + 4 (g)
+          |                 | /
+          |                 |/
+    (y) 6 +-----------------+ 5 (g)
 
-    The XYZ coordinate frames are attached to each object as if the object were a
-    camera facing the world through the front.  In other words, from the point of
-    view of viewing the front from inside the object, the X axis points to the
-    right, the Y axis points down, and the Z axis points forward toward the world.
-    Alternatively, from the point of view of viewing the front of the object from
-    the outside (shown below), the X axis points left, the Y axis points down, and
-    the Z axis points out of the page toward the viewer (right-hand coordinate
-    system).
-
-          4 +-----------------+ 5
-           /     TOP         /|
-          /                 / |
-       0 +-----------------+ 1|
-         |      FRONT      |  |
-         |                 |  |
-         |  x <--+         |  |
-         |       |         |  |
-         |       v         |  + 6
-         |        y        | /
-         |                 |/
-       3 +-----------------+ 2
+    Debug markers for the cuboid corners can be rendered using the `--debug` option,
+    with (b) = blue, (m) = magenta, (g) = green, (y) = yellow and the centroid being
+    white.
     """
     obj = visii.entity.get(name)
 
