@@ -117,3 +117,67 @@ Please use the updated training scripts with this data: https://github.com/NVlab
 - Verify that the data exported is compatible with the training script directly. This script does not export `_camera_setting.json` file for example, the information is directly in the `.json` files. 
 PRs are welcome :P. 
  -->
+
+# Dataset format
+
+This section contains a description of the generated dataset format.
+
+## Coordinate systems and units
+
+All coordinate systems (world, model, camera) are right-handed.
+
+The world coordinate system is X forward, Y left and Z up.
+
+The model coordinate system is ultimately defined by the mesh, but if the model should appear "naturally upright" in its neutral orientation in the world frame, the Z axis should point up (when the object is standing "naturally upright"), the X axis should point from the "natural backside" of the model towards the front, the Y axis should point left and the origin should coincide with the center of the 3D bounding box of the object model.
+
+The camera coordinate system is X right, Y up and Z out of the image towards the viewer.
+
+All pixel coordinates (U, V) have the origin at the top left corner of the image, with U going right and V going down.
+
+All length measurements are in meters.
+
+## Projected cuboid corners
+
+The indices of the 3D bounding cuboid are in the order shown in the sketch below (0..7), with the object being in its neutral orientation (X axis pointing forward, Y left, Z up).
+
+The order of the indices is the same as NVidia Deep learning Dataset Synthesizer (NDDS) and nvdu_viz from NVidia Dataset Utilities.
+
+```text
+   (m) 3 +-----------------+ 0 (b)
+        /                 /|
+       /                 / |
+(m) 2 +-----------------+ 1| (b)
+      |                 |  |
+      |       ^ z       |  |
+      |       |         |  |
+      |  y <--x         |  |
+  (y) |                 |  + 4 (g)
+      |                 | /
+      |                 |/
+(y) 6 +-----------------+ 5 (g)
+```
+Debug markers for the cuboid corners can be rendered using the `--debug` option, with (b) = blue, (m) = magenta, (g) = green, (y) = yellow and the centroid being white.
+
+## JSON Fields
+
+Each generated image is accompanied by a JSON file. This JSON file contains the following fields:
+
+* `camera_data`
+    - `camera_look_at`: an alternative representation of the `camera_view_matrix`
+    - `camera_view_matrix`: 4×4 transformation matrix from the world to the camera coordinate system
+    - `height` and `width`: dimensions of the image in pixels
+    - `intrinsics`: the camera intrinsics
+    - `location_world` and `quaternion_world_xyzw`: see below
+
+* `objects`: one entry for each object instance, with:
+    - `bounding_box_minx_maxx_miny_maxy`: 2D bounding box of the object in the image: left, right, top, bottom (in pixels)
+    - `class`: class name
+    - `local_cuboid`: 3D coordinates of the vertices of the 3D bounding cuboid (in meters); currently always `null`
+    - `local_to_world_matrix`: 4×4 transformation matrix from the object to the world coordinate system
+    - `location` and `quaternion_xyzw`: position and orientation of the object in the *camera* coordinate system
+    - `location_world` and `quaternion_xyzw_world`:  position and orientation of the object (or camera) in the *world* coordinate system
+    - `name`: unique string that identifies the object instance internally
+    - `projected_cuboid`: 2D coordinates of the projection of the the vertices of the 3D bounding cuboid (in pixels) plus the centroid. See section "Projected cuboid corners".
+    - `provenance`: always `nvisii`
+    - `segmentation_id`: segmentation instance ID; unique integer value that is used for this object instance in the `.seg.exr` file
+    - `visibility`: 1 if at least one pixel of the object is visible in the image, else 0
