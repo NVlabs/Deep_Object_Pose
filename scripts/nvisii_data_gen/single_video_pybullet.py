@@ -125,6 +125,13 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    '--no-visibility-fraction',
+    action='store_true',
+    default=False,
+    help = "Do not compute the `visibility` field of the json output (always set to 1). Speeds up rendering."
+)
+
+parser.add_argument(
     '--debug',
     action='store_true',
     default=False,
@@ -512,7 +519,7 @@ while True:
             # cuboids = cuboids,
             camera_struct = random_camera_movement,
             segmentation_mask = np.array(segmentation_array).reshape(opt.width,opt.height,4)[:,:,0],
-            visibility_percentage = False,
+            compute_visibility_fraction=(not opt.no_visibility_fraction),
         )
         visii.render_data_to_file(
             width=opt.width,

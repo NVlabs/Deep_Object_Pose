@@ -180,4 +180,8 @@ Each generated image is accompanied by a JSON file. This JSON file contains the 
     - `projected_cuboid`: 2D coordinates of the projection of the the vertices of the 3D bounding cuboid (in pixels) plus the centroid. See section "Projected cuboid corners".
     - `provenance`: always `nvisii`
     - `segmentation_id`: segmentation instance ID; unique integer value that is used for this object instance in the `.seg.exr` file
-    - `visibility`: 1 if at least one pixel of the object is visible in the image, else 0
+    - `px_count_all`: number of pixels in the object silhouette without occlusions
+    - `px_count_visib`: number of pixels in the visible part of the object silhouette, with occlusions
+    - `visibility`: The visible fraction of the object silhouette (= `px_count_visib`/`px_count_all`). 
+      Note that the object may still not be fully visible when `visib_fract == 1.0` because it may extend beyond the borders of the image.
+      If run with `--no-visibility-fraction`, this field will always be set to `1`.

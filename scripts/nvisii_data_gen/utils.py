@@ -1011,27 +1011,30 @@ def export_to_ndds_file(
     cuboids = None,
     camera_struct = None,
     segmentation_mask = None,
-    visibility_percentage = False, 
+    compute_visibility_fraction = True,
     ):
-    # To do export things in the camera frame, e.g., pose and quaternion
+
+    if segmentation_mask is None:
+        segmentation_mask = visii.render_data(
+            width=int(width),
+            height=int(height),
+            start_frame=0,
+            frame_count=1,
+            bounce=int(0),
+            options="entity_id",
+        )
+        segmentation_mask = np.array(segmentation_mask).reshape(width, height, 4)[:, :, 0]
+
+    visible_object_ids = np.unique(segmentation_mask.astype(int))
 
     # assume we only use the view camera
     cam_matrix = visii.entity.get(camera_name).get_transform().get_world_to_local_matrix()
-    
-    # print("get_world_to_local_matrix")
-    # print(cam_matrix)
-    # print('look_at')
-    # print(camera_struct)
-    # print('position')
-    # print(visii.entity.get(camera_name).get_transform().get_position())
-    # # raise()
     cam_matrix_export = []
     for row in cam_matrix:
         cam_matrix_export.append([row[0],row[1],row[2],row[3]])
     
     cam_world_location = visii.entity.get(camera_name).get_transform().get_position()
     cam_world_quaternion = visii.entity.get(camera_name).get_transform().get_rotation()
-    # cam_world_quaternion = visii.quat_cast(cam_matrix)
 
     cam_intrinsics = visii.entity.get(camera_name).get_camera().get_intrinsic_matrix(width, height)
 
@@ -1089,8 +1092,10 @@ def export_to_ndds_file(
 
     # Segmentation id to export
     id_keys_map = visii.entity.get_name_to_id_map()
-    # print(obj_names)
-    for obj_name in obj_names: 
+    for obj_name in obj_names:
+        # don't write objects without a single visible pixel in the output image to json file
+        if int(id_keys_map[obj_name]) not in visible_object_ids:
+            continue
 
         projected_keypoints, _ = get_cuboid_image_space(obj_name, camera_name=camera_name)
 
@@ -1123,26 +1128,13 @@ def export_to_ndds_file(
         else:
             cuboid = None
 
-        #check if the object is visible
-        visibility = -1
-        bounding_box = [-1,-1,-1,-1]
-        # print("---")
-        # print(segmentation_mask)
-        # print(projected_keypoints)
-        if segmentation_mask is None and projected_keypoints is not None:
-            segmentation_mask = visii.render_data(
-                width=int(width), 
-                height=int(height), 
-                start_frame=0,
-                frame_count=1,
-                bounce=int(0),
-                options="entity_id",
-            )
-            segmentation_mask = np.array(segmentation_mask).reshape(width,height,4)[:,:,0]
-            
-        if visibility_percentage == True and int(id_keys_map[obj_name]) in np.unique(segmentation_mask.astype(int)): 
+        # compute visibility fraction
+        visibility = 1
+        px_count_visib = 0
+        px_count_all = 0
+        if compute_visibility_fraction:
             transforms_to_keep = {}
-            
+
             for name in id_keys_map.keys():
                 if 'camera' in name.lower() or obj_name in name:
                     continue
@@ -1150,41 +1142,29 @@ def export_to_ndds_file(
                 transforms_to_keep[name]=trans_to_keep
                 visii.entity.get(name).clear_transform()
 
-            # Percentatge visibility through full segmentation mask. 
+            # render segmentation mask of object in isolation to determine px_count_all (number of
+            # pixels in the object silhouette without occlusions)
             segmentation_unique_mask = visii.render_data(
-                width=int(width), 
-                height=int(height), 
+                width=int(width),
+                height=int(height),
                 start_frame=0,
                 frame_count=1,
                 bounce=int(0),
                 options="entity_id",
             )
-
             segmentation_unique_mask = np.array(segmentation_unique_mask).reshape(width,height,4)[:,:,0]
 
-            values_segmentation = np.where(segmentation_mask == int(id_keys_map[obj_name]))[0]
-            values_segmentation_full = np.where(segmentation_unique_mask == int(id_keys_map[obj_name]))[0]
-            visibility = len(values_segmentation)/float(len(values_segmentation_full))
-            
-            # bounding box calculation
+            px_count_visib = len(np.where(segmentation_mask == int(id_keys_map[obj_name]))[0])
+            px_count_all = len(np.where(segmentation_unique_mask == int(id_keys_map[obj_name]))[0])
+            visibility = px_count_visib / px_count_all
 
             # set back the objects from remove
             for entity_name in transforms_to_keep.keys():
                 visii.entity.get(entity_name).set_transform(transforms_to_keep[entity_name])
-        else:
-            # print(np.unique(segmentation_mask.astype(int)))
-            # print(np.isin(np.unique(segmentation_mask).astype(int),
-            #         [int(name_to_id[obj_name])]))
-            try:
-                if int(id_keys_map[obj_name]) in np.unique(segmentation_mask.astype(int)): 
-                    #
-                    visibility = 1
-                    y,x = np.where(segmentation_mask == int(id_keys_map[obj_name]))
-                    bounding_box = [int(min(x)),int(max(x)),height-int(max(y)),height-int(min(y))]
-                else:
-                    visibility = 0
-            except:
-                pass
+
+        # bounding box calculation
+        y, x = np.where(segmentation_mask == int(id_keys_map[obj_name]))
+        bounding_box = [int(min(x)), int(max(x)), height - int(max(y)), height - int(min(y))]
 
         tran_matrix = trans.get_local_to_world_matrix()
     
@@ -1234,6 +1214,8 @@ def export_to_ndds_file(
             'projected_cuboid':projected_keypoints,
             'segmentation_id':seg_id,
             'local_cuboid': cuboid,
+            'px_count_visib': px_count_visib,
+            'px_count_all': px_count_all,
             'visibility':visibility,
             'bounding_box_minx_maxx_miny_maxy':bounding_box
         })

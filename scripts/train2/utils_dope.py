@@ -224,7 +224,7 @@ class CleanVisiiDopeLoader(data.Dataset):
                 :
                 continue
             # load the projected_cuboid_keypoints
-            if obj['visibility'] == 1:
+            if obj['visibility'] > 0:
                 projected_cuboid_keypoints = obj['projected_cuboid']
             else:
                 projected_cuboid_keypoints = [[-100,-100],[-100,-100],[-100,-100],\
