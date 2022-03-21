@@ -524,7 +524,7 @@ while True:
             options="entity_id",
             file_path = f"{opt.outf}/{str(i_render).zfill(5)}.seg.exr"
         )
-        segmentation_array = visii.render_data(
+        segmentation_mask = visii.render_data(
             width=int(opt.width),
             height=int(opt.height),
             start_frame=0,
@@ -532,6 +532,7 @@ while True:
             bounce=int(0),
             options="entity_id",
         )
+        segmentation_mask = np.array(segmentation_mask).reshape((opt.height, opt.width, 4))[:, :, 0]
         export_to_ndds_file(
             f"{opt.outf}/{str(i_render).zfill(5)}.json",
             obj_names = names_to_export,
@@ -540,7 +541,7 @@ while True:
             camera_name = 'camera',
             # cuboids = cuboids,
             camera_struct = random_camera_movement,
-            segmentation_mask = np.array(segmentation_array).reshape(opt.width,opt.height,4)[:,:,0],
+            segmentation_mask=segmentation_mask,
             compute_visibility_fraction=(not opt.no_visibility_fraction),
         )
         visii.render_data_to_file(

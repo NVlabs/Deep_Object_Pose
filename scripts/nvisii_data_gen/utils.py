@@ -1023,7 +1023,7 @@ def export_to_ndds_file(
             bounce=int(0),
             options="entity_id",
         )
-        segmentation_mask = np.array(segmentation_mask).reshape(width, height, 4)[:, :, 0]
+        segmentation_mask = np.array(segmentation_mask).reshape((height, width, 4))[:, :, 0]
 
     visible_object_ids = np.unique(segmentation_mask.astype(int))
 
@@ -1152,7 +1152,7 @@ def export_to_ndds_file(
                 bounce=int(0),
                 options="entity_id",
             )
-            segmentation_unique_mask = np.array(segmentation_unique_mask).reshape(width,height,4)[:,:,0]
+            segmentation_unique_mask = np.array(segmentation_unique_mask).reshape((height, width, 4))[:, :, 0]
 
             px_count_visib = len(np.where(segmentation_mask == int(id_keys_map[obj_name]))[0])
             px_count_all = len(np.where(segmentation_unique_mask == int(id_keys_map[obj_name]))[0])
