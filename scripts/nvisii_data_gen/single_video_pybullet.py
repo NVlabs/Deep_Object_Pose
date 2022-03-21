@@ -125,6 +125,13 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    '--focal-length',
+    default=None,
+    type=float,
+    help = "focal length of the camera"
+)
+
+parser.add_argument(
     '--no-visibility-fraction',
     action='store_true',
     default=False,
@@ -172,15 +179,30 @@ visii.sample_pixel_area(
 if not opt.noise:
     visii.enable_denoiser()
 
-camera = visii.entity.create(
-    name = "camera",
-    transform = visii.transform.create("camera"),
-    camera = visii.camera.create_perspective_from_fov(
+if opt.focal_length:
+    camera = visii.entity.create(
         name = "camera",
-        field_of_view = 0.785398,
-        aspect = float(opt.width)/float(opt.height)
+        transform = visii.transform.create("camera"),
+        camera = visii.camera.create_from_intrinsics(
+            name = "camera",
+            fx=opt.focal_length,
+            fy=opt.focal_length,
+            cx=(opt.width / 2),
+            cy=(opt.height / 2),
+            width=opt.width,
+            height=opt.height
+        )
     )
-)
+else:
+    camera = visii.entity.create(
+        name = "camera",
+        transform = visii.transform.create("camera"),
+        camera = visii.camera.create_perspective_from_fov(
+            name = "camera",
+            field_of_view = 0.785398,
+            aspect = float(opt.width)/float(opt.height)
+        )
+    )
 
 # data structure
 random_camera_movement = {
