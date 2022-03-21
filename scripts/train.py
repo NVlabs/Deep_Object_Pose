@@ -291,10 +291,16 @@ def loadjson(path, objectofinterest):
         for p in pointdata:
             points3d.append((p[0], p[1]))
 
-        # Get the centroids
-        pcenter = info['projected_cuboid_centroid']
+        if len(points3d) == 8:
+            # NDDS format: 8 points in 'projected_cuboid', 1 point in 'projected_cuboid_centroid'
+            pcenter = info['projected_cuboid_centroid']
+            points3d.append((pcenter[0], pcenter[1]))
+        elif len(points3d) == 9:
+            # nvisii format: 9 points in 'projected_cuboid', no 'projected_cuboid_centroid' key
+            pcenter = points3d[-1]
+        else:
+            raise RuntimeError(f'projected_cuboid has to have 8 or 9 points while reading "{path}"')
 
-        points3d.append((pcenter[0], pcenter[1]))
         pointsBelief.append(points3d)
         points.append(points3d + [(pcenter[0], pcenter[1])])  # NOTE: Adding the centroid again is probably a bug.
         centroids.append((pcenter[0], pcenter[1]))
