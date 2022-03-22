@@ -130,7 +130,7 @@ The world coordinate system is X forward, Y left and Z up.
 
 The model coordinate system is ultimately defined by the mesh, but if the model should appear "naturally upright" in its neutral orientation in the world frame, the Z axis should point up (when the object is standing "naturally upright"), the X axis should point from the "natural backside" of the model towards the front, the Y axis should point left and the origin should coincide with the center of the 3D bounding box of the object model.
 
-The camera coordinate system is X right, Y up and Z out of the image towards the viewer.
+The camera coordinate system is the same as in OpenCV with X right, Y down and Z into the image away from the viewer.
 
 All pixel coordinates (U, V) have the origin at the top left corner of the image, with U going right and V going down.
 

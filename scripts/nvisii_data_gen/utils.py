@@ -1029,12 +1029,22 @@ def export_to_ndds_file(
 
     # assume we only use the view camera
     cam_matrix = visii.entity.get(camera_name).get_transform().get_world_to_local_matrix()
+
+    # rotate camera by 180° around x
+    # from: X right, Y up and Z out of the image towards the viewer
+    # to: X right, Y down and Z into the image away from the viewer (= OpenCV / NDDS / ROS "optical" frame)
+    cam_matrix = visii.mat4(1, 0, 0, 0,
+                            0, -1, 0, 0,
+                            0, 0, -1, 0,
+                            0, 0, 0, 1) * cam_matrix
+
     cam_matrix_export = []
     for row in cam_matrix:
         cam_matrix_export.append([row[0],row[1],row[2],row[3]])
-    
-    cam_world_location = visii.entity.get(camera_name).get_transform().get_position()
-    cam_world_quaternion = visii.entity.get(camera_name).get_transform().get_rotation()
+
+    inverse_cam_matrix = visii.inverse(cam_matrix)
+    cam_world_location = visii.vec3(inverse_cam_matrix[3][0], inverse_cam_matrix[3][1], inverse_cam_matrix[3][2])
+    cam_world_quaternion = visii.quat(inverse_cam_matrix)
 
     cam_intrinsics = visii.entity.get(camera_name).get_camera().get_intrinsic_matrix(width, height)
 
