@@ -49,7 +49,7 @@ python single_video_pybullet.py --nb_frames 1 --scale 0.01
 
 This will generate a single frame example in `output/output_example/`. The image should be similar to the following: 
 
-![This is an image](/scripts/nvisii_data_gen/output/output_example/00001.png)
+![example output image](output/output_example/00000.png)
 
 The script has a few controls that are exposed at the beginning of the file. 
 Please consult `single_video_pybullet.py` for a complete list of parameters. 
