@@ -1068,13 +1068,13 @@ def export_to_ndds_file(
                         ]
                     },
                     'camera_view_matrix':cam_matrix_export,
-                    'location_world':
+                    'location_worldframe':
                     [
                         cam_world_location[0],
                         cam_world_location[1],
                         cam_world_location[2],
                     ],
-                    'quaternion_world_xyzw':[
+                    'quaternion_xyzw_worldframe':[
                         cam_world_quaternion[0],
                         cam_world_quaternion[1],
                         cam_world_quaternion[2],
@@ -1193,7 +1193,7 @@ def export_to_ndds_file(
                 pos_camera_frame[1],
                 pos_camera_frame[2]
             ],
-            'location_world': [
+            'location_worldframe': [
                 trans.get_position()[0],
                 trans.get_position()[1],
                 trans.get_position()[2]
@@ -1204,7 +1204,7 @@ def export_to_ndds_file(
                 quaternion_xyzw[2],
                 quaternion_xyzw[3],
             ],
-            'quaternion_xyzw_world':[
+            'quaternion_xyzw_worldframe':[
                 trans.get_rotation()[0],
                 trans.get_rotation()[1],
                 trans.get_rotation()[2],

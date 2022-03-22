@@ -164,10 +164,10 @@ Each generated image is accompanied by a JSON file. This JSON file contains the 
 
 * `camera_data`
     - `camera_look_at`: an alternative representation of the `camera_view_matrix`
-    - `camera_view_matrix`: 4×4 transformation matrix from the world to the camera coordinate system
+    - `camera_view_matrix`: 4×4 transformation matrix from the world to the camera coordinate system. This is the inverse of `location_worldframe` + `quaternion_xyzw_worldframe`.
     - `height` and `width`: dimensions of the image in pixels
     - `intrinsics`: the camera intrinsics
-    - `location_world` and `quaternion_world_xyzw`: see below
+    - `location_worldframe` and `quaternion_xyzw_worldframe`: see below
 
 * `objects`: one entry for each object instance, with:
     - `bounding_box_minx_maxx_miny_maxy`: 2D bounding box of the object in the image: left, right, top, bottom (in pixels)
@@ -175,7 +175,7 @@ Each generated image is accompanied by a JSON file. This JSON file contains the 
     - `local_cuboid`: 3D coordinates of the vertices of the 3D bounding cuboid (in meters); currently always `null`
     - `local_to_world_matrix`: 4×4 transformation matrix from the object to the world coordinate system
     - `location` and `quaternion_xyzw`: position and orientation of the object in the *camera* coordinate system
-    - `location_world` and `quaternion_xyzw_world`:  position and orientation of the object (or camera) in the *world* coordinate system
+    - `location_worldframe` and `quaternion_xyzw_worldframe`:  position and orientation of the object (or camera) in the *world* coordinate system
     - `name`: unique string that identifies the object instance internally
     - `projected_cuboid`: 2D coordinates of the projection of the the vertices of the 3D bounding cuboid (in pixels) plus the centroid. See section "Projected cuboid corners".
     - `provenance`: always `nvisii`
