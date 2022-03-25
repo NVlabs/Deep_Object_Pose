@@ -5,5 +5,5 @@ pybullet
 randomcolor
 requests
 simplejson
-Pillow==5.2.0
+Pillow
 pyquaternion

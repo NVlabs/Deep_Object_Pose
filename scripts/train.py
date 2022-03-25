@@ -264,20 +264,14 @@ class DopeNetwork(nn.Module):
 def default_loader(path):
     return Image.open(path).convert('RGB')          
 
-def loadjson(path, objectsofinterest, img):
+def loadjson(path, objectofinterest):
     """
-    Loads the data from a json file. 
-    If there are no objects of interest, then load all the objects. 
+    Loads the data from a json file.
+    If there are no objects of interest, then load all the objects.
     """
-    with open(path) as data_file:    
+    with open(path) as data_file:
         data = json.load(data_file)
-    # print (path)
     pointsBelief = []
-    boxes = []
-    points_keypoints_3d = []
-    points_keypoints_2d = []
-    pointsBoxes = []
-    poses = []
     centroids = []
 
     translations = []
@@ -286,56 +280,47 @@ def loadjson(path, objectsofinterest, img):
 
     for i_line in range(len(data['objects'])):
         info = data['objects'][i_line]
-        if not objectsofinterest is None and \
-           not objectsofinterest in info['class'].lower():
-            continue 
-        
-        box = info['bounding_box']
-        boxToAdd = []
+        if not objectofinterest is None and \
+                not objectofinterest in info['class'].lower():
+            continue
 
-        boxToAdd.append(float(box['top_left'][0]))
-        boxToAdd.append(float(box['top_left'][1]))
-        boxToAdd.append(float(box["bottom_right"][0]))
-        boxToAdd.append(float(box['bottom_right'][1]))
-        boxes.append(boxToAdd)
-
-        boxpoint = [(boxToAdd[0],boxToAdd[1]),(boxToAdd[0],boxToAdd[3]),
-                    (boxToAdd[2],boxToAdd[1]),(boxToAdd[2],boxToAdd[3])]
-
-        pointsBoxes.append(boxpoint)
-        
-        # 3dbbox with belief maps
+        # 3d bbox with belief maps
         points3d = []
-        
+
         pointdata = info['projected_cuboid']
         for p in pointdata:
-            points3d.append((p[0],p[1]))
+            points3d.append((p[0], p[1]))
 
-        # Get the centroids
-        pcenter = info['projected_cuboid_centroid']
+        if len(points3d) == 8:
+            # NDDS format: 8 points in 'projected_cuboid', 1 point in 'projected_cuboid_centroid'
+            pcenter = info['projected_cuboid_centroid']
+            points3d.append((pcenter[0], pcenter[1]))
+        elif len(points3d) == 9:
+            # nvisii format: 9 points in 'projected_cuboid', no 'projected_cuboid_centroid' key
+            pcenter = points3d[-1]
+        else:
+            raise RuntimeError(f'projected_cuboid has to have 8 or 9 points while reading "{path}"')
 
-        points3d.append ((pcenter[0],pcenter[1]))
         pointsBelief.append(points3d)
-        points.append (points3d + [(pcenter[0],pcenter[1])])
-        centroids.append((pcenter[0],pcenter[1]))
+        points.append(points3d + [(pcenter[0], pcenter[1])])  # NOTE: Adding the centroid again is probably a bug.
+        centroids.append((pcenter[0], pcenter[1]))
 
         # load translations
         location = info['location']
-        translations.append([location[0],location[1],location[2]])
+        translations.append([location[0], location[1], location[2]])
 
         # quaternion
         rot = info["quaternion_xyzw"]
         rotations.append(rot)
 
     return {
-        "pointsBelief":pointsBelief, 
-        "rotations":rotations,
-        "translations":translations,
-        "centroids":centroids,
-        "points":points,
-        "keypoints_2d":points_keypoints_2d,
-        "keypoints_3d":points_keypoints_3d,
-        }
+        "pointsBelief": pointsBelief,
+        "rotations": rotations,
+        "translations": translations,
+        "centroids": centroids,
+        "points": points,
+        "keypoints_2d": [],
+    }
 
 def loadimages(root):
     """
@@ -377,7 +362,7 @@ class MultipleVertexJson(data.Dataset):
             normal = None, test=False, 
             target_transform = None,
             loader = default_loader, 
-            objectsofinterest = "",
+            objectofinterest = "",
             img_size = 400,
             save = False,  
             noise = 2,
@@ -387,7 +372,7 @@ class MultipleVertexJson(data.Dataset):
             random_rotation = 15.0,
             ):
         ###################
-        self.objectsofinterest = objectsofinterest
+        self.objectofinterest = objectofinterest
         self.img_size = img_size
         self.loader = loader
         self.transform = transform
@@ -442,7 +427,7 @@ class MultipleVertexJson(data.Dataset):
 
         loader = loadjson
         
-        data = loader(txt, self.objectsofinterest,img)
+        data = loader(txt, self.objectofinterest)
 
         pointsBelief        =   data['pointsBelief'] 
         objects_centroid    =   data['centroids']
@@ -488,11 +473,11 @@ class MultipleVertexJson(data.Dataset):
 
         cuboid = torch.zeros(1)
 
-        if self.objectsofinterest is None:
+        if self.objectofinterest is None:
             cuboid = np.array(data['exported_objects'][0]['cuboid_dimensions'])
         else:
             for info in data["exported_objects"]:
-                if self.objectsofinterest in info['class']:
+                if self.objectofinterest in info['class']:
                     cuboid = np.array(info['cuboid_dimensions'])
 
         img_original = img.copy()        
@@ -1167,7 +1152,7 @@ trainingdata = None
 if not opt.data == "":
     train_dataset = MultipleVertexJson(
         root = opt.data,
-        objectsofinterest=opt.object,
+        objectofinterest=opt.object,
         keep_orientation = True,
         noise = opt.noise,
         sigma = opt.sigma,
@@ -1203,7 +1188,7 @@ if not opt.datatest == "":
     testingdata = torch.utils.data.DataLoader(
         MultipleVertexJson(
             root = opt.datatest,
-            objectsofinterest=opt.object,
+            objectofinterest=opt.object,
             keep_orientation = True,
             noise = opt.noise,
             sigma = opt.sigma,
