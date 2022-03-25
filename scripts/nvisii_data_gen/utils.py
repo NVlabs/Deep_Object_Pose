@@ -1002,6 +1002,76 @@ def get_cuboid_image_space(obj_id, camera_name = 'my_camera'):
     return points, points_cam
 
 
+def object_to_class_name(obj_name):
+    try:
+        # strip off part before first '_' ('hope_' or 'google_') and after last '_' ('_1234')
+        return obj_name.split('_', 1)[1].rsplit('_', 1)[0]
+    except:
+        return obj_name
+
+
+def export_to_ndds_folder_settings_files(
+        output_folder=".",
+        obj_names=None,
+        height=500,
+        width=500,
+        camera_name='my_camera',
+):
+    if obj_names is None:
+        obj_names = []
+
+    # write _camera_settings.json
+    cam_intrinsics = visii.entity.get(camera_name).get_camera().get_intrinsic_matrix(width, height)
+    dict_out = {
+        "camera_settings": [
+            {
+                "name": camera_name,
+                "intrinsic_settings":
+                    {
+                        "resX": width,
+                        "resY": height,
+                        "fx": cam_intrinsics[0][0],
+                        "fy": cam_intrinsics[1][1],
+                        "cx": cam_intrinsics[2][0],
+                        "cy": cam_intrinsics[2][1],
+                        "s": cam_intrinsics[1][0]
+                    },
+                "captured_image_size":
+                    {
+                        "width": width,
+                        "height": height
+                    }
+            }
+        ]
+    }
+    camera_settings_filename = output_folder + "/_camera_settings.json"
+    with open(camera_settings_filename, 'w') as fp:
+        json.dump(dict_out, fp, indent=4)
+
+    # write _object_settings.json
+    exported_object_classes = []
+    exported_objects = {}
+    for obj_name in obj_names:
+        class_name = object_to_class_name(obj_name)
+        if class_name in exported_object_classes:
+            continue
+        exported_object_classes.append(class_name)
+        mesh = visii.mesh.get(obj_name)
+        if mesh is None:
+            continue
+        bbox_size = mesh.get_max_aabb_corner() - mesh.get_min_aabb_corner()
+        exported_objects[class_name] = {"class": class_name,
+                                        "cuboid_dimensions": [bbox_size[0], bbox_size[1], bbox_size[2]]}
+    exported_object_classes.sort()
+    dict_out = {
+        "exported_object_classes": exported_object_classes,
+        "exported_objects": [exported_objects[class_name] for class_name in exported_object_classes]
+    }
+    object_settings_filename = output_folder + "/_object_settings.json"
+    with open(object_settings_filename, 'w') as fp:
+        json.dump(dict_out, fp, indent=4)
+
+
 def export_to_ndds_file(
     filename = "tmp.json", #this has to include path as well
     obj_names = [], # this is a list of ids to load and export
@@ -1183,11 +1253,7 @@ def export_to_ndds_file(
             trans_matrix_export.append([row[0],row[1],row[2],row[3]])
 
         # Final export
-        try:
-            # strip off part before first '_' ('hope_') and after last '_' ('_1234')
-            class_name = obj_name.split('_', 1)[1].rsplit('_', 1)[0]
-        except:
-            class_name = obj_name
+        class_name = object_to_class_name(obj_name)
         try:
             seg_id = id_keys_map[obj_name]
         except :

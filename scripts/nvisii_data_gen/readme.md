@@ -52,7 +52,7 @@ This will generate a single frame example in `output/output_example/`. The image
 ![example output image](output/output_example/00000.png)
 
 The script has a few controls that are exposed at the beginning of the file. 
-Please consult `single_video_pybullet.py` for a complete list of parameters. 
+Please consult `single_video_pybullet.py --help` for a complete list of parameters. 
 The major parameters are as follows: 
 - `--spp` for the number of sample per pixel, the higher it is the better quality the resulting image.  
 - `--nb_frames` number of images to export.
@@ -110,13 +110,9 @@ If you use this data generation script in your research, please cite as follows:
 
 # Training
 
-Please use the updated training scripts with this data: https://github.com/NVlabs/Deep_Object_Pose/tree/master/scripts/train2 . 
-
-<!-- # To verify
-
-- Verify that the data exported is compatible with the training script directly. This script does not export `_camera_setting.json` file for example, the information is directly in the `.json` files. 
-PRs are welcome :P. 
- -->
+You can either use the main training script ([`scripts/train.py`](https://github.com/NVlabs/Deep_Object_Pose/blob/master/scripts/train.py),
+at least commit [9b509fa8](https://github.com/NVlabs/Deep_Object_Pose/commit/9b509fa842dbcb3c23858378b0d1cdfbbf29f235))
+or the updated training script ([`scripts/train2`](https://github.com/NVlabs/Deep_Object_Pose/tree/master/scripts/train2)) with this data. 
 
 # Dataset format
 

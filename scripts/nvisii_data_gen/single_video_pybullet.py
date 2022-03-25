@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 import cv2
 import glob
@@ -132,10 +134,13 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    '--no-visibility-fraction',
+    '--visibility-fraction',
     action='store_true',
     default=False,
-    help = "Do not compute the `visibility` field of the json output (always set to 1). Speeds up rendering."
+    help = "Compute the fraction of visible pixels and store it in the "
+           "`visibility` field of the json output. Without this argument, "
+           "`visibility` is always set to 1. Slows down rendering by about "
+           "50 %%, depending on the number of visible objects."
 )
 
 parser.add_argument(
@@ -450,6 +455,13 @@ plane6_body = p.createMultiBody(
 # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
+export_to_ndds_folder_settings_files(
+    opt.outf,
+    obj_names=names_to_export,
+    width=opt.width,
+    height=opt.height,
+    camera_name='camera',
+)
 
 i_frame = -1
 i_render = 0
@@ -542,7 +554,7 @@ while True:
             # cuboids = cuboids,
             camera_struct = random_camera_movement,
             segmentation_mask=segmentation_mask,
-            compute_visibility_fraction=(not opt.no_visibility_fraction),
+            compute_visibility_fraction=opt.visibility_fraction,
         )
         visii.render_data_to_file(
             width=opt.width,
