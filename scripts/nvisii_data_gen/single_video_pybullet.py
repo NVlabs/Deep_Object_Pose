@@ -132,10 +132,13 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    '--no-visibility-fraction',
+    '--visibility-fraction',
     action='store_true',
     default=False,
-    help = "Do not compute the `visibility` field of the json output (always set to 1). Speeds up rendering."
+    help = "Compute the fraction of visible pixels and store it in the "
+           "`visibility` field of the json output. Without this argument, "
+           "`visibility` is always set to 1. Slows down rendering by about "
+           "50 %%, depending on the number of visible objects."
 )
 
 parser.add_argument(
@@ -542,7 +545,7 @@ while True:
             # cuboids = cuboids,
             camera_struct = random_camera_movement,
             segmentation_mask=segmentation_mask,
-            compute_visibility_fraction=(not opt.no_visibility_fraction),
+            compute_visibility_fraction=opt.visibility_fraction,
         )
         visii.render_data_to_file(
             width=opt.width,
