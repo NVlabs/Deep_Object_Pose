@@ -911,29 +911,53 @@ random_texture_material.textures = []
 ######## NDDS ##########
 
 def add_cuboid(name, scale=1, debug=False):
+    """
+    Computes the 3D bounding cuboid for object `name` and the centroid, adds the
+    corresponding child transforms to the object (which will later be used in
+    `get_cuboid_image_space`), and optionally adds small spheres as debug markers
+    to the scene.
+
+    The order of the indexes is the same as NVidia Deep learning Dataset Synthesizer (NDDS),
+    nvdu_viz from NVidia Dataset Utilities and DOPE.
+
+    The indexes of the 3D bounding cuboid are in the order shown in the sketch
+    below (0..7), with the object being in its neutral orientation (X axis pointing
+    forward, Y left, Z up).
+
+       (m) 3 +-----------------+ 0 (b)
+            /                 /|
+           /                 / |
+    (m) 2 +-----------------+ 1| (b)
+          |                 |  |
+          |       ^ z       |  |
+          |       |         |  |
+          |  y <--x         |  |
+      (y) |                 |  + 4 (g)
+          |                 | /
+          |                 |/
+    (y) 6 +-----------------+ 5 (g)
+
+    Debug markers for the cuboid corners can be rendered using the `--debug` option,
+    with (b) = blue, (m) = magenta, (g) = green, (y) = yellow and the centroid being
+    white.
+    """
     obj = visii.entity.get(name)
 
     min_obj = obj.get_mesh().get_min_aabb_corner()
     max_obj = obj.get_mesh().get_max_aabb_corner()
     centroid_obj = obj.get_mesh().get_aabb_center()
 
-
     cuboid = [
-        visii.vec3(max_obj[0], max_obj[1], max_obj[2]),
-        visii.vec3(min_obj[0], max_obj[1], max_obj[2]),
         visii.vec3(max_obj[0], min_obj[1], max_obj[2]),
-        visii.vec3(max_obj[0], max_obj[1], min_obj[2]),
         visii.vec3(min_obj[0], min_obj[1], max_obj[2]),
+        visii.vec3(min_obj[0], max_obj[1], max_obj[2]),
+        visii.vec3(max_obj[0], max_obj[1], max_obj[2]),
         visii.vec3(max_obj[0], min_obj[1], min_obj[2]),
-        visii.vec3(min_obj[0], max_obj[1], min_obj[2]),
         visii.vec3(min_obj[0], min_obj[1], min_obj[2]),
-        visii.vec3(centroid_obj[0], centroid_obj[1], centroid_obj[2]), 
+        visii.vec3(min_obj[0], max_obj[1], min_obj[2]),
+        visii.vec3(max_obj[0], max_obj[1], min_obj[2]),
+        visii.vec3(centroid_obj[0], centroid_obj[1], centroid_obj[2]),
     ]
-
-    # change the ids to be like ndds / DOPE
-    cuboid = [  cuboid[2],cuboid[0],cuboid[3],
-                cuboid[5],cuboid[4],cuboid[1],
-                cuboid[6],cuboid[7],cuboid[-1]]
 
     # same colors as nvdu_viz
     cuboid_colors = [
@@ -963,8 +987,6 @@ def add_cuboid(name, scale=1, debug=False):
     for i_v, v in enumerate(cuboid):
         cuboid[i_v]=[v[0], v[1], v[2]]
 
-
-     
     return cuboid
 
 def get_cuboid_image_space(obj_id, camera_name = 'my_camera'):
