@@ -455,6 +455,13 @@ plane6_body = p.createMultiBody(
 # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
+export_to_ndds_folder_settings_files(
+    opt.outf,
+    obj_names=names_to_export,
+    width=opt.width,
+    height=opt.height,
+    camera_name='camera',
+)
 
 i_frame = -1
 i_render = 0
