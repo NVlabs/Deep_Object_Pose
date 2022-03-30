@@ -975,7 +975,13 @@ def add_cuboid(name, scale=1, debug=False):
     for i_p, p in enumerate(cuboid):
         child_transform = visii.transform.create(f"{name}_cuboid_{i_p}")
         child_transform.set_position(p)
-        child_transform.set_parent(obj.get_transform())
+
+        # Attach the cuboids not directly to the object's transform, but to the symmetry_corrected
+        # transform instead. That way, when the symmetry_corrected transform gets updated to the
+        # "canonical" orientation (i.e., the symmetry transformation with the best alignment),
+        # the cuboid corners get rotated along with it.
+        child_transform.set_parent(visii.transform.get(f"{name}_symmetry_corrected"))
+
         if debug: 
             visii.entity.create(
                 name = f"{name}_cuboid_{i_p}",
@@ -1206,20 +1212,19 @@ def export_to_ndds_file(
             for i_p, p in enumerate(projected_keypoints):
                 projected_keypoints[i_p] = [p[0]*width, p[1]*height]
 
-        # Get the location and rotation of the object in the camera frame 
-
-        trans = visii.transform.get(obj_name)
+        # Get the location and rotation of the object in the camera frame
+        trans = visii.transform.get(f"{obj_name}_symmetry_corrected")
         if trans is None:
-            trans = visii.entity.get(obj_name).get_transform()
+            trans = visii.entity.get(f"{obj_name}_symmetry_corrected").get_transform()
             if trans is None: 
                 continue
 
-        quaternion_xyzw = visii.inverse(cam_world_quaternion) * trans.get_rotation()
+        quaternion_xyzw = visii.inverse(cam_world_quaternion) * visii.quat(trans.get_local_to_world_matrix())
 
         object_world = visii.vec4(
-            trans.get_position()[0],
-            trans.get_position()[1],
-            trans.get_position()[2],
+            trans.get_world_position()[0],
+            trans.get_world_position()[1],
+            trans.get_world_position()[2],
             1
         ) 
         pos_camera_frame = cam_matrix * object_world
@@ -1292,9 +1297,9 @@ def export_to_ndds_file(
                 pos_camera_frame[2]
             ],
             'location_worldframe': [
-                trans.get_position()[0],
-                trans.get_position()[1],
-                trans.get_position()[2]
+                trans.get_world_position()[0],
+                trans.get_world_position()[1],
+                trans.get_world_position()[2]
             ],
             'quaternion_xyzw':[
                 quaternion_xyzw[0],
@@ -1303,10 +1308,10 @@ def export_to_ndds_file(
                 quaternion_xyzw[3],
             ],
             'quaternion_xyzw_worldframe':[
-                trans.get_rotation()[0],
-                trans.get_rotation()[1],
-                trans.get_rotation()[2],
-                trans.get_rotation()[3]
+                visii.quat(trans.get_local_to_world_matrix())[0],
+                visii.quat(trans.get_local_to_world_matrix())[1],
+                visii.quat(trans.get_local_to_world_matrix())[2],
+                visii.quat(trans.get_local_to_world_matrix())[3],
             ],
             'local_to_world_matrix':trans_matrix_export,
             'projected_cuboid':projected_keypoints,
@@ -1328,8 +1333,206 @@ def change_image_extension(path,extension="jpg"):
     cv2.imwrite(path.replace("png",extension),im)
     subprocess.call(['rm',path])
     del im
-    
 
+
+######## SYMMETRIES ##########
+
+def update_symmetry_corrected_transform(obj_id, model_info, symmetry_transforms, camera_name='camera'):
+    """
+    Updates the "object transform" -> "symmetry_corrected transform" to the "canonical" symmetry
+    transform. The "canonical" symmetry transform is the one with the smallest angle
+    between the object and camera axes specified in "align_axes" in the model_info.
+
+    The cuboid corners are child transforms of the "symmetry_corrected" transform, so that when that
+    transform is updated here, the cuboid corners will be rotated along with it such that they are
+    identical for two poses which are symmetrical.
+    """
+
+    # convert align_axes vectors to visii.vec3
+    align_axes = []
+    try:
+        # e.g., "align_axes": [{"object": [0, 1, 0], "camera": [0, 0, 1]}, {"object": [0, 0, 1], "camera": [0, 1, 0]}]
+        for axis_pair in model_info["align_axes"]:
+            object_axis = axis_pair["object"]
+            object_axis = visii.vec3(object_axis[0], object_axis[1], object_axis[2])
+            camera_axis = axis_pair["camera"]
+            camera_axis = visii.vec3(camera_axis[0], camera_axis[1], camera_axis[2])
+            align_axes.append({"object": object_axis, "camera": camera_axis})
+    except (KeyError, IndexError):
+        align_axes.append({"object": visii.vec3(1, 0, 0), "camera": visii.vec3(0, 0, 1)})
+
+    # find the symmetry transform with the best alignment between the first object_axis and the first camera_axis,
+    # using the second object_axis/camera_axis as a tie breaker
+
+    cam_matrix = visii.entity.get(camera_name).get_transform().get_world_to_local_matrix()
+
+    # calculate rotation error for each symmetry transform
+    def calc_alignment_score(object_axis, camera_axis, symmetry_trans):
+        """
+        Transforms the `object_axis` vector into the camera frame using the transformation `trans` and calculates
+        the "alignment score" between the rotated vector and the `camera_axis` vector. The "alignment score" is
+        just the dot product between the vectors, so `math.acos(alignment_score)` is the angle between the vectors.
+        `alignment_score` is between -1 (180 degree angle, worst alignment) and 1 (0 degree angle, best alignment).
+        """
+        mat_trans = visii.transform.get(f"{obj_id}").get_local_to_world_matrix() * symmetry_trans
+        sym_object_to_camera_rotation = visii.quat(cam_matrix * mat_trans)
+        sym_object_axis = sym_object_to_camera_rotation * object_axis
+        return visii.dot(sym_object_axis, camera_axis)
+
+    # score according to the first element of align_axes
+    scored_symmetry_transforms = []
+    for i, trans in enumerate(symmetry_transforms):
+        alignment_score = calc_alignment_score(align_axes[0]["object"], align_axes[0]["camera"], trans)
+        scored_symmetry_transforms.append((alignment_score, trans))
+
+    # Sort from best to worst. Using only first element (score) for sorting to
+    # avoid undefined "<" operator between second element (transforms).
+    scored_symmetry_transforms.sort(key=lambda x: x[0], reverse=True)
+
+    best_symmetry_transform = scored_symmetry_transforms[0][1]
+
+    if len(align_axes) >= 2:
+        # collect best transforms with identical score
+        if len(scored_symmetry_transforms) == 0:
+            return
+        reference_score = scored_symmetry_transforms[0][0]
+        top_symmetry_transforms = []
+        EPSILON = 1e-3
+        for (score, symmetry_transform) in scored_symmetry_transforms:
+            if math.fabs(score - reference_score) > EPSILON:
+                break
+            top_symmetry_transforms.append(symmetry_transform)
+
+        # use second element of align_axes as a tie breaker
+        max_alignment_score = float("-inf")
+        for trans in top_symmetry_transforms:
+            alignment_score = calc_alignment_score(align_axes[1]["object"], align_axes[1]["camera"], trans)
+            if alignment_score > max_alignment_score:
+                max_alignment_score = alignment_score
+                best_symmetry_transform = trans
+
+    # update the symmetry_corrected transform
+    symmetry_corrected_trans = visii.transform.get(f"{obj_id}_symmetry_corrected")
+    symmetry_corrected_trans.set_transform(best_symmetry_transform)
+
+
+# Modified from https://github.com/thodan/bop_toolkit/
+def rotation_matrix(angle, direction, point=None):
+    """Return matrix to rotate about axis defined by point and direction.
+
+    >>> R = rotation_matrix(math.pi/2, [0, 0, 1], [1, 0, 0])
+    >>> np.allclose(np.dot(R, [0, 0, 0, 1]), [1, -1, 0, 1])
+    True
+    >>> angle = (random.random() - 0.5) * (2*math.pi)
+    >>> direc = np.random.random(3) - 0.5
+    >>> point = np.random.random(3) - 0.5
+    >>> R0 = rotation_matrix(angle, direc, point)
+    >>> R1 = rotation_matrix(angle-2*math.pi, direc, point)
+    >>> is_same_transform(R0, R1)
+    True
+    >>> R0 = rotation_matrix(angle, direc, point)
+    >>> R1 = rotation_matrix(-angle, -direc, point)
+    >>> is_same_transform(R0, R1)
+    True
+    >>> I = np.identity(4, np.float64)
+    >>> np.allclose(I, rotation_matrix(math.pi*2, direc))
+    True
+    >>> np.allclose(2, np.trace(rotation_matrix(math.pi/2,
+    ...                                               direc, point)))
+    True
+
+    """
+    sina = math.sin(angle)
+    cosa = math.cos(angle)
+    direction = direction[:3] / np.linalg.norm(direction[:3])
+    # rotation matrix around unit vector
+    R = np.diag([cosa, cosa, cosa])
+    R += np.outer(direction, direction) * (1.0 - cosa)
+    direction *= sina
+    R += np.array([[0.0, -direction[2], direction[1]],
+                   [direction[2], 0.0, -direction[0]],
+                   [-direction[1], direction[0], 0.0]])
+    M = np.identity(4)
+    M[:3, :3] = R
+    if point is not None:
+        # rotation not around origin
+        point = np.array(point[:3], dtype=np.float64, copy=False)
+        M[:3, 3] = point - np.dot(R, point)
+    return M
+
+
+def get_symmetry_transformations(model_info_path, discrete_steps_count=64):
+    if model_info_path is not None:
+        try:
+            with open(model_info_path) as json_file:
+                model_info = json.load(json_file)
+        except FileNotFoundError:
+            model_info = {}
+    else:
+        model_info = {}
+
+    trans = _get_symmetry_transformations(model_info, discrete_steps_count)
+
+    # convert to visii format
+    trans_visii = []
+    for tran in trans:
+        R = tran['R']
+        t = tran['t']
+        mat_4x4 = visii.mat4(R[0][0], R[1][0], R[2][0], t[0],
+                             R[0][1], R[1][1], R[2][1], t[1],
+                             R[0][2], R[1][2], R[2][2], t[2],
+                             0, 0, 0, 1)
+        trans_visii.append(mat_4x4)
+
+    return trans_visii
+
+
+# Modified from https://github.com/thodan/bop_toolkit/
+def _get_symmetry_transformations(model_info, discrete_steps_count=64):
+    """Returns a set of symmetry transformations for an object model.
+
+    :param model_info: See files models_info.json provided with the datasets.
+    :param discrete_steps_count: The number of discretization steps
+      for continuous rotational symmetries.
+    :return: The set of symmetry transformations.
+    """
+    # Discrete symmetries.
+    trans_disc = [{'R': np.eye(3), 't': np.array([[0.0, 0.0, 0.0]]).T}]  # Identity.
+    if 'symmetries_discrete' in model_info:
+        for sym in model_info['symmetries_discrete']:
+            sym_4x4 = np.array(sym, dtype=np.float64).reshape((4, 4))
+            R = sym_4x4[:3, :3]
+            t = sym_4x4[:3, 3].reshape((3, 1))
+            trans_disc.append({'R': R, 't': t})
+
+    # Discretized continuous symmetries.
+    trans_cont = []
+    discrete_steps_count = int(discrete_steps_count)
+    if 'symmetries_continuous' in model_info:
+        for sym in model_info['symmetries_continuous']:
+            axis = np.array(sym['axis'], dtype=np.float64)
+            offset = np.array(sym['offset'], dtype=np.float64).reshape((3, 1))
+
+            # Discrete step in radians.
+            discrete_step = 2.0 * np.pi / discrete_steps_count
+
+            for i in range(0, discrete_steps_count):
+                R = rotation_matrix(i * discrete_step, axis)[:3, :3]
+                t = -R.dot(offset) + offset
+                trans_cont.append({'R': R, 't': t})
+
+    # Combine the discrete and the discretized continuous symmetries.
+    trans = []
+    for tran_disc in trans_disc:
+        if len(trans_cont):
+            for tran_cont in trans_cont:
+                R = tran_cont['R'].dot(tran_disc['R'])
+                t = tran_cont['R'].dot(tran_disc['t']) + tran_cont['t']
+                trans.append({'R': R, 't': t})
+        else:
+            trans.append(tran_disc)
+
+    return trans
 
 
 #################### BULLET THINGS ##############################
@@ -1528,7 +1731,7 @@ def update_pose(obj_dict,parent=False):
                                     rot[2]
                                     )   
                                 )
-
+    update_symmetry_corrected_transform(obj_dict['visii_id'], obj_dict['model_info'], obj_dict['symmetry_transforms'])
 
 def material_from_json(path_json, randomize = False):
     """Load a json file visii material definition. 
