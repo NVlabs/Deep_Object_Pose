@@ -9,6 +9,8 @@ This is the official DOPE ROS package for detection and 6-DoF pose estimation of
 ![DOPE Objects](dope_objects.png)
 
 ## Updates
+2022/03/30 - Update on the NViSII script to handle [symmetrical objects](https://github.com/NVlabs/Deep_Object_Pose/tree/master/scripts/nvisii_data_gen#handling-objects-with-symmetries).  Also the NViSII script is compatible with the original training script. Thanks to Martin Günther. 
+
 2021/12/13 - Added a NViSII script to generate synthetic data for training DOPE. See this [readme](https://github.com/NVlabs/Deep_Object_Pose/tree/master/scripts/nvisii_data_gen) for more details. We also added the update training and inference (without ROS) scripts for the NViSII paper [here](https://github.com/NVlabs/Deep_Object_Pose/tree/master/scripts/train2). 
 
 2021/10/20 - Added ROS2 Foxy inference support through [Isaac ROS DOPE package](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_pose_estimation) for Jetson and x86+CUDA-capable GPU.
@@ -19,7 +21,7 @@ This is the official DOPE ROS package for detection and 6-DoF pose estimation of
 
 2020/02/09 - Upgraded DOPE to use Python 3. Updated Dockerfile to use Python3-compatible ROS Noetic. The Python 2.7/ROS Kinetic is still available on the ['ros-kinetic' branch](https://github.com/NVlabs/Deep_Object_Pose/tree/ros-kinetic).
 
-2020/16/03 - Added a wiki (thanks to [@saratrajput](https://github.com/saratrajput)) 
+<!-- 2020/16/03 - Added a wiki (thanks to [@saratrajput](https://github.com/saratrajput))  -->
 
 <!-- 2019/03/07 - ROS interface update (thanks to Martin Günther) -->
 
