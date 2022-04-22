@@ -274,9 +274,29 @@ def adding_mesh_object(name, obj_to_load, texture_to_load, model_info_path=None,
 
     if texture_to_load is None:
         toys = load_obj_scene(obj_to_load)
-        toy_transform = visii.entity.get(toys[0]).get_transform().get_parent()
-        name = toys[0]
-        names_to_export.append(toy_transform.get_name())
+
+        toy_transform = visii.entity.get(toys[0]).get_transform()
+        toy_material = visii.entity.get(toys[0]).get_material()
+        toy_mesh = visii.entity.get(toys[0]).get_mesh()        
+
+        obj_export = visii.entity.create(
+                name = name,
+                transform = visii.transform.create(
+                    name = name, 
+                    position = toy_transform.get_position(),
+                    rotation = toy_transform.get_rotation(),
+                    scale = toy_transform.get_scale(),
+                ),
+                material = toy_material,
+                mesh = visii.mesh.create_from_file(name,obj_to_load),
+            )
+        toy_transform = obj_export.get_transform()
+        obj_export.get_material().set_roughness(random.uniform(0.1, 0.5))
+
+        for toy in toys:
+            visii.entity.remove(toy)
+
+        toys = [name]
     else:
         toys = [name]
 
@@ -299,6 +319,8 @@ def adding_mesh_object(name, obj_to_load, texture_to_load, model_info_path=None,
 
         toy_transform = toy.get_transform()
 
+    ###########################
+
     toy_transform.set_scale(visii.vec3(scale))
     toy_transform.set_position(
         visii.vec3(
@@ -318,6 +340,8 @@ def adding_mesh_object(name, obj_to_load, texture_to_load, model_info_path=None,
 
     # add symmetry_corrected transform
     child_transform = visii.transform.create(f"{toy_transform.get_name()}_symmetry_corrected")
+    # print(toy_transform.get_name())
+    # print(child_transform)
     child_transform.set_parent(toy_transform)
 
     # store symmetry transforms for later use.
@@ -334,6 +358,7 @@ def adding_mesh_object(name, obj_to_load, texture_to_load, model_info_path=None,
             model_info = {}
     else:
         model_info = {}
+
     visii_pybullet.append(
         {
             'visii_id': name,
@@ -360,7 +385,7 @@ def adding_mesh_object(name, obj_to_load, texture_to_load, model_info_path=None,
 
     for entity_name in toys:
         names_to_export.append(entity_name)
-        add_cuboid(entity_name, scale=scale, debug=debug)
+        add_cuboid(entity_name, scale=scale, debug=debug,toy_transform = toy_transform.get_name())
 
 google_content_folder = glob.glob(opt.objs_folder_distrators + "*/")
 
