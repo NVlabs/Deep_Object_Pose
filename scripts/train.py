@@ -80,7 +80,7 @@ from os.path import exists
 import cv2
 import colorsys
 
-from dope.utils import make_grid
+from utils import make_grid
 
 import warnings
 warnings.filterwarnings("ignore")
