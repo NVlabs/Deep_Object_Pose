@@ -226,6 +226,9 @@ class CleanVisiiDopeLoader(data.Dataset):
             # load the projected_cuboid_keypoints
             if obj['visibility'] > 0:
                 projected_cuboid_keypoints = obj['projected_cuboid']
+                # FAT dataset only has 8 corners for 'projected_cuboid' 
+                if len(projected_cuboid_keypoints) == 8:
+                    projected_cuboid_keypoints.append(obj['projected_cuboid_centroid'])
             else:
                 projected_cuboid_keypoints = [[-100,-100],[-100,-100],[-100,-100],\
                     [-100,-100],[-100,-100],[-100,-100],[-100,-100],[-100,-100],[-100,-100]]
