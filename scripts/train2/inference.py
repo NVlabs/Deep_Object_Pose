@@ -151,7 +151,7 @@ class DopeNode(object):
         img_name = "00000.png", # this is the name of the img file to save, it needs the .png at the end
         output_folder = 'out_inference', # folder where to put the output
         ):
-        img_name = str(img_name).zfill(5)
+        # img_name = str(img_name).zfill(5)
         """Image callback"""
 
         # img = self.cv_bridge.imgmsg_to_cv2(image_msg, "rgb8")
@@ -193,24 +193,26 @@ class DopeNode(object):
 
         for m in self.models:
             # Detect object
-            results, beliefs = ObjectDetector.detect_object_in_image(
+            results, _ = ObjectDetector.detect_object_in_image(
                 self.models[m].net,
                 self.pnp_solvers[m],
                 img,
                 self.config_detect
             )
-            # print(results)
-            # print('---')
+            print('---')
             # continue
             # Publish pose and overlay cube on image
             for i_r, result in enumerate(results):
+                # print("type(result):", type(result))
+                
                 if result["location"] is None:
+
                     continue
-                # print(result)
+                # print("result:", result)
                 loc = result["location"]
                 ori = result["quaternion"]
                 
-                print(loc)
+                print("loc:", loc)
 
                 dict_out['objects'].append({
                     'class':m,
@@ -236,12 +238,17 @@ class DopeNode(object):
                     for pair in result['projected_points']:
                         points2d.append(tuple(pair))
                     draw.draw_cube(points2d, self.draw_colors[m])
+
+        # create directory to save image if it does not exist 
+        if not os.path.isdir(f"{output_folder}/{img_name.split('/')[0]}"):
+            os.mkdir(f"{output_folder}/{img_name.split('/')[0]}")
+
         # save the output of the image. 
-        im.save(f"{output_folder}/{img_name}.png")
+        im.save(f"{output_folder}/{img_name}")
 
         # save the json files 
-        with open(f"{output_folder}/{img_name.replace('png','json')}", 'w') as fp:
-            json.dump(dict_out, fp)
+        with open(f"{output_folder}/{img_name.replace('jpg','json')}", 'w') as fp:
+            json.dump(dict_out, fp, indent=2)
 
             
 
@@ -327,9 +334,13 @@ if __name__ == "__main__":
 
     if not opt.data is None:
         videopath = opt.data
-        for j in sorted(glob.glob(videopath+"/*.png")):
+        for j in sorted(glob.glob(videopath+"/*/*.jpg", recursive=True)):
             imgs.append(j)
-            imgsname.append(j.replace(videopath,"").replace("/",""))
+            imgname = j.replace(videopath,"")
+            imgname = imgname[1:] if imgname[0] == '/' else imgname
+            # print("imgname:", imgname)
+
+            imgsname.append(imgname)
     else:
         if not opt.realsense:
             cap = cv2.VideoCapture(0)
@@ -357,6 +368,7 @@ if __name__ == "__main__":
             img_name = i_image
         else:
             if i_image >= len(imgs):
+                break # exit after all images have been inferred 
                 i_image =0
                 
             frame = cv2.imread(imgs[i_image])

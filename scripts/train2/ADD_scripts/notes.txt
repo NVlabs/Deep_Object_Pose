@@ -1,0 +1,76 @@
+python inference.py --data /home/jtremblay/code/hope-dataset/images/ --suffix *realsense_rgb.png --config ../config/config_pose_webcam.yaml --camera ../config/realsense_grocery.yaml --headless --outf hope_ketchup_video
+
+
+python inference.py --data /home/jtremblay/code/hope-dataset/images/ --suffix *realsense_rgb.png --config ../config/config_pose_webcam.yaml --camera ../config/realsense_grocery.yaml --headless --graph --outf hope_alphabet_soup
+
+config has the network to load. 
+
+
+ffmpeg -y -framerate 10 -pattern_type glob -i 'tmp/*.png' video.mp4
+
+
+make the figures
+
+CUDA_VISIBLE_DEVICES=1 python run_add.py --data_prediction hope_ketchup/ --outf hope_ketchup_adds
+
+CUDA_VISIBLE_DEVICES=1 python run_add.py --data_prediction h/ # the same as data_prediction input 
+
+
+python make_graphs.py --data \
+hope_ketchup_adds/adds_Ketchup_dope.p \
+hope_ketchup_adds/adds_Ketchup_mobile.p \ 
+hope_ketchup_adds/adds_Ketchup_mobile_visibility.p \ 
+hope_ketchup_adds/adds_Ketchup_full_ue4.p \ 
+hope_ketchup_adds/adds_Ketchup_full_visii.p \ 
+hope_ketchup_adds/adds_Ketchup_full_visii_25.p \ 
+--labels \
+"ue4 dope" \
+"visii mobile" \ 
+"visii mobile visibility" \ 
+"ue4 full" \
+"visii full 17" \
+"visii full 25" \
+--colours 0 1 2 3 4 5 \
+--threshold 0.1 
+
+same as before but one line
+
+python make_graphs.py --data hope_ketchup_adds/adds_Ketchup_dope.p hope_ketchup_adds/adds_Ketchup_mobile.p hope_ketchup_video_visii_visibility/adds_Ketchup_mobile_visibility.p hope_ketchup_adds/adds_Ketchup_full_ue4.p hope_ketchup_adds/adds_Ketchup_full_visii_rerun.p hope_ketchup_adds/adds_Ketchup_full_visii_25.p --labels "ue4 dope" "visii mobile" "visii mobile visibility" "ue4 full" "visii full 17" "visii full 25" --colours 0 1 2 3 4 5 --threshold 0.1 
+
+
+python make_graphs.py --data ketchup_exp/adds_Ketchup_dope.p ketchup_exp/adds_Ketchup_ue4.p ketchup_exp/adds_Ketchup_mobile.p --labels "visii dope" "ue4 dope" "visii mobile" --colours 0 1 2
+
+
+
+python make_graphs.py --data hope_ketchup_video_test_visii_ketchup_17/adds_Ketchup_full_visii_rerun.p --labels "visii full 17" --colours 0 --threshold 0.1 
+
+
+
+###############################################################
+
+
+CUDA_VISIBLE_DEVICES=1 python run_add.py --data_prediction dope_results/dope_dr/
+CUDA_VISIBLE_DEVICES=1 python run_add.py --data_prediction dope_results/dfull_dr/
+
+
+
+python make_graphs.py --data dope_results/dope_dr/adds_AlphabetSoup.p dope_results/dfull_dr/adds_AlphabetSoup.p --labels 'ue4 dope' 'ue4 full' --colours 0 1 --threshold 0.1 --outf dope_results/ --filename AlphabetSoup
+
+python make_graphs.py --data dope_results/dope_dr/adds_Ketchup.p dope_results/dfull_dr/adds_Ketchup.p --labels 'ue4 dope' 'ue4 full' --colours 0 1 --threshold 0.1 --outf dope_results/ --filename Ketchup
+
+
+
+################################################################
+
+python inference.py --data ../data/ycb_meat/sample/ --config ../config/config_pose_webcam.yaml
+
+
+
+
+# my own notes: 
+
+# to run add: 
+python run_add.py --data_prediction \
+/home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/cracker_out_1 \
+--outf cracker_add --data /home/andrewg/Documents/dope_ws/fat_data/rgb_only/single/003_cracker_box_16k/kitchen_1 \
+--adds 

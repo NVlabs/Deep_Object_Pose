@@ -1,0 +1,26 @@
+
+# To run inference: 
+
+python inference.py \
+--data /home/andrewg/Documents/dope_ws/fat_data/rgb_only/single/003_cracker_box_16k/kitchen_1 \
+--outf output/cracker_out_x
+
+# Run ADD Script: 
+python run_add.py \
+--data_prediction /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/cracker_out_3 \
+--data /home/andrewg/Documents/dope_ws/fat_data/rgb_only/single/003_cracker_box_16k/kitchen_1 \
+--cuboid --show --outf output/cracker_add
+
+## Entire Object: 
+# Run inference on entire dataset:
+python inference.py \
+--data /home/andrewg/Documents/dope_ws/fat_data/rgb_only/single/003_cracker_box_16k \
+--outf output/all_cracker_out_0
+
+# Run ADD on entire Object: 
+python run_add.py \
+--data_prediction /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/all_cracker_out_0 \
+--data /home/andrewg/Documents/dope_ws/fat_data/rgb_only/single/003_cracker_box_16k/ \
+--cuboid --show --outf output/all_cracker_add
+
+
