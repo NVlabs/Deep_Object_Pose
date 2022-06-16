@@ -9,3 +9,5 @@ venv
 *.hdr
 google_scanned_models/
 scripts/nvisii_data_gen/output/dataset/
+train2/output
+train2/ADD_scripts/output

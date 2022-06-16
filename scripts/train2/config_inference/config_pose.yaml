@@ -2,7 +2,7 @@ topic_camera: "/dope/webcam/image_raw"
 topic_camera_info: "/dope/webcam/camera_info"
 topic_publishing: "dope"
 input_is_rectified: True   # Whether the input image is rectified (strongly suggested!)
-downscale_height: 400      # if the input image is larger than this, scale it down to this pixel height
+downscale_height: 540      # if the input image is larger than this, scale it down to this pixel height
 
 # Comment any of these lines to prevent detection / pose estimation of that object
 weights: {
@@ -17,19 +17,23 @@ weights: {
     # "bleach":"package://dope/weights/bleach_28_dr.pth"
     # 'pudding':"weights_dope/pudding.pth"
     # 'pudding':"weights_dope/dope_network/net_epoch_60.pth"
-    'alphabet_soup':"weights_dope/resnet_simple/alphabe_soup.pth"
+    # 'alphabet_soup':"weights_dope/resnet_simple/alphabe_soup.pth"
+    # 'alphabet_soup' : "/home/andrewg/Documents/dope_ws/src/dope/scripts/train2/tmp3/net_epoch_20.pth"
+    # 'cracker' : "/home/andrewg/Documents/dope_ws/src/dope/scripts/train2/cracker_dope/net_epoch_13.pth"
+    '003_cracker_box_16k' : "/home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/cracker_dope_30_all/net_epoch_30.pth"
 }
 
 # Type of neural network architecture
 architectures: {
-    'pudding':"dope",
-    'alphabet_soup':'resnet_simple',   
+    '003_cracker_box_16k':"dope",
+    # 'pudding':"dope",
+    # 'alphabet_soup':'resnet_simple',   
 }
 
 
 # Cuboid dimension in cm x,y,z
 dimensions: {
-    "cracker": [16.403600692749023,21.343700408935547,7.179999828338623],
+    "003_cracker_box_16k": [16.403600692749023,21.343700408935547,7.179999828338623],
     "gelatin": [8.918299674987793, 7.311500072479248, 2.9983000755310059],
     "meat": [10.164673805236816,8.3542995452880859,5.7600898742675781],
     "mustard": [9.6024150848388672,19.130100250244141,5.824894905090332],
@@ -40,11 +44,10 @@ dimensions: {
     'cube_red':[5,5,5],
     'pudding':[49.47199821472168, 29.923000335693359, 83.498001098632812],
     'alphabet_soup':[8.3555002212524414, 7.1121001243591309, 6.6055998802185059]
-
 }
 
 class_ids: {
-    "cracker": 1,
+    "003_cracker_box_16k": 1,
     "gelatin": 2,
     "meat":    3,
     "mustard": 4,
@@ -58,7 +61,7 @@ class_ids: {
 }
 
 draw_colors: {
-    "cracker": [13, 255, 128],  # green
+    "003_cracker_box_16k": [13, 255, 128],  # green
     "gelatin": [255, 255, 255],  # while
     "meat": [0, 104, 255],  # blue
     "mustard": [217,12, 232],  # magenta
@@ -72,10 +75,10 @@ draw_colors: {
 
 # optional: provide a transform that is applied to the pose returned by DOPE
 model_transforms: {
-#    "cracker": [[ 0,  0,  1,  0],
-#                [ 0, -1,  0,  0],
-#                [ 1,  0,  0,  0],
-#                [ 0,  0,  0,  1]]
+   "003_cracker_box_16k": [[ 0,  0,  1,  0],
+               [ 0, -1,  0,  0],
+               [ 1,  0,  0,  0],
+               [ 0,  0,  0,  1]]
 }
 
 # optional: if you provide a mesh of the object here, a mesh marker will be
@@ -93,7 +96,7 @@ meshes: {
 
 # optional: If the specified meshes are not in meters, provide a scale here (e.g. if the mesh is in centimeters, scale should be 0.01). default scale: 1.0.
 mesh_scales: {
-    "cracker": 0.01,
+    "003_cracker_box_16k": 0.01,
     "gelatin": 0.01,
     "meat":    0.01,
     "mustard": 0.01,
