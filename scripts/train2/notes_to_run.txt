@@ -24,3 +24,17 @@ python run_add.py \
 --cuboid --show --outf output/all_cracker_add
 
 
+
+
+# For training: 
+
+python -m torch.distributed.launch --nproc_per_node=1 train.py \
+--network dope --epochs 2 --batchsize 10 \
+--data /home/andrewg/Documents/dope_ws/fat_data/single/003_cracker_box_16k/kitchen_0 \
+--outf output/tmp
+
+
+python -m torch.distributed.launch --nproc_per_node=1 train.py \
+--network dope --epochs 2 --batchsize 10 \
+--data /home/andrewg/Documents/dope_ws/fat_data/rgb_only/single/003_cracker_box_16k/kitchen_0 \
+--outf output/tmp

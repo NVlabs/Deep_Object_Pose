@@ -190,7 +190,8 @@ class CleanVisiiDopeLoader(data.Dataset):
         for path_look in path_dataset:
             self.imgs += load_data(path_look,extensions = self.extensions)
         
-        # np.random.shuffle(self.imgs)        
+        # np.random.shuffle(self.imgs) 
+        print("Number of Training Images:", len(self.imgs))     
 
         if debug:
             print("Debuging will be save in debug/")
