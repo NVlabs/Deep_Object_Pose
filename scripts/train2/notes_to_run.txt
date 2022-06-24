@@ -2,8 +2,13 @@
 # To run inference: 
 
 python inference.py \
---data /home/andrewg/Documents/dope_ws/fat_data/rgb_only/single/003_cracker_box_16k/kitchen_1 \
---outf output/cracker_out_x
+--data /home/andrewg/Documents/dope_ws/fat_data/rgb_only/single/003_cracker_box_16k \
+--outf output/inference/cracker_out_test
+
+# run inference on png data 
+python inference.py \
+--data /home/andrewg/Documents/dope_ws/generated_data/500_DOME_Cracker_Box \
+--outf /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/cracker_out_0
 
 # Run ADD Script: 
 python run_add.py \
@@ -21,7 +26,8 @@ python inference.py \
 python run_add.py \
 --data_prediction /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/all_cracker_out_0 \
 --data /home/andrewg/Documents/dope_ws/fat_data/rgb_only/single/003_cracker_box_16k/ \
---cuboid --show --outf output/all_cracker_add
+--cuboid --show \
+--outf output/all_cracker_add
 
 
 
@@ -38,3 +44,10 @@ python -m torch.distributed.launch --nproc_per_node=1 train.py \
 --network dope --epochs 2 --batchsize 10 \
 --data /home/andrewg/Documents/dope_ws/fat_data/rgb_only/single/003_cracker_box_16k/kitchen_0 \
 --outf output/tmp
+
+
+python -m torch.distributed.launch --nproc_per_node=1 train.py \
+--network dope --epochs 10 --batchsize 20 \
+--data /home/andrewg/Documents/dope_ws/generated_data/5000_DOME_Cracker_Box \
+--outf output/DOPE_epoch10_batchsize20_data5000DOMECrackerBox 
+

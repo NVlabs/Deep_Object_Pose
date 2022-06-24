@@ -10,6 +10,7 @@ listening to an image topic and publishing poses.
 """
 
 from __future__ import print_function
+# from tkinter import image_types
 
 import cv2
 import numpy as np
@@ -17,6 +18,7 @@ from PIL import Image
 from PIL import ImageDraw
 
 import sys 
+import re
 sys.path.append("inference")
 from cuboid import Cuboid3d
 from cuboid_pnp_solver import CuboidPNPSolver
@@ -200,6 +202,7 @@ class DopeNode(object):
                 self.config_detect
             )
             print('---')
+            print("len (results)", len(results))
             # continue
             # Publish pose and overlay cube on image
             for i_r, result in enumerate(results):
@@ -237,17 +240,25 @@ class DopeNode(object):
                     points2d = []
                     for pair in result['projected_points']:
                         points2d.append(tuple(pair))
+                    print("points2d: ", points2d)
                     draw.draw_cube(points2d, self.draw_colors[m])
 
         # create directory to save image if it does not exist 
+        if img_name[0] == '/':
+            img_name = img_name[1:]
+            
         if not os.path.isdir(f"{output_folder}/{img_name.split('/')[0]}"):
+            print("making dir 248")
             os.mkdir(f"{output_folder}/{img_name.split('/')[0]}")
+        else:
+            print(f"{output_folder}/{img_name.split('/')[0]} exists")
 
         # save the output of the image. 
         im.save(f"{output_folder}/{img_name}")
 
+        json_name = img_name.replace('png','json') if img_name.endswith(".png") else img_name.replace('jpg','json')
         # save the json files 
-        with open(f"{output_folder}/{img_name.replace('jpg','json')}", 'w') as fp:
+        with open(f"{output_folder}/{json_name}", 'w') as fp:
             json.dump(dict_out, fp, indent=2)
 
             
@@ -334,13 +345,21 @@ if __name__ == "__main__":
 
     if not opt.data is None:
         videopath = opt.data
-        for j in sorted(glob.glob(videopath+"/*/*.jpg", recursive=True)):
+
+        image_paths = sorted(glob.glob(videopath+'/*/*.png', recursive=True))
+        image_paths = sorted(glob.glob(videopath+'/*/*.png', recursive=True)) if len(image_paths) == 0 else image_paths
+        image_paths = sorted(glob.glob(videopath+'/*/*.jpg', recursive=True)) if len(image_paths) == 0 else image_paths
+        image_paths = sorted(glob.glob(videopath+'/*.jpg', recursive=True)) if len(image_paths) == 0 else image_paths
+
+        for j in image_paths:
+        # for j in sorted([os.path.join(root, files) for root, _, files in os.walk(videopath) if re.search(r'.*(png|jpg|jpeg)$', files)]):
             imgs.append(j)
             imgname = j.replace(videopath,"")
-            imgname = imgname[1:] if imgname[0] == '/' else imgname
-            # print("imgname:", imgname)
+            # imgname = imgname[1:] if imgname[0] == '/' else imgname
+            print("imgname:", imgname)
 
             imgsname.append(imgname)
+
     else:
         if not opt.realsense:
             cap = cv2.VideoCapture(0)

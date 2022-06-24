@@ -138,8 +138,11 @@ def loadimages(root,datastyle = "json",extensions= ['png']):
             #             imgpath.replace(ext,"json").replace(".rgb",'')))
             for imgpath in glob.glob(path+"/*.{}".format(ext.replace('.',''))):
                 if exists(imgpath) and exists(imgpath.replace(ext,"json")):
-                    imgs.append((imgpath,imgpath.replace(path,"").replace("/",""),
-                        imgpath.replace(ext,"json")))
+                    imgs.append(
+                        (imgpath,
+                        imgpath.replace(path,"").replace("/",""),
+                        imgpath.replace(ext,"json"))
+                    )
 
 
     def explore(path):
