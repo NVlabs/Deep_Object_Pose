@@ -66,8 +66,8 @@ class Draw(object):
         self.draw_line(points[0], points[5], color)
         self.draw_line(points[1], points[4], color)
 
-path_json = "/home/andrewg/Documents/dope_ws/generated_data/500_DOME_Cracker_Box/data/000009.json"
-path_img = "/home/andrewg/Documents/dope_ws/generated_data/500_DOME_Cracker_Box/data/000009.png"
+path_json = "/home/andrewg/Documents/dope_ws/generated_data/5000_DOME_Cracker_Box/data/000009.json"
+path_img = "/home/andrewg/Documents/dope_ws/generated_data/5000_DOME_Cracker_Box/data/000009.png"
 path_draw = "/home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/debug_draw/draw.png"
 
 img = Image.open(path_img).convert('RGB')

@@ -247,11 +247,12 @@ class DopeNode(object):
         if img_name[0] == '/':
             img_name = img_name[1:]
             
+            
         if not os.path.isdir(f"{output_folder}/{img_name.split('/')[0]}"):
-            print("making dir 248")
+            # print(f"Making Directory: {output_folder}/{img_name.split('/')[0]}")
             os.mkdir(f"{output_folder}/{img_name.split('/')[0]}")
         else:
-            print(f"{output_folder}/{img_name.split('/')[0]} exists")
+            # print(f"{output_folder}/{img_name.split('/')[0]} exists")
 
         # save the output of the image. 
         im.save(f"{output_folder}/{img_name}")
