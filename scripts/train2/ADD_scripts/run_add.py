@@ -29,6 +29,7 @@ from pyquaternion import Quaternion
 import pickle 
 import visii 
 import subprocess 
+from pathlib import Path
 
 
 
@@ -69,13 +70,15 @@ opt = parser.parse_args()
 
 if opt.outf is None:
     opt.outf = opt.data_prediction
+    # raise Exception("No value specified for output folder.")
 
 if os.path.isdir(opt.outf + "/tmp"):
     print(f'folder {opt.outf + "/tmp"}/ exists')
 else:
-    os.mkdir(opt.outf + "/tmp")
+    os.makedirs(opt.outf + "/tmp")
     print(f'created folder {opt.outf + "/tmp"}/')
 
+# Path(opt.outf).mkdir(parents=True, exist_ok=True)
 
 
 def get_all_entries(path_to_explore, what='*.json'):
@@ -246,8 +249,8 @@ visii.initialize_headless()
 # data_thruth = get_all_entries(opt.data,'scene_all_realsense.json')
 # if len(data_thruth) == 0: 
 #     data_thruth = get_all_entries(opt.data,'scene_realsense.json')
-data_thruth = get_all_entries(opt.data, "*.right.json")
-data_thruth += get_all_entries(opt.data, "*.left.json")
+data_thruth = get_all_entries(opt.data, "*.json")
+# data_thruth += get_all_entries(opt.data, "*.left.json")
 data_prediction = get_all_entries(opt.data_prediction)
 # data_prediction += get_all_entries(opt.data_prediction)
 
@@ -269,28 +272,34 @@ count_by_object = {}
 count_all_guesses = 0
 count_by_object_guesses = {}
 
+print("len(data_thruth)", len(data_thruth))
 
 for gt_file in data_thruth:
     scene_gt = gt_file.replace(opt.data,"").replace('.json','')
-    # print("scene_gt", scene_gt)
+    print("------------")
+    print("scene_gt", scene_gt)
+
     pred_scene = None
 
 
     for d in data_prediction:
         scene_d = d.replace(opt.data_prediction,'').replace('.json','')
-        scene_d = scene_d[1:] if scene_d[0] == '/' else scene_d
+        # print("scene_d", scene_d)
+
+        # scene_d = scene_d[1:] if scene_d[0] == '/' else scene_d
 
         # if scene in d:
-        # print(scene_d,scene_gt)
         # if scene_d.split('/')[-1] == scene_gt.split('/')[-1]:
         if scene_d == scene_gt:
+            # print(scene_d,scene_gt)
             
             pred_scene = d
             break
+    
+    # print("gt_file", gt_file)
 
     if pred_scene is None:
         continue
-    print(gt_file)
     gt_json = None
     with open(gt_file) as json_file:
         gt_json = json.load(json_file)
@@ -315,11 +324,13 @@ for gt_file in data_thruth:
                         obj['quaternion_xyzw'][0],
                         obj['quaternion_xyzw'][1],
                         obj['quaternion_xyzw'][2],
+                        # 0, 0, 0, 0,
                     ),
                     "position":visii.vec3(
                         obj['location'][0]/100,
                         obj['location'][1]/100,
                         obj['location'][2]/100,
+                        # 0, 0, 0
                     )
                 }
             ]
@@ -333,7 +344,7 @@ for gt_file in data_thruth:
             count_by_object[name_gt] = 1
 
     for obj_guess in gu_json['objects']:
-
+        print("obj_guess", obj_guess)
         name_guess = obj_guess['class']
         # print("name_guess", name_guess)
         name_look_up = obj_guess['class'].split('_')[0]
@@ -384,8 +395,8 @@ for gt_file in data_thruth:
         candidates = []
         for i_obj_gt, obj_gt in enumerate(objects_gt):
             name_gt, pose_mesh_gt = obj_gt
-            # print("name_gt", name_gt)
-            name_gt = name_gt.replace('_16k', '')
+            print("obj_gt", obj_gt)
+            # name_gt = name_gt.replace('_16k', '')
 
             if name_look_up in name_gt.split('_'):
                 name_look_up = name_gt
@@ -394,7 +405,10 @@ for gt_file in data_thruth:
         best_dist = 10000000000 
         best_index = -1 
 
+
         for candi_gt in candidates:
+            print("candi_gt", candi_gt)
+
             # compute the add
             i_gt, pose_gt, name_gt = candi_gt
             # if i_gt in used_index:
@@ -455,13 +469,16 @@ for gt_file in data_thruth:
             else:
                 if opt.cuboid:                                            
                     dist = 0
+                    
                     for i_p in range(9):
                         corner_gt = visii.transform.get(f"{name_gt + '_gt'}_cuboid_{i_p}")
                         corner_gu = visii.transform.get(f"{name_look_up+ '_gu'}_cuboid_{i_p}")
+
                         gt_trans = corner_gt.get_local_to_world_matrix()
                         gu_trans = corner_gu.get_local_to_world_matrix()
 
                         # print(corner_pos,cuboid_gt[i_p])
+                        print(f"{i_p} | gt: {gt_trans[3]} gu: {gu_trans[3]}")
                         dist +=\
                             math.sqrt(
                                 (gt_trans[3][0]-gu_trans[3][0])**2+\
@@ -486,6 +503,7 @@ for gt_file in data_thruth:
             if dist < best_dist:
                 best_dist = dist
                 best_index = i_gt
+            print("dist", dist)                
 
         if best_index != -1:
             if not name_look_up in adds_objects.keys():
@@ -510,7 +528,9 @@ else:
         os.mkdir(opt.outf)
     except:
         pass
+
 # print("adds_objects", adds_objects)
+
 count_by_object["all"] = count_all_annotations
 pickle.dump(count_by_object,open(f'{opt.outf}/count_all_annotations.p','wb'))
 pickle.dump(adds_all,open(f'{opt.outf}/adds_all.p','wb'))

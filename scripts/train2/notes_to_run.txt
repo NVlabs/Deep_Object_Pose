@@ -9,14 +9,28 @@ python inference.py \
 
 # run inference on png data 
 python inference.py \
---data /home/andrewg/Documents/dope_ws/generated_data/500_DOME_Cracker_Box \
---outf /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/trained_on_fat_test
+--data /home/andrewg/Documents/dope_ws/generated_data_1280x720/500_DOME_Cracker_Box \
+--outf /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/DOME_20k_June_26
+
+# run inference on png data 
+python inference.py \
+--data /home/andrewg/Documents/dope_ws/fat_data/rgb_only/single/003_cracker_box_16k \
+--outf /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/DOME_20k_June_26 \
+--config config_inference/config_pose_512x512.yaml \
+--camera config_inference/camera_info_512x512.yaml
+
 
 # Run ADD Script: 
 python run_add.py \
---data_prediction /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/cracker_out_3 \
---data /home/andrewg/Documents/dope_ws/fat_data/rgb_only/single/003_cracker_box_16k/kitchen_1 \
---cuboid --show --outf output/cracker_add
+--data_prediction /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/DOME_20K_CrackerBox_e30_b30 \
+--data /home/andrewg/Documents/dope_ws/fat_data/rgb_only/single/003_cracker_box_16k \
+--cuboid --show --outf output/DOME_20K_CrackerBox_e30_b30
+
+########       baseline ADD 
+python run_add.py \
+--data_prediction /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/Baseline_fixed_camera_config \
+--data /home/andrewg/Documents/dope_ws/fat_data/rgb_only/single/003_cracker_box_16k \
+--cuboid --show --outf output/Baseline
 
 ## Entire Object: 
 # Run inference on entire dataset:
@@ -34,8 +48,7 @@ python run_add.py \
 
 
 
-# For training: 
-
+# For training:
 python -m torch.distributed.launch --nproc_per_node=1 train.py \
 --network dope --epochs 2 --batchsize 20 \
 --data /home/andrewg/Documents/dope_ws/fat_data/rgb_only/single/003_cracker_box_16k \
@@ -52,4 +65,44 @@ python -m torch.distributed.launch --nproc_per_node=1 train.py \
 --network dope --epochs 2 --batchsize 20 --local_rank 0 --loginterval 5 \
 --data /home/andrewg/Documents/dope_ws/generated_data/5000_DOME_Cracker_Box \
 --outf output/DOPE_epoch10_batchsize20_data5000DOMECrackerBox_v2
+
+python -m torch.distributed.launch --nproc_per_node=1 train.py \
+--network dope --epochs 30 --batchsize 30 --local_rank 0 --loginterval 5 \
+--data /home/andrewg/Documents/dope_ws/generated_data_1280x720/20k_DOME_Cracker_Box \
+--outf output/DOPE_epoch30_batchsize30_data20K_DOMECrackerBox
+
+
+# overfit
+python -m torch.distributed.launch --nproc_per_node=1 train.py \
+--network dope --epochs 1000 --batchsize 1  --loginterval 1 \
+--data /home/andrewg/Documents/dope_ws/gxenerated_data_1280x720/overfit_512x512/data \
+--outf output/model_weights/overfit_512x512
+
+python inference.py \
+--data /home/andrewg/.local/share/ov/pkg/isaac_sim-daily-2022.1.1-alpha.7/output/DOPE \
+--outf /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/overfit_512x512
+
+# DOME 20k 512x512 images TRAINING 
+python -m torch.distributed.launch --nproc_per_node=1 train.py \
+--network dope --epochs 40 --batchsize 30 --local_rank 0 --loginterval 10 \
+--data /home/andrewg/Documents/dope_ws/generated_data_512x512/DOME_and_MESH \
+--outf output/model_weights/DOME_MESH_CrackerBox_e40_b30
+
+# DOME 60K + 20K MESH Training 
+python -m torch.distributed.launch --nproc_per_node=1 train.py \
+--network dope --epochs 50 --batchsize 30 --loginterval 50 \
+--data /home/andrewg/Documents/dope_ws/generated_data_512x512/60k_DOME_20k_MESH \
+--outf output/model_weights/DOME60K_MESH20K_CrackerBox_e50_b30 
+
+# overfit 
+python -m torch.distributed.launch --nproc_per_node=1 train.py \
+--network dope --epochs 1000 --batchsize 1 --loginterval 1 \
+--data /home/andrewg/Documents/dope_ws/generated_data_1280x720/overfit_512x512 \
+--outf output/model_weights/overfit_fixed_points
+
+python inference.py \
+--data /home/andrewg/Documents/dope_ws/generated_data_1280x720/overfit_512x512 \
+--outf /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/overfit_fixed_points \
+--config config_inference/config_pose.yaml \
+--camera config_inference/camera_info_512x512.yaml
 

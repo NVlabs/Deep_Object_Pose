@@ -1,0 +1,32 @@
+
+######### Inference #########
+
+# Run Inference on DOME Images (Model Trained on 20K DOME Images)
+python inference.py \
+--data /home/andrewg/Documents/dope_ws/generated_data_512x512/DOME_200_CrackerBox_test \
+--outf /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/DOME_200_CrackerBox_test \
+--config config_inference/config_pose_512x512.yaml \
+--camera config_inference/camera_info_512x512.yaml
+
+
+# Run Inference on DOME Images (Baseline)
+python inference.py \
+--data /home/andrewg/Documents/dope_ws/generated_data_512x512/DOME_200_CrackerBox_test \
+--outf /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/Baseline_DOME_200 \
+--config config_inference/config_pose.yaml \
+--camera config_inference/camera_info.yaml
+
+######### ADD #########
+
+# SD Trained ADD 
+python run_add.py \
+--data_prediction /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/DOME_200_CrackerBox_test/data \
+--data /home/andrewg/Documents/dope_ws/generated_data_512x512/DOME_200_CrackerBox_test/data \
+--cuboid --show --outf output/DOME_200_CrackerBox_test
+
+# Baseline ADD 
+python run_add.py \
+--data_prediction /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/Baseline_DOME_200 \
+--data /home/andrewg/Documents/dope_ws/generated_data_512x512/DOME_200_CrackerBox_test \
+--cuboid --show --outf output/Baseline_DOME_200
+

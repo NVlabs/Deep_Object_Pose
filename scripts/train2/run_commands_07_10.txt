@@ -1,0 +1,107 @@
+
+######### Training ##################
+
+##### 63K DOME Images, Fixed 
+
+python -m torch.distributed.launch --nproc_per_node=1 train.py \
+--network dope --epochs 50 --batchsize 40 --loginterval 10 \
+--data /home/andrewg/Documents/dope_ws/generated_data_512x512/DOME_63K/data \
+--outf output/model_weights/DOME_63K
+
+
+######### Inference and ADD #########
+
+#######################################################################################
+####### Run Inference on FAT Dataset - Kitchen (Model Trained on 80K (DOME and MESH 60/20) Images)
+#######################################################################################
+python inference.py \
+--data /home/andrewg/Documents/dope_ws/fat_data/inference \
+--outf /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/80K_kitchen_0_CrackerBox_test \
+--config config_inference/config_pose_80k.yaml \
+--camera config_inference/camera_info.yaml
+
+# SD Trained ADD 
+python run_add.py \
+--data_prediction /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/80K_kitchen_0_CrackerBox_test \
+--data /home/andrewg/Documents/dope_ws/fat_data/inference \
+--cuboid --show --outf output/80K_kitchen_0_CrackerBox_test
+
+#######################################################################################
+####### Run Inference on FAT Dataset (Baseline)
+#######################################################################################
+python inference.py \
+--data /home/andrewg/Documents/dope_ws/fat_data/inference \
+--outf /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/Baseline_kitchen_0 \
+--config config_inference/config_pose.yaml \
+--camera config_inference/camera_info.yaml
+
+# Baseline ADD 
+python run_add.py \
+--data_prediction /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/Baseline_kitchen_0 \
+--data /home/andrewg/Documents/dope_ws/fat_data/inference \
+--cuboid --show --outf output/Baseline_kitchen_0_CrackerBox_test
+
+#######################################################################################
+####### Run Inference on FAT Dataset - Kitchen (Model Trained on 20K DOME Images)
+#######################################################################################
+python inference.py \
+--data /home/andrewg/Documents/dope_ws/fat_data/inference \
+--outf /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/20K_kitchen_0_CrackerBox_test \
+--config config_inference/config_pose_512x512.yaml \
+--camera config_inference/camera_info.yaml
+
+# SD Trained ADD 
+python run_add.py \
+--data_prediction /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/20K_kitchen_0_CrackerBox_test \
+--data /home/andrewg/Documents/dope_ws/fat_data/inference \
+--cuboid --show --outf output/20K_kitchen_0_CrackerBox_test
+
+
+
+
+
+
+
+
+
+
+
+
+
+####### IGNORE 
+python inference.py \
+--data /home/andrewg/Documents/dope_ws/fat_data/rgb_only/single/003_cracker_box_16k \
+--outf /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/80K_FAT_CrackerBox_test \
+--config config_inference/config_pose_80k.yaml \
+--camera config_inference/camera_info.yaml && cd ADD_scripts/ \
+&& python run_add.py \
+--data_prediction /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/80K_FAT_CrackerBox_test \
+--data /home/andrewg/Documents/dope_ws/fat_data/rgb_only/single/003_cracker_box_16k \
+--cuboid --show --outf output/80K_FAT_CrackerBox_test && cd ../ 
+
+python inference.py \
+--data /home/andrewg/Documents/dope_ws/fat_data/rgb_only/single/003_cracker_box_16k \
+--outf /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/Baseline_FAT_CrackerBox_test \
+--config config_inference/config_pose.yaml \
+--camera config_inference/camera_info.yaml && cd ADD_scripts/ \
+&& python run_add.py \
+--data_prediction /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/Baseline_FAT_CrackerBox_test \
+--data /home/andrewg/Documents/dope_ws/fat_data/rgb_only/single/003_cracker_box_16k \
+--cuboid --show --outf output/Baseline_FAT_CrackerBox_test && cd ../ 
+
+
+
+
+
+
+# Needed this to make symbolic links of all of the data since 
+ln -s /home/andrewg/.local/share/ov/pkg/isaac_sim-daily-2022.1.1-alpha.7/output/DOPE/DOME_20K_v2/*0.json ./generated_data_512x512/DOME_63K/data \
+&& ln -s /home/andrewg/.local/share/ov/pkg/isaac_sim-daily-2022.1.1-alpha.7/output/DOPE/DOME_20K_v2/*1.json ./generated_data_512x512/DOME_63K/data \
+&& ln -s /home/andrewg/.local/share/ov/pkg/isaac_sim-daily-2022.1.1-alpha.7/output/DOPE/DOME_20K_v2/*2.json ./generated_data_512x512/DOME_63K/data \
+&& ln -s /home/andrewg/.local/share/ov/pkg/isaac_sim-daily-2022.1.1-alpha.7/output/DOPE/DOME_20K_v2/*3.json ./generated_data_512x512/DOME_63K/data \
+&& ln -s /home/andrewg/.local/share/ov/pkg/isaac_sim-daily-2022.1.1-alpha.7/output/DOPE/DOME_20K_v2/*4.json ./generated_data_512x512/DOME_63K/data \
+&& ln -s /home/andrewg/.local/share/ov/pkg/isaac_sim-daily-2022.1.1-alpha.7/output/DOPE/DOME_20K_v2/*5.json ./generated_data_512x512/DOME_63K/data \
+&& ln -s /home/andrewg/.local/share/ov/pkg/isaac_sim-daily-2022.1.1-alpha.7/output/DOPE/DOME_20K_v2/*6.json ./generated_data_512x512/DOME_63K/data \
+&& ln -s /home/andrewg/.local/share/ov/pkg/isaac_sim-daily-2022.1.1-alpha.7/output/DOPE/DOME_20K_v2/*7.json ./generated_data_512x512/DOME_63K/data \
+&& ln -s /home/andrewg/.local/share/ov/pkg/isaac_sim-daily-2022.1.1-alpha.7/output/DOPE/DOME_20K_v2/*8.json ./generated_data_512x512/DOME_63K/data \
+&& ln -s /home/andrewg/.local/share/ov/pkg/isaac_sim-daily-2022.1.1-alpha.7/output/DOPE/DOME_20K_v2/*9.json ./generated_data_512x512/DOME_63K/data  

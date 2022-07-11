@@ -113,6 +113,7 @@ for i_file, file in enumerate(adds_to_load):
 
     # add_pnp_found = np.array(adds_objects)/100
     add_pnp_found = np.array(adds_objects)
+    print("add_pnp_found", add_pnp_found)
     print('mean',add_pnp_found.mean(),'std',add_pnp_found.std(),
         'ratio',f'{len(add_pnp_found)}/{n_pnp_possible_frames}')
     n_pnp_found = len(add_pnp_found)

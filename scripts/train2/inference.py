@@ -86,6 +86,10 @@ class Draw(object):
         self.draw_line(points[0], points[5], color)
         self.draw_line(points[1], points[4], color)
 
+        # draw center 
+        if len(points) == 9:
+            self.draw_dot(points[8], point_color=(0, 255, 255), point_radius=5)
+
 
 class DopeNode(object):
     """ROS node that listens to image topic, runs DOPE, and publishes DOPE results"""
@@ -251,8 +255,8 @@ class DopeNode(object):
         if not os.path.isdir(f"{output_folder}/{img_name.split('/')[0]}"):
             # print(f"Making Directory: {output_folder}/{img_name.split('/')[0]}")
             os.mkdir(f"{output_folder}/{img_name.split('/')[0]}")
-        else:
-            # print(f"{output_folder}/{img_name.split('/')[0]} exists")
+        # else:
+        #     # print(f"{output_folder}/{img_name.split('/')[0]} exists")
 
         # save the output of the image. 
         im.save(f"{output_folder}/{img_name}")
@@ -346,11 +350,11 @@ if __name__ == "__main__":
 
     if not opt.data is None:
         videopath = opt.data
-
-        image_paths = sorted(glob.glob(videopath+'/*/*.png', recursive=True))
+        image_paths = []
+        # image_paths = sorted(glob.glob(videopath+'/*/*.png', recursive=True))
+        # image_paths = sorted(glob.glob(videopath+'/*/*.png', recursive=True)) if len(image_paths) == 0 else image_paths
         image_paths = sorted(glob.glob(videopath+'/*/*.png', recursive=True)) if len(image_paths) == 0 else image_paths
         image_paths = sorted(glob.glob(videopath+'/*/*.jpg', recursive=True)) if len(image_paths) == 0 else image_paths
-        image_paths = sorted(glob.glob(videopath+'/*.jpg', recursive=True)) if len(image_paths) == 0 else image_paths
 
         for j in image_paths:
         # for j in sorted([os.path.join(root, files) for root, _, files in os.walk(videopath) if re.search(r'.*(png|jpg|jpeg)$', files)]):
