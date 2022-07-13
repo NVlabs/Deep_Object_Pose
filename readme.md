@@ -9,6 +9,9 @@ This is the official DOPE ROS package for detection and 6-DoF pose estimation of
 ![DOPE Objects](dope_objects.png)
 
 ## Updates
+
+2022/07/13 - Added a script with a simple example for computing the ADD and ADD-S metric on data. Please refer to [script/metrics/](https://github.com/NVlabs/Deep_Object_Pose/tree/master/scripts/metrics). 
+
 2022/03/30 - Update on the NViSII script to handle [symmetrical objects](https://github.com/NVlabs/Deep_Object_Pose/tree/master/scripts/nvisii_data_gen#handling-objects-with-symmetries).  Also the NViSII script is compatible with the original training script. Thanks to Martin Günther. 
 
 2021/12/13 - Added a NViSII script to generate synthetic data for training DOPE. See this [readme](https://github.com/NVlabs/Deep_Object_Pose/tree/master/scripts/nvisii_data_gen) for more details. We also added the update training and inference (without ROS) scripts for the NViSII paper [here](https://github.com/NVlabs/Deep_Object_Pose/tree/master/scripts/train2). 
@@ -19,7 +22,7 @@ This is the official DOPE ROS package for detection and 6-DoF pose estimation of
 
 2020/03/09 - Added HOPE [weights to google drive](https://drive.google.com/open?id=1DfoA3m_Bm0fW8tOWXGVxi4ETlLEAgmcg), [the 3d models](https://drive.google.com/drive/folders/1jiJS9KgcYAkfb8KJPp5MRlB0P11BStft), and the objects dimensions to config. [Tremblay et al., IROS 2020](https://arxiv.org/abs/2008.11822).  The HOPE dataset can be found [here](https://github.com/swtyree/hope-dataset/) and is also part of the [BOP challenge](https://bop.felk.cvut.cz/datasets/#HOPE)
 
-2020/02/09 - Upgraded DOPE to use Python 3. Updated Dockerfile to use Python3-compatible ROS Noetic. The Python 2.7/ROS Kinetic is still available on the ['ros-kinetic' branch](https://github.com/NVlabs/Deep_Object_Pose/tree/ros-kinetic).
+<!-- 2020/02/09 - Upgraded DOPE to use Python 3. Updated Dockerfile to use Python3-compatible ROS Noetic. The Python 2.7/ROS Kinetic is still available on the ['ros-kinetic' branch](https://github.com/NVlabs/Deep_Object_Pose/tree/ros-kinetic). -->
 
 <!-- 2020/16/03 - Added a wiki (thanks to [@saratrajput](https://github.com/saratrajput))  -->
 
