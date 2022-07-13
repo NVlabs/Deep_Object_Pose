@@ -36,3 +36,4 @@ If the script takes to long to run, please run with `--cuboid`, instead of using
 # TODO 
 - Make a `requirement.txt` file. 
 - Possibly subsamble vertices so computation is faster
+- make a script to visualize the json files from DOPE
