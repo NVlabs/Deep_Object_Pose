@@ -270,8 +270,6 @@ def adding_mesh_object(name, obj_to_load, texture_to_load, model_info_path=None,
     # obj_to_load = toy_to_load + "/meshes/model.obj"
     # texture_to_load = toy_to_load + "/materials/textures/texture.png"
 
-    print("loading:", obj_to_load)
-
     if texture_to_load is None:
         toys = load_obj_scene(obj_to_load)
 
@@ -290,6 +288,7 @@ def adding_mesh_object(name, obj_to_load, texture_to_load, model_info_path=None,
                 material = toy_material,
                 mesh = visii.mesh.create_from_file(name,obj_to_load),
             )
+
         toy_transform = obj_export.get_transform()
         obj_export.get_material().set_roughness(random.uniform(0.1, 0.5))
 
@@ -404,7 +403,7 @@ if opt.path_single_obj is not None:
         model_info_path = os.path.dirname(opt.path_single_obj) + '/model_info.json'
         adding_mesh_object(f"single_obj_{i_object}",
                            opt.path_single_obj,
-                           None,
+                           "/home/jtremblay/code/visii_dr/content/models/grocery_ycb/003_cracker_box/google_16k/texture_map_flat.png",
                            model_info_path,
                            scale=opt.scale,
                            debug=opt.debug)

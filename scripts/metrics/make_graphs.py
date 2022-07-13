@@ -85,7 +85,7 @@ for i_file, file in enumerate(adds_to_load):
     print(file)
     label = file.split("/")[-1]
     label = label.replace('adds_','').replace(".p",'')
-    filename = label.split("_")[0] 
+    filename = label
 
     if not counts_dict is None: 
         fig = plt.figure()

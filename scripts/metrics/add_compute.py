@@ -27,7 +27,7 @@ import simplejson as json
 import copy 
 from pyquaternion import Quaternion
 import pickle 
-import visii 
+import nvisii as visii 
 import subprocess 
 
 
@@ -35,18 +35,18 @@ import subprocess
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--data_prediction', 
-    default = "dope_annotation/grocery_dope_dr/", 
+    default = "data/table_dope_results/", 
     help='path to prediction data')
 parser.add_argument('--data', 
-    default="/home/jtremblay/code/hope-dataset/images/", 
+    default="data/table_ground_truth/", 
     help='path to data ground truth')
 parser.add_argument('--models', 
     # /home/jtremblay/code/nvdu/nvdu/data/ycb/aligned_cm/AlphabetSoup/google_16k
     # default="/home/jtremblay/code/nvdu/nvdu/data/ycb/original/", 
-    default="/home/jtremblay/code/visii_dr/content/models/grocery/", 
+    default="content/", 
     help='path to the 3D grocery models')
 parser.add_argument("--outf",
-    default=None,
+    default="results/",
     help="where to put the data"
     )
 parser.add_argument('--adds',
@@ -68,6 +68,10 @@ opt = parser.parse_args()
 
 if opt.outf is None:
     opt.outf = opt.data_prediction
+
+if not os.path.isdir(opt.outf):
+    print(f'creating the folder: {opt.outf}')
+    os.mkdir(opt.outf)
 
 if os.path.isdir(opt.outf + "/tmp"):
     print(f'folder {opt.outf + "/tmp"}/ exists')
@@ -117,7 +121,7 @@ def create_obj(
     path_tex = None,
     scale = 1, 
     rot_base = None, #visii quat
-    pos_base = None, # visii vec3
+    pos_base = (-10,-10,-10), # visii vec3
     ):
 
     
@@ -159,10 +163,9 @@ def create_obj(
         obj_entity.get_transform().set_rotation(rot_base)
     if not pos_base is None:
         obj_entity.get_transform().set_position(pos_base)
-
-    if 'cherries' in name.lower():
-        print(obj_entity.get_mesh().get_min_aabb_corner()*-1 + obj_entity.get_mesh().get_max_aabb_corner())
+    print(f' created: {obj_entity.get_name()}')
     return obj_entity
+
 create_obj.meshes = {}
 create_obj.textures = {}
 
@@ -197,7 +200,7 @@ def add_cuboid(name, debug=False):
     for i_p, p in enumerate(cuboid):
         child_transform = visii.transform.create(f"{name}_cuboid_{i_p}")
         child_transform.set_position(p)
-        child_transform.set_scale(visii.vec3(0.3))
+        child_transform.set_scale(visii.vec3(0.1))
         child_transform.set_parent(obj.get_transform())
         if debug: 
             visii.entity.create(
@@ -218,13 +221,12 @@ def add_cuboid(name, debug=False):
 def get_models(path,suffix=""):
     models = {}
     for folder in glob.glob(path+"/*/"):
-        # if 'Ketchup' not in folder:
-        #     continue
+
         model_name = folder.replace(path,"").replace('/',"")
         print('loading',model_name + suffix)
         models[model_name] = create_obj(
             name = model_name + suffix,
-            path_obj = folder + "/google_16k/textured_simple.obj",
+            path_obj = folder + "/google_16k/textured.obj",
             path_tex = folder + "/google_16k/texture_map_flat.png",
             scale = 0.01
         )
@@ -245,9 +247,9 @@ visii.initialize_headless()
 # data_thruth = get_all_entries(opt.data,'scene_all_realsense.json')
 # if len(data_thruth) == 0: 
 #     data_thruth = get_all_entries(opt.data,'scene_realsense.json')
-data_thruth = get_all_entries(opt.data,"*realsense_rgb.json")
-data_prediction = get_all_entries(opt.data_prediction,"*realsense_rgb.json")
-data_prediction += get_all_entries(opt.data_prediction,"*realsense_rgb..json")
+data_thruth = get_all_entries(opt.data,"*.json")
+data_prediction = get_all_entries(opt.data_prediction,"*.json")
+
 
 print('number of ground thruths found',len(data_thruth))
 print("number of predictions found",len(data_prediction))
@@ -282,7 +284,7 @@ for gt_file in data_thruth:
 
     if pred_scene is None:
         continue
-    print(gt_file)
+    # print(gt_file)
     gt_json = None
     with open(gt_file) as json_file:
         gt_json = json.load(json_file)
@@ -297,6 +299,10 @@ for gt_file in data_thruth:
     for obj in gt_json['objects']:
 
         name_gt = obj['class']
+
+        # little hack from bug in the data
+        if name_gt == '003':
+            name_gt = "003_cracker_box_16k"
         objects_gt.append(
             [
                 name_gt,
@@ -308,9 +314,9 @@ for gt_file in data_thruth:
                         obj['quaternion_xyzw'][2],
                     ),
                     "position":visii.vec3(
-                        obj['location'][0]/100,
-                        obj['location'][1]/100,
-                        obj['location'][2]/100,
+                        obj['location'][0],
+                        obj['location'][1],
+                        obj['location'][2],
                     )
                 }
             ]
@@ -326,7 +332,8 @@ for gt_file in data_thruth:
     for obj_guess in gu_json['objects']:
 
         name_guess = obj_guess['class']
-        name_look_up = obj_guess['class'].split('_')[0]
+        # name_look_up = obj_guess['class'].split("_")[0]
+        name_look_up = obj_guess['class']
 
         # need to add rotation for DOPE prediction, if your frames are aligned 
         try:
@@ -336,7 +343,10 @@ for gt_file in data_thruth:
                     float(obj_guess['quaternion_xyzw'][0]),
                     float(obj_guess['quaternion_xyzw'][1]),
                     float(obj_guess['quaternion_xyzw'][2]),
-                ) * visii.angleAxis(1.57, visii.vec3(1,0,0)) * visii.angleAxis(1.57, visii.vec3(0,0,1))
+                ) 
+                # * visii.angleAxis(1.57, visii.vec3(1,0,0)) * visii.angleAxis(1.57, visii.vec3(0,0,1))
+                # * visii.angleAxis(1.57*2, visii.vec3(0,0,1)) 
+                # * visii.angleAxis(1.57, visii.vec3(0,1,0))
                 ,
                 "position":visii.vec3(
                     float(str(obj_guess['location'][0]))/100.0,
@@ -373,6 +383,8 @@ for gt_file in data_thruth:
         for i_obj_gt, obj_gt in enumerate(objects_gt):
             name_gt, pose_mesh_gt = obj_gt
 
+            # print(name_look_up,name_gt)
+
             if name_look_up == name_gt:
                 candidates.append([i_obj_gt, pose_mesh_gt, name_gt])
 
@@ -384,17 +396,25 @@ for gt_file in data_thruth:
             i_gt, pose_gt, name_gt = candi_gt
             # if i_gt in used_index:
             #     continue
+            # print(meshes_gt.keys())
             visii_gt = meshes_gt[name_gt]
             
             visii_gt.get_transform().set_position(pose_gt['position'])
             visii_gt.get_transform().set_rotation(pose_gt['rotation'])
+
+            # visii_gt.get_transform().set_position(visii.vec3(-10,-10,-10))
+            # visii_gt.get_transform().set_rotation(pose_gt['rotation'])
+
 
             visii_gu = meshes_gu[name_look_up]
 
             visii_gu.get_transform().set_position(pose_mesh['position'])
             visii_gu.get_transform().set_rotation(pose_mesh['rotation'])
 
+            # dope is in the opencv frame, need to be put in the opengl frame
+            visii_gu.get_transform().rotate_around(visii.vec3(0,0,0),visii.angleAxis(visii.pi(), visii.vec3(1,0,0)))
 
+            
             if opt.adds:
                 if opt.cuboid:                                            
                     dist = 0
@@ -455,7 +475,6 @@ for gt_file in data_thruth:
                             )
                         
                     dist /= 9
-
                 else:
                     dist = []
                     vertices = visii_gt.get_mesh().get_vertices()
@@ -507,9 +526,9 @@ pickle.dump(count_by_object,open(f'{opt.outf}/count_all_guesses.p','wb'))
 labels = []
 data = []
 for key in adds_objects.keys():
-    pickle.dump(adds_objects[key],open(f'{opt.outf}/adds_{key.split("_")[0]}.p','wb'))
+    pickle.dump(adds_objects[key],open(f'{opt.outf}/adds_{key}.p','wb'))
     labels.append(key)
-    data.append(f'{opt.outf}/adds_{key.split("_")[0]}.p')
+    data.append(f'{opt.outf}/adds_{key}.p')
 
 
 array_to_call = ["python", "make_graphs.py","--outf", opt.outf,'--labels']
