@@ -33,6 +33,13 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    '--gray',
+    action='store_true',
+    default=False,
+    help = "draw the 3d model in gray"
+)
+
+parser.add_argument(
     '--path_json',
     required=True,
     help = "path to the json files you want loaded,\
@@ -246,24 +253,35 @@ elif os.path.exists(opt.path_json.replace("json",'jpg')):
 if im is not None: 
     im_pred = cv2.imread(opt.out,cv2.IMREAD_UNCHANGED)
 
-    alpha = im_pred[:,:,-1]/255.0 * 0.85
+    alpha = im_pred[:,:,-1]/255.0 * 0.75
     alpha = np.stack((alpha,)*3, axis=-1)
     im_pred = im_pred.astype(float)
+    
     im = im.astype(float)
+    
+    im_pred_gray = cv2.imread(opt.out)
+    im_pred_gray = cv2.cvtColor(im_pred_gray, cv2.COLOR_BGR2GRAY)
+    im_pred_gray = im_pred_gray.astype(float)
+    im_pred_gray = np.stack((im_pred_gray,)*3, axis=-1)
 
 
-    foreground = cv2.multiply(alpha,im_pred[:,:,:3])
+    if opt.gray:
+        foreground = cv2.multiply(alpha,im_pred_gray)
+    else:
+        foreground = cv2.multiply(alpha,im_pred[:,:,:3])
+    
     background = cv2.multiply(1-alpha,im[:,:,:3])
     outrgb = cv2.add(foreground,background)
+    
+    if opt.contour:     
+        gray = cv2.cvtColor((alpha*255).astype(np.uint8), cv2.COLOR_RGB2GRAY)
+        cnts = cv2.findContours(gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+
+        for c in cnts:
+            cv2.drawContours(outrgb, [c], -1, (36, 255, 12), thickness=1)
+
     cv2.imwrite(opt.out,outrgb)
-
-    gray = cv2.cvtColor((alpha*255).astype(np.uint8), cv2.COLOR_RGB2GRAY)
-    cnts = cv2.findContours(gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
-
-    for c in cnts:
-        cv2.drawContours(im, [c], -1, (36, 255, 12), thickness=2)
-    cv2.imwrite(opt.out,im)
 
 # let's clean up the GPU
 visii.deinitialize()
