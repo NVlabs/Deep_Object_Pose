@@ -24,6 +24,14 @@ parser.add_argument(
     help = "Use the opencv coordinate frame, e.g., dope inference,\
             otherwise it uses the opengl coordinate frame."
 )
+
+parser.add_argument(
+    '--contour',
+    action='store_true',
+    default=False,
+    help = "Only draw the contour instead of the 3d model overlay"
+)
+
 parser.add_argument(
     '--path_json',
     required=True,
@@ -39,7 +47,7 @@ parser.add_argument(
 
 parser.add_argument(
     '--out',
-    default='tmp.png',
+    default='overlay.png',
     help = "output filename"
 )
 
@@ -248,5 +256,14 @@ if im is not None:
     background = cv2.multiply(1-alpha,im[:,:,:3])
     outrgb = cv2.add(foreground,background)
     cv2.imwrite(opt.out,outrgb)
+
+    gray = cv2.cvtColor((alpha*255).astype(np.uint8), cv2.COLOR_RGB2GRAY)
+    cnts = cv2.findContours(gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+
+    for c in cnts:
+        cv2.drawContours(im, [c], -1, (36, 255, 12), thickness=2)
+    cv2.imwrite(opt.out,im)
+
 # let's clean up the GPU
 visii.deinitialize()
