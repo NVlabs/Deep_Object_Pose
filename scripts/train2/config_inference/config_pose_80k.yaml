@@ -20,7 +20,7 @@ weights: {
     # 'alphabet_soup':"weights_dope/resnet_simple/alphabe_soup.pth"
     # 'alphabet_soup' : "/home/andrewg/Documents/dope_ws/src/dope/scripts/train2/tmp3/net_epoch_20.pth"
     # 'cracker' : "/home/andrewg/Documents/dope_ws/src/dope/scripts/train2/cracker_dope/net_epoch_13.pth"
-    '003_cracker_box_16k' : "/home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/model_weights/DOME60K_MESH20K_CrackerBox_e50_b40/net_epoch_50.pth"
+    '003_cracker_box_16k' : "/home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/model_weights/DOME_63K/net_epoch_40.pth"
 }
 
 # Type of neural network architecture

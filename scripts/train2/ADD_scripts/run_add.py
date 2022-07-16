@@ -398,8 +398,10 @@ for gt_file in data_thruth:
             print("obj_gt", obj_gt)
             # name_gt = name_gt.replace('_16k', '')
 
+            # if name_look_up == name_gt:
             if name_look_up in name_gt.split('_'):
                 name_look_up = name_gt
+
                 candidates.append([i_obj_gt, pose_mesh_gt, name_gt])
 
         best_dist = 10000000000 

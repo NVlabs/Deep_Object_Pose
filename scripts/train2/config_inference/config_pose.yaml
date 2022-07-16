@@ -22,8 +22,8 @@ weights: {
     # 'cracker' : "/home/andrewg/Documents/dope_ws/src/dope/scripts/train2/cracker_dope/net_epoch_13.pth"
     # '003_cracker_box_16k' : "/home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/cracker_dope_30_all/net_epoch_30.pth"
     # '003_cracker_box_16k' : "/home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/DOPE_epoch20_batchsize25_data5000DOMECrackerBox/net_epoch_20.pth"
-    # '003_cracker_box_16k' : "/home/andrewg/Documents/dope_ws/cracker_60.pth"
-    '003_cracker_box_16k' : "/home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/model_weights/overfit_fixed_points/net_epoch_969.pth"
+    '003_cracker_box_16k' : "/home/andrewg/Documents/dope_ws/cracker_60.pth"
+    # '003_cracker_box_16k' : "/home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/model_weights/overfit_fixed_points/net_epoch_969.pth"
 }
 
 # Type of neural network architecture

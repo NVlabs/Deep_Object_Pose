@@ -5,7 +5,7 @@
 
 python inference.py \
 --data /home/andrewg/Documents/dope_ws/generated_data_512x512/DOME_200_CrackerBox_test \
---outf /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/80K_DOME_200_CrackerBox_test \
+--outf /home/andrewg/Documents/dope_ws/src/dope/scripts/train2/output/inference/63K_DOME_200_CrackerBox_test \
 --config config_inference/config_pose_80k.yaml \
 --camera config_inference/camera_info_512x512.yaml
 
