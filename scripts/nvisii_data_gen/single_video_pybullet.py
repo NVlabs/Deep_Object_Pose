@@ -22,7 +22,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument(
     '--spp',
-    default=4000,
+    default=800,
     type=int,
     help = "number of sample per pixel, higher the more costly"
 )
@@ -69,13 +69,13 @@ parser.add_argument(
 )
 parser.add_argument(
     '--nb_objects',
-    default=28,
+    default=1,
     type = int,
     help = "how many objects"
 )
 parser.add_argument(
     '--nb_distractors',
-    default=15,
+    default=1,
     help = "how many objects"
 )
 parser.add_argument(
@@ -265,14 +265,23 @@ visii_pybullet = []
 names_to_export = []
 
 
-def adding_mesh_object(name, obj_to_load, texture_to_load, model_info_path=None, scale=1, debug=False):
+def adding_mesh_object(
+        name, 
+        obj_to_load, 
+        texture_to_load, 
+        model_info_path=None, 
+        scale=1, 
+        debug=False
+    ):
     global mesh_loaded, visii_pybullet, names_to_export
     # obj_to_load = toy_to_load + "/meshes/model.obj"
     # texture_to_load = toy_to_load + "/materials/textures/texture.png"
 
     if texture_to_load is None:
         toys = load_obj_scene(obj_to_load)
-
+        if len(toys) > 1: 
+            print("more than one model in the object, \
+                   materials might be wrong!")
         toy_transform = visii.entity.get(toys[0]).get_transform()
         toy_material = visii.entity.get(toys[0]).get_material()
         toy_mesh = visii.entity.get(toys[0]).get_mesh()        
@@ -401,9 +410,13 @@ for i_obj in range(int(opt.nb_distractors)):
 if opt.path_single_obj is not None:
     for i_object in range(opt.nb_objects):
         model_info_path = os.path.dirname(opt.path_single_obj) + '/model_info.json'
+
+        if not os.path.exists(model_info_path):
+            model_info_path = None
+
         adding_mesh_object(f"single_obj_{i_object}",
                            opt.path_single_obj,
-                           "/home/jtremblay/code/visii_dr/content/models/grocery_ycb/003_cracker_box/google_16k/texture_map_flat.png",
+                           None,
                            model_info_path,
                            scale=opt.scale,
                            debug=opt.debug)
