@@ -47,6 +47,16 @@ python render_json.py --path_json data/table_ground_truth/scene1/00100.json --co
 
 `--gray` render the 3d model as a gray image and `--contour` adds the 3d model contour in green. 
 
+## Rendering BOP format on images 
+
+Using the same argument, you can use this script on the BOP annotation with 3d models. The script simply rebuilds the data structure that is needed to load the scene. 
+
+```
+python render_json.py --path_json /PATH/TO/hope_bop/hope_val/val/000001/scene_gt.json --bop --objs_folder /PATH/TO/hope_bop/hope_models/models/ --gray --contour --bop_scene 0
+```
+
+Only `--bop` is needed to be passed to load a bop scene. You can pass which scene you want to load with `--bop_scene`. The rest is the same behaviour. This was only tested on the HOPE data. 
+
 ## Assumptions 
 
 We assume that you have the intrinsics stored in the camera data. If you do not have them, the script uses 512 x 512 with a fov of 0.78. If the camera data is complete, like with NViSII data, it will use the camera intrinsics. 
