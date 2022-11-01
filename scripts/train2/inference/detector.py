@@ -748,7 +748,7 @@ class ObjectDetector(object):
                             best_angle = dist_angle
                             best_dist = dist_point
 
-                    if i_best is -1:
+                    if i_best == -1:
                         continue
                     
                     if objects[i_best][1][i_lists] is None \

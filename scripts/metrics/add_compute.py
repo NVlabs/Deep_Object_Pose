@@ -491,7 +491,7 @@ for gt_file in data_thruth:
                 best_dist = dist
                 best_index = i_gt
 
-        if best_index is not -1:
+        if best_index != -1:
             if not name_guess in adds_objects.keys():
                  adds_objects[name_guess] = []
             adds_all.append(best_dist)
