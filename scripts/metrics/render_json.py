@@ -162,7 +162,15 @@ camera.get_transform().look_at(
 visii.set_camera_entity(camera)
 
 visii.set_dome_light_intensity(1)
-visii.set_dome_light_color(visii.vec3(1,1,1),0)
+
+try:
+    visii.set_dome_light_color(visii.vec3(1, 1, 1), 0)
+except TypeError:
+    # Support for alpha transparent backgrounds was added in nvisii ef1880aa,
+    # but as of 2022-11-03, the latest released version (1.1) does not include
+    # that change yet.
+    print("WARNING! Your version of NVISII does not support alpha transparent backgrounds yet; --contour will not work properly.")
+    visii.set_dome_light_color(visii.vec3(1, 1, 1))
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
 
