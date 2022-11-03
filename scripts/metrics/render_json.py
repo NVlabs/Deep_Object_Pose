@@ -238,16 +238,14 @@ if "camera_data" in data_json.keys() and "intrinsics" in data_json['camera_data'
 
     camera.get_camera().set_projection(proj_matrix)
 else:
-    # im_height = 512
-    # im_width = 512 
+    im_height = 512
+    im_width = 512
     intrinsics = {  "cx": 964.957,
                     "cy": 522.586,
                     "fx": 1390.53,
                     "fy": 1386.99,
                 }
 
-    im_height = data_json['camera_data']['height']
-    im_width = data_json['camera_data']['width']
     cam = pyrender.IntrinsicsCamera(intrinsics['fx'],intrinsics['fy'],intrinsics['cx'],intrinsics['cy'])
 
     proj_matrix = cam.get_projection_matrix(im_width, im_height)
