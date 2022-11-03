@@ -1,12 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright (c) 2018 NVIDIA Corporation. All rights reserved.
 # This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 # https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
 
 """
-This file starts a ROS node to run DOPE, 
-listening to an image topic and publishing poses.
+This file runs DOPE without ROS, either on an image folder or from a Realsense
+camera image stream.
 """
 
 from __future__ import print_function
@@ -23,6 +23,7 @@ from cuboid_pnp_solver import CuboidPNPSolver
 from detector import ModelData, ObjectDetector
 
 import simplejson as json
+import copy
 
 class Draw(object):
     """Drawing helper class to visualize the neural network output"""
@@ -171,6 +172,8 @@ class DopeNode(object):
             dist_coeffs = np.matrix(camera_info.D, dtype='float64')
             dist_coeffs.resize((len(camera_info.D), 1))
 
+        camera_matrix_for_json = copy.deepcopy(camera_matrix)
+
         # Downscale image if necessary
         height, width, _ = img.shape
         scaling_factor = float(self.downscale_height) / height
@@ -187,10 +190,20 @@ class DopeNode(object):
         im = Image.fromarray(img_copy)
         draw = Draw(im)
 
-
         # dictionary for the final output
-        dict_out = {"camera_data":{},"objects":[]}
-
+        dict_out = {
+            "camera_data": {
+                "intrinsics": {
+                    "cx": camera_matrix_for_json[0, 2],
+                    "cy": camera_matrix_for_json[1, 2],
+                    "fx": camera_matrix_for_json[0, 0],
+                    "fy": camera_matrix_for_json[1, 1],
+                },
+                "width": width,
+                "height": height,
+            },
+            "objects": [],
+        }
         for m in self.models:
             # Detect object
             results, beliefs = ObjectDetector.detect_object_in_image(
@@ -237,11 +250,11 @@ class DopeNode(object):
                         points2d.append(tuple(pair))
                     draw.draw_cube(points2d, self.draw_colors[m])
         # save the output of the image. 
-        im.save(f"{output_folder}/{img_name}.png")
+        im.save(f"{output_folder}/{img_name}")
 
         # save the json files 
         with open(f"{output_folder}/{img_name.replace('png','json')}", 'w') as fp:
-            json.dump(dict_out, fp)
+            json.dump(dict_out, fp, indent=4)
 
             
 
@@ -310,10 +323,6 @@ if __name__ == "__main__":
 
     # create the output folder
     print (f"output is located in {opt.outf}")
-    try:
-        shutil.rmtree(f"{opt.outf}")
-    except:
-        pass
 
     try:
         os.makedirs(f"{opt.outf}")
@@ -357,8 +366,8 @@ if __name__ == "__main__":
             img_name = i_image
         else:
             if i_image >= len(imgs):
-                i_image =0
-                
+                break
+
             frame = cv2.imread(imgs[i_image])
             print(f"frame {imgsname[i_image]}")
             img_name = imgsname[i_image]
