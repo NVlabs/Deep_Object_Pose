@@ -76,6 +76,14 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    '--scale',
+    default=1,
+    type=float,
+    help='Specify the scale of the target object(s). If the obj mesh is in '
+         'meters -> scale=1; if it is in cm -> scale=0.01.'
+)
+
+parser.add_argument(
     '--out',
     default='overlay.png',
     help = "output filename"
@@ -320,7 +328,7 @@ for i_obj, obj in enumerate(data_json['objects']):
             name = obj['class'] + "_" + str(i_obj),
             path_obj = opt.objs_folder + "/"+name + "/google_16k/textured.obj",
             path_tex = opt.objs_folder + "/"+name + "/google_16k/texture_map_flat.png",
-            scale = 0.01, 
+            scale = opt.scale,
             rot_base = None
         )        
     
