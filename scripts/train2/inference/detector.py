@@ -401,59 +401,57 @@ class ObjectDetector(object):
         return im
 
     @staticmethod
-    def detect_object_in_image(net_model, pnp_solver, in_img, config, 
-            grid_belief_debug = False, norm_belief=True):
-        ''' Detect objects in a image using a specific trained network model
-            Returns the poses of the objects and the belief maps
-            '''
-
+    def detect_object_in_image(net_model, pnp_solver, in_img, config,
+                               make_belief_debug_img=False, norm_belief=True, overlay_image=True):
+        """
+        Detect objects in a image using a specific trained network model
+        Returns the poses of the objects and the belief maps
+        """
         if in_img is None:
             return []
-
-        # print("detect_object_in_image - image shape: {}".format(in_img.shape))
 
         # Run network inference
         image_tensor = transform(in_img)
         image_torch = Variable(image_tensor).cuda().unsqueeze(0)
-        out, seg = net_model(image_torch)  # run inference using the network (calls 'forward' method)
+        out, seg = net_model(image_torch)
         vertex2 = out[-1][0]
         aff = seg[-1][0]
 
         # Find objects from network output
         detected_objects = ObjectDetector.find_object_poses(vertex2, aff, pnp_solver, config)
 
-        if not grid_belief_debug: 
-
+        if not make_belief_debug_img:
             return detected_objects, None
         else:
-            # Run the belief maps debug display on the beliefmaps
-            
-            upsampling = nn.UpsamplingNearest2d(scale_factor=8)
+            # Run the belief maps debug display on the belief maps
             tensor = vertex2
             belief_imgs = []
-            in_img = (torch.tensor(in_img).float()/255.0)
-            in_img *= 0.7            
+            if overlay_image:
+                upsampling = nn.UpsamplingNearest2d(size=in_img.shape[:2])
+                in_img = (torch.tensor(in_img).float() / 255.0)
+                in_img *= 0.5
 
             for j in range(tensor.size()[0]):
                 belief = tensor[j].clone()
                 if norm_belief:
-                    belief -= float(torch.min(belief)[0].data.cpu().numpy())
-                    belief /= float(torch.max(belief)[0].data.cpu().numpy())
+                    belief -= float(torch.min(belief).item())
+                    belief /= float(torch.max(belief).item())
 
-                # print (image_torch.size())
-                # raise()    
-                # belief *= 0.5
-                # print(in_img.size())
-                belief = upsampling(belief.unsqueeze(0).unsqueeze(0)).squeeze().squeeze().data 
-                belief = torch.clamp(belief,0,1).cpu()  
-                belief = torch.cat([
-                            belief.unsqueeze(0) + in_img[:,:,0],
-                            belief.unsqueeze(0) + in_img[:,:,1],
-                            belief.unsqueeze(0) + in_img[:,:,2]
-                            ]).unsqueeze(0)
-                belief = torch.clamp(belief,0,1) 
-
-                # belief_imgs.append(belief.data.squeeze().cpu().numpy().transpose(1,2,0))
+                belief = torch.clamp(belief, 0, 1).cpu()
+                if overlay_image:
+                    belief = upsampling(belief.unsqueeze(0).unsqueeze(0)).squeeze().squeeze().data
+                    belief = torch.cat([
+                        belief.unsqueeze(0) + in_img[:, :, 0],
+                        belief.unsqueeze(0) + in_img[:, :, 1],
+                        belief.unsqueeze(0) + in_img[:, :, 2]
+                    ]).unsqueeze(0)
+                    belief = torch.clamp(belief, 0, 1)
+                else:
+                    belief = torch.cat([
+                        belief.unsqueeze(0),
+                        belief.unsqueeze(0),
+                        belief.unsqueeze(0)
+                    ]).unsqueeze(0)
                 belief_imgs.append(belief.data.squeeze().numpy())
 
             # Create the image grid
@@ -748,7 +746,7 @@ class ObjectDetector(object):
                             best_angle = dist_angle
                             best_dist = dist_point
 
-                    if i_best is -1:
+                    if i_best == -1:
                         continue
                     
                     if objects[i_best][1][i_lists] is None \

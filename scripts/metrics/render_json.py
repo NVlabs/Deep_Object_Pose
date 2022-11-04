@@ -76,6 +76,14 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    '--scale',
+    default=1,
+    type=float,
+    help='Specify the scale of the target object(s). If the obj mesh is in '
+         'meters -> scale=1; if it is in cm -> scale=0.01.'
+)
+
+parser.add_argument(
     '--out',
     default='overlay.png',
     help = "output filename"
@@ -162,7 +170,15 @@ camera.get_transform().look_at(
 visii.set_camera_entity(camera)
 
 visii.set_dome_light_intensity(1)
-visii.set_dome_light_color(visii.vec3(1,1,1),0)
+
+try:
+    visii.set_dome_light_color(visii.vec3(1, 1, 1), 0)
+except TypeError:
+    # Support for alpha transparent backgrounds was added in nvisii ef1880aa,
+    # but as of 2022-11-03, the latest released version (1.1) does not include
+    # that change yet.
+    print("WARNING! Your version of NVISII does not support alpha transparent backgrounds yet; --contour will not work properly.")
+    visii.set_dome_light_color(visii.vec3(1, 1, 1))
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -230,16 +246,14 @@ if "camera_data" in data_json.keys() and "intrinsics" in data_json['camera_data'
 
     camera.get_camera().set_projection(proj_matrix)
 else:
-    # im_height = 512
-    # im_width = 512 
+    im_height = 512
+    im_width = 512
     intrinsics = {  "cx": 964.957,
                     "cy": 522.586,
                     "fx": 1390.53,
                     "fy": 1386.99,
                 }
 
-    im_height = data_json['camera_data']['height']
-    im_width = data_json['camera_data']['width']
     cam = pyrender.IntrinsicsCamera(intrinsics['fx'],intrinsics['fy'],intrinsics['cx'],intrinsics['cy'])
 
     proj_matrix = cam.get_projection_matrix(im_width, im_height)
@@ -314,7 +328,7 @@ for i_obj, obj in enumerate(data_json['objects']):
             name = obj['class'] + "_" + str(i_obj),
             path_obj = opt.objs_folder + "/"+name + "/google_16k/textured.obj",
             path_tex = opt.objs_folder + "/"+name + "/google_16k/texture_map_flat.png",
-            scale = 0.01, 
+            scale = opt.scale,
             rot_base = None
         )        
     
