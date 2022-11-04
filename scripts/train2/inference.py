@@ -210,7 +210,8 @@ class DopeNode(object):
                 self.models[m].net,
                 self.pnp_solvers[m],
                 img,
-                self.config_detect
+                self.config_detect,
+                make_belief_debug_img=True
             )
             # print(results)
             # print('---')
@@ -251,6 +252,8 @@ class DopeNode(object):
                     draw.draw_cube(points2d, self.draw_colors[m])
         # save the output of the image. 
         im.save(f"{output_folder}/{img_name}")
+        if beliefs is not None:
+            beliefs.save(f"{output_folder}/{img_name[:img_name.rfind('.')]}_belief.png")
 
         # save the json files 
         with open(f"{output_folder}/{img_name.replace('png','json')}", 'w') as fp:
