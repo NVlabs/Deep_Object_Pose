@@ -224,6 +224,9 @@ class DopeNode(object):
                 loc = result["location"]
                 ori = result["quaternion"]
                 
+                CONVERT_SCALE_CM_TO_METERS = 100
+                loc = [l / CONVERT_SCALE_CM_TO_METERS for l in loc]
+
                 print(loc)
 
                 dict_out['objects'].append({
