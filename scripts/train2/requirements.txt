@@ -10,7 +10,7 @@ torch
 pyquaternion
 tqdm
 pyrr
-Pillow==5.2.0
+Pillow==9.3.0
 torchvision
 PyYAML
 tensorboardX
