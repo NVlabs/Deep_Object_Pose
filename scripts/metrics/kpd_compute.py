@@ -196,9 +196,13 @@ for gt_file in data_thruth:
             dist = []
 
             for i in range(len(keypoints_gu)):
-                d = np.sqrt((keypoint_gt[i][0]-keypoints_gu[i][0])**2+(keypoint_gt[i][1]-keypoints_gu[i][1])**2)
-                print(d)
-                dist.append(d)
+                dist_key = 100000
+                for j in range(len(keypoints_gu)):
+                    d = np.sqrt((keypoint_gt[i][0]-keypoints_gu[j][0])**2+(keypoint_gt[i][1]-keypoints_gu[j][1])**2)
+                    # print(keypoint_gt[i],keypoints_gu[i],i,d)
+                    if d < dist_key:
+                        dist_key = d
+                dist.append(dist_key)
 
 
             dist = np.mean(dist)
@@ -250,7 +254,7 @@ for key in adds_objects.keys():
 array_to_call = ["python", 
                 "make_graphs.py",
                 '--pixels',
-                '--threshold',"200.0",
+                '--threshold',"50.0",
                 "--outf", 
                 opt.outf,
                 '--labels',
