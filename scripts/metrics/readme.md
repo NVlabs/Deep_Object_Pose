@@ -33,6 +33,11 @@ We make a few assumptions in this script.
 
 If the script takes to long to run, please run with `--cuboid`, instead of using the 3d models vertices to compare the metric, it uses the 3d cuboid of the 3d model to compute the metric.
 
+# 2D image-based metric
+
+If you do not have a 3d model of your model and you would prefer to just measure the quality of your detections with a simple euclidean distance for the predicted keypoints. You can use `python kpd_compute.py`, this is very similar to `add_compute.py` and it behaves very similarly. 
+The metric used here is the euclidean (L2) distance from predicted keypoint and the ground truth keypoint. Then we propose to use a threshold plot to evaluate the data, similar to the ADD metric. 
+
 # Rendering 3d predictions using NViSII 
 
 ![example of overlay](overlay.png)

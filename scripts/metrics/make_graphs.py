@@ -52,12 +52,16 @@ parser.add_argument("--show",
     action='store_true',
     help="show the graph at the end. "
     )
+parser.add_argument("--pixels",
+    action='store_true',
+    help="Using keypoint distance as metric"
+    )
 opt = parser.parse_args()
 sns.set_style("white")
 sns.set_style("ticks")
-# sns.set_context("paper")
+sns.set_context("paper")
 # sns.set_context("notebook")
-sns.set_context("talk")
+# sns.set_context("talk")
 sns.despine()
 # load the data 
 
@@ -112,7 +116,7 @@ for i_file, file in enumerate(adds_to_load):
         'ratio',f'{len(add_pnp_found)}/{n_pnp_possible_frames}')
     n_pnp_found = len(add_pnp_found)
 
-    delta_threshold = 0.00001
+    delta_threshold = opt.threshold/300
     add_threshold_values = np.arange(0., opt.threshold, delta_threshold)
 
     counts = []
@@ -157,8 +161,10 @@ for i_file, file in enumerate(adds_to_load):
     ax.plot(add_threshold_values, counts,style,color=colour,label=label)
 
     if not counts_dict is None:
-
-        plt.xlabel('ADD threshold distance (m)')
+        if opt.pixels:
+            plt.xlabel('L2 threshold distance (pixels)')
+        else:
+            plt.xlabel('ADD threshold distance (m)')
         plt.ylabel('Accuracy')
         plt.title(f'{filename} auc: {auc:.3f}')
 
@@ -171,7 +177,11 @@ for i_file, file in enumerate(adds_to_load):
         plt.close()
 
 if counts_dict is None: 
-    plt.xlabel('ADD threshold distance (m)')
+    if opt.pixels:
+        plt.xlabel('L2 threshold distance (pixels)')
+    else:
+        plt.xlabel('ADD threshold distance (m)')
+
     plt.ylabel('Accuracy')
     plt.title(opt.title)
     ax.legend(loc='lower right',frameon = True, fancybox=True, framealpha=0.8)
