@@ -1662,12 +1662,20 @@ def create_physics(
 
 
     else:
-        obj_col_id = p.createCollisionShape(
-            p.GEOM_MESH,
-            vertices = vertices,
-            meshScale = scale,
-        )
-
+        try:
+            obj_col_id = p.createCollisionShape(
+                p.GEOM_MESH,
+                vertices = vertices,
+                meshScale = scale,
+            )
+        except:
+            # TODO use the size of the object to 
+            # create the cuboid.
+            print(f'cannot load the collision from the mesh for {name}')
+            obj_col_id = p.createCollisionShape(
+                p.GEOM_BOX,
+                halfExtents = [0.1,0.1,0.1]
+                )
     # create a body without mass so it is static
     if not mass is None : 
         obj_id = p.createMultiBody(  
