@@ -142,7 +142,10 @@ for gt_file in data_thruth:
     objects_gt = [] #name obj, keypoints
 
     for obj in gt_json['objects']:
-        name_gt = obj['class']
+        if 'class' not in obj:
+            name_gt = obj['name']
+        else:
+            name_gt = obj['class']
         # little hack from bug in the data
         if name_gt == '003':
             name_gt = "003_cracker_box_16k"
@@ -163,8 +166,12 @@ for gt_file in data_thruth:
 
     for obj_guess in gu_json['objects']:
 
-        name_guess = obj_guess['class']
-        name_look_up = obj_guess['class']
+        if 'class' not in obj:
+            name_guess = obj_guess['name']
+            name_look_up = obj_guess['name']
+        else:
+            name_guess = obj_guess['class']
+            name_look_up = obj_guess['class']
 
 
         keypoints_gu = obj_guess["projected_cuboid"]
