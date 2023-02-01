@@ -42,7 +42,7 @@ The metric used here is the euclidean (L2) distance from predicted keypoint and 
 
 ![example of overlay](overlay.png)
 
-We added a script for you to add render of the 3d model to your predictions. 
+We added a script for you to add render of the 3d model to your predictions. It uses a version of NViSII that is not released yet. Please manually install this [wheel](https://www.dropbox.com/s/m85v7ts981xs090/nvisii-1.2.dev47%2Bgf122b5b.72-cp36-cp36m-manylinux2014_x86_64.whl?dl=0).
 ```
 # for scenes with DOPE inference
 python render_json.py --path_json data/table_dope_results/scene1/00300.json --scale 0.01 --opencv --contour --gray
