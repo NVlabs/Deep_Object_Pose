@@ -19,8 +19,29 @@ Path to groundtruth data for the predictions that you want to evaluate.
 Path to predictions that were outputted from running inference. To support the evaluation of multiple sets of weights at once, this path can point to a folder containing the **outputs of multiple inference results**. 
 
 ### `--models`: 
-Path to 3D model files. See the sample folder `YCB_models` for reference on what needs to be included. 
+Path to 3D model files. 
 These models are loaded before running evaluation and are rendered to compute the 3D error between the predicted results and ground truth. 
+Point this argument at the root of the folder containing all of your different model files. Below is a sample folder structure of what the models folder should look like: 
+
+```
+/PATH_TO_MODELS_FOLDER
+├── 002_master_chef_can
+│   ├── 002_master_chef_can.xml
+│   ├── points.xyz
+│   ├── textured.mtl
+│   ├── textured.obj
+│   ├── textured_simple.obj
+│   ├── textured_simple.obj.mtl
+│   └── texture_map.png
+└── 035_power_drill
+    ├── 035_power_drill.xml
+    ├── points.xyz
+    ├── textured.mtl
+    ├── textured.obj
+    ├── textured_simple.obj
+    ├── textured_simple.obj.mtl
+    └── texture_map.png
+```
 
 If you trained DOPE on a new object and want to evaluate its performance, make sure to include the 3D model files in a folder that matches `"class_name"` in the ground truth `.json` file. 
 
