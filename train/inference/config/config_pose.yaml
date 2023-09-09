@@ -1,0 +1,48 @@
+input_is_rectified: True   # Whether the input image is rectified (strongly suggested!)
+downscale_height: 512      # if the input image is larger than this, scale it down to this pixel height
+
+# Cuboid dimension in cm x,y,z
+dimensions: {
+    "003_cracker_box": [16.403600692749023,21.343700408935547,7.179999828338623],
+    "009_gelatin_box": [8.918299674987793, 7.311500072479248, 2.9983000755310059],
+    "010_potted_meat_can": [10.164673805236816,8.3542995452880859,5.7600898742675781],
+    "006_mustard_bottle": [9.6024150848388672,19.130100250244141,5.824894905090332],
+    "005_tomato_soup_can": [6.7659378051757813,10.185500144958496,6.771425724029541],
+    "004_sugar_box": [9.267730712890625,17.625339508056641,4.5134143829345703],
+    "021_bleach_cleanser": [10.267730712890625,26.625339508056641,7.5134143829345703],
+    "071_nine_hole_peg_test": [12.6,3.9,12.6],
+    '008_pudding_box':[49.47199821472168, 29.923000335693359, 83.498001098632812],
+    "Ketchup" : [ 14.860799789428711, 4.3368000984191895, 6.4513998031616211 ],
+}
+
+class_ids: {
+    "003_cracker_box": 1,
+    "009_gelatin_box": 2,
+    "010_potted_meat_can":    3,
+    "006_mustard_bottle": 4,
+    "005_tomato_soup_can":    5,
+    "004_sugar_box":   6,
+    "021_bleach_cleanser":  7,
+    "071_nine_hole_peg_test": 8,
+    '008_pudding_box': 10,
+    'Ketchup': 11,
+}
+
+draw_colors: {
+    "003_cracker_box": [13, 255, 128],  # green
+    "009_gelatin_box": [255, 255, 255],  # while
+    "010_potted_meat_can": [0, 104, 255],  # blue
+    "006_mustard_bottle": [217,12, 232],  # magenta
+    "005_tomato_soup_can": [255, 101, 0],  # orange
+    "004_sugar_box": [232, 222, 12],  # yellow
+    "021_bleach_cleanser": [232, 222, 12],  # yellow
+    "071_nine_hole_peg_test": [232, 222, 12],  # yellow
+    "008_pudding_box": [255,0,0],
+    "Ketchup": [0x76,0xb9,0x00],          # NVIDIA green
+}
+
+# Config params for DOPE
+thresh_angle: 0.5
+thresh_map: 0.01
+sigma: 3
+thresh_points: 0.0

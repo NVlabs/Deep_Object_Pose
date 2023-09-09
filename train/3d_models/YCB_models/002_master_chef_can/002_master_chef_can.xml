@@ -1,0 +1,4 @@
+<?xml version="1.0" ?>
+<model version="1">
+    <geom type="mesh" sx="1" sy="1" sz="1" tx="0" ty="0" tz="0" rx="0" ry="0" rz="0" red="200" green="40" blue="60" meshFile="textured.obj" />
+</model>

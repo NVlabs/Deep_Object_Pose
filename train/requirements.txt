@@ -1,0 +1,76 @@
+torch 
+torchvision
+tensorboardX
+boto3
+albumentations
+
+botocore
+certifi
+charset-normalizer
+idna
+imageio
+jmespath
+joblib
+networkx
+numpy
+opencv-python-headless
+packaging
+Pillow
+protobuf==3.20.1
+pyparsing
+python-dateutil
+PyWavelets
+PyYAML
+qudida
+requests
+s3transfer
+scikit-image
+scikit-learn
+scipy
+six
+threadpoolctl
+tifffile
+typing_extensions
+urllib3
+
+pyrr
+simplejson
+
+visii
+
+## If running into dependency issues, install the version-specific requirements below in a virtual environment
+# albumentations==1.2.1
+# boto3==1.24.58
+# botocore==1.27.58
+# certifi==2022.6.15
+# charset-normalizer==2.1.1
+# idna==3.3
+# imageio==2.21.1
+# jmespath==1.0.1
+# joblib==1.1.0
+# networkx==2.8.6
+# numpy==1.23.2
+# opencv-python-headless==4.6.0.66
+# packaging==21.3
+# Pillow==9.2.0
+# protobuf==3.20.1
+# pyparsing==3.0.9
+# pyrr==0.10.3
+# python-dateutil==2.8.2
+# PyWavelets==1.3.0
+# PyYAML==6.0
+# qudida==0.0.4
+# requests==2.28.1
+# s3transfer==0.6.0
+# scikit-image==0.19.3
+# scikit-learn==1.1.2
+# scipy==1.9.0
+# simplejson==3.17.6
+# six==1.16.0
+# tensorboardX==2.5.1
+# threadpoolctl==3.1.0
+# tifffile==2022.8.12
+# torch==1.12.1
+# torchvision==0.13.1
+# typing_extensions==4.3.0
+# urllib3==1.26.12
