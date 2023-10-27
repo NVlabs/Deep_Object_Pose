@@ -1,8 +1,0 @@
-.git
-/weights
-*.pyc
-*._
-*.png
-__pycache__
-venv
-.idea

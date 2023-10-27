@@ -1,11 +1,5 @@
-/weights
-*.pyc
-*._
-__pycache__
-venv
-.idea
-.DS_Store
-._.DS_Store
-*.hdr
-google_scanned_models/
-scripts/nvisii_data_gen/output/dataset/
+resource/
+test/
+training_script/
+weights/
+
