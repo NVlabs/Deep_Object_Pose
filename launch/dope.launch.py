@@ -17,7 +17,7 @@ def generate_launch_description():
         description='Logging level'
     )
 
-    rviz_absolute_path = "/home/sfederico/pick_and_place_ws/src/dope_ros2/rviz/rviz.rviz" #os.path.join(get_package_share_directory('dope_ros2'),'rviz','rviz.rviz')
+    rviz_absolute_path = os.path.join(get_package_share_directory('dope_ros2'),'rviz','rviz.rviz')
     rviz_ = LaunchConfiguration("rviz_")
 
     rviz_launch_arg = DeclareLaunchArgument(
