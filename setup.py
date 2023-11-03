@@ -17,7 +17,7 @@ setup(
         (os.path.join('share', package_name, 'weights'), glob('weights/*.pth')),
         # (os.path.join('share', package_name, 'rviz'), glob('rviz/*.rviz')),
     ],
-    install_requires=['setuptools', 'inference_script', 'uclv_utilities'],
+    install_requires=['setuptools', 'inference_script'],
     zip_safe=True,
     maintainer='sfederico',
     maintainer_email='sfederico@todo.todo',

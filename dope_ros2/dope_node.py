@@ -11,19 +11,15 @@ import resource_retriever
 from PIL import Image
 from PIL import ImageDraw
 from cv_bridge import CvBridge
-from nptyping import NDArray
-import time
-import cProfile
-import pstats
-import transformations
+# from nptyping import NDArray
 
+import transformations
 
 # Custom library
 from inference_script.cuboid import Cuboid3d
 from inference_script.cuboid_pnp_solver import CuboidPNPSolver
 from inference_script.detector import ModelData, ObjectDetector
 import simple_colors
-import uclv_utilities.utils_py as utils_py
 # ROS2 packages
 import rclpy
 from rclpy.node import Node
@@ -155,7 +151,7 @@ class DopeNode(Node):
             try:
                 M = self.get_parameters_by_prefix('model_transforms')[model].get_parameter_value().double_array_value
                 # self.model_transforms[model] = tf.transformations.quaternion_from_matrix(M)
-                self.model_transforms[model] = utils_py.quaternion_from_matrix(M)
+                self.model_transforms[model] = transformations.quaternion_from_matrix(M) #utils_py.quaternion_from_matrix(M)
             except KeyError:
                 self.model_transforms[model] = np.array([1.0, 0.0, 0.0, 0.0], dtype='float64')
 
@@ -327,6 +323,7 @@ class DopeNode(Node):
                 ori = np.array([ori_[3], ori_[0], ori_[1], ori_[2]], dtype='float64')
 
                 transformed_ori = transformations.quaternion_multiply(ori, self.model_transforms[m])
+                
 
                 # rotate bbox dimensions if necessary
                 # (this only works properly if model_transform is in 90 degree angles)
@@ -478,11 +475,7 @@ def rotate_vector(vector, quaternion):
     vector = np.append(vector, [0.0])
     vector = transformations.quaternion_multiply(q_conj, vector)
     vector = transformations.quaternion_multiply(vector, quaternion)
-    # q_conj = utils_py.quaternion_conjugate(quaternion)
-    # vector: NDArray[float] = np.array(vector)
-    # vector = np.append(vector, [0.0])
-    # vector = utils_py.multiply_quaternions(q_conj, vector)
-    # vector = utils_py.multiply_quaternions(vector, quaternion)
+    
     return vector[:3]
 
 def main():
