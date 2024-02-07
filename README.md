@@ -6,10 +6,10 @@ This is a ROS2 package to make inference with DOPE ([official repo](https://gith
 
 The code has been tested on Ubuntu 22.04 with ROS2 Humble and Python 3.10. 
 
-1. **Clone the repository**
+1. **Clone the repository into your ros2 workspace**
     ```
     cd ~/ros2_ws/src
-    git clone https://github.com/sara9915/DOPE.git dope -b ros2_humble
+    git clone https://github.com/Vanvitelli-Robotics/DOPE.git dope -b ros2_humble
     ```
 
 2. **Install python dependencies**
