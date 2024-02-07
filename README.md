@@ -1,6 +1,6 @@
 # Deep Object Pose Estimation (DOPE) - ROS2 Inference
 
-This is a ROS2 package to make inference with DOPE ([official repo](https://github.com/NVlabs/Deep_Object_Pose/tree/master). The official code is adapted to work on the ROS2 framework with Python3.10 and the updated requirements. See the official repository for detailed info about DOPE.
+This is a ROS2 package to make inference with DOPE ([official repo](https://github.com/NVlabs/Deep_Object_Pose/tree/master)). The official code is adapted to work on the ROS2 framework with Python3.10 and the updated requirements. See the official repository for detailed info about DOPE.
 
 ## Installing
 
