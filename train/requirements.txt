@@ -1,4 +1,4 @@
-torch 
+torch
 torchvision
 tensorboardX
 boto3
@@ -13,11 +13,12 @@ jmespath
 joblib
 networkx
 numpy
-opencv-python-headless
+opencv-python-headless==4.6.0.66
 packaging
 Pillow
 protobuf==3.20.1
 pyparsing
+pyrr
 python-dateutil
 PyWavelets
 PyYAML
@@ -27,16 +28,13 @@ s3transfer
 scikit-image
 scikit-learn
 scipy
+simplejson
 six
 threadpoolctl
 tifffile
 typing_extensions
 urllib3
 
-pyrr
-simplejson
-
-visii
 
 ## If running into dependency issues, install the version-specific requirements below in a virtual environment
 # albumentations==1.2.1

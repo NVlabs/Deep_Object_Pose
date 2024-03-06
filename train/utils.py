@@ -17,7 +17,6 @@ import torchvision.transforms as transforms
 import torch.utils.data as data
 import glob
 import os
-# import boto3
 import io
 
 from PIL import Image
@@ -143,7 +142,7 @@ def loadweights(root):
         ]
 
         weights.sort()
-        return weights 
+        return weights
 
 
 def loadimages_inference(root, extensions):
@@ -937,35 +936,8 @@ class Draw(object):
 
         for l in line_order:
             self.draw_line(points[l[0]], points[l[1]], color, line_width=2)
+        # Draw center
         self.draw_dot(points[0], point_color=color, point_radius=6)
-        # # draw front
-        # self.draw_line(points[0], points[1], color)
-        # self.draw_line(points[1], points[2], color)
-        # self.draw_line(points[3], points[2], color)
-        # self.draw_line(points[3], points[0], color)
-
-        # # draw back
-        # self.draw_line(points[4], points[5], color)
-        # self.draw_line(points[6], points[5], color)
-        # self.draw_line(points[6], points[7], color)
-        # self.draw_line(points[4], points[7], color)
-
-        # # draw sides
-        # self.draw_line(points[0], points[4], color)
-        # self.draw_line(points[7], points[3], color)
-        # self.draw_line(points[5], points[1], color)
-        # self.draw_line(points[2], points[6], color)
-
-        # # draw dots
-        # self.draw_dot(points[0], point_color=color, point_radius=4)
-        # self.draw_dot(points[1], point_color=color, point_radius=4)
-
-        # # draw x on the top
-        # self.draw_line(points[0], points[5], color)
-        # self.draw_line(points[1], points[4], color)
-
-        # # Draw center
-        # self.draw_dot(points[8], point_color=color, point_radius=6)
 
         for i in range(9):
             self.draw_text(points[i], str(i), (255, 0, 0))

@@ -123,7 +123,8 @@ parser.add_argument(
     help="folder to output images and model checkpoints",
 )
 parser.add_argument("--sigma", default=4, help="keypoint creation sigma")
-parser.add_argument("--local_rank", type=int)
+parser.add_argument("--local-rank", type=int, default=0)
+
 
 parser.add_argument("--save", action="store_true", help="save a batch and quit")
 parser.add_argument(
@@ -242,7 +243,7 @@ net = torch.nn.parallel.DistributedDataParallel(
 
 if opt.pretrained:
     if opt.net_path is not None:
-        net.load_state_dict(torch.load(opt.net))
+        net.load_state_dict(torch.load(opt.net_path))
     else:
         print("Error: Did not specify path to pretrained weights.")
         quit()
@@ -374,8 +375,14 @@ def _runnetwork(epoch, train_loader, syn=False):
             "loss/train_bel", np.mean(loss_avg_to_log["loss_belief"]), epoch
         )
 
+start_epoch = 1
+if opt.pretrained and opt.net_path is not None:
+    # we started with a saved checkpoint, we start numbering
+    # checkpoints after the loaded one
+    start_epoch = int(os.path.splitext(os.path.basename(opt.net_path).split('_')[2])[0]) + 1
+    print(f"Starting at epoch {start_epoch}")
 
-for epoch in range(1, opt.epochs + 1):
+for epoch in range(start_epoch, opt.epochs + 1):
 
     _runnetwork(epoch, trainingdata)
 
