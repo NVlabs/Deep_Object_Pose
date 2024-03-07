@@ -1,39 +1,34 @@
 """
-python train.py --data data/path/to/images
-
+Example usage:
+ python -m torch.distributed.launch --nproc_per_node=1 train.py --data ../sample_data/ --object cracker
 """
 
 
-from __future__ import print_function
-
 import argparse
+import datetime
 import os
 import random
+import warnings
+warnings.filterwarnings("ignore")
 
 try:
     import configparser as configparser
 except ImportError:
     import ConfigParser as configparser
 
-# import cv2
 import torch
+from torch.autograd import Variable
 import torch.nn.parallel
 import torch.optim as optim
 import torch.utils.data
 import torchvision.transforms as transforms
-from torch.autograd import Variable
-import datetime
-
 from tensorboardX import SummaryWriter
 
-
+import sys
+sys.path.insert(1, '../common')
 from models import *
 from utils import *
 
-
-import warnings
-
-warnings.filterwarnings("ignore")
 
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3,4,5,6,7"

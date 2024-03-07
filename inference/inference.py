@@ -1,19 +1,18 @@
 #!/usr/bin/env python
 
+import argparse
 import cv2
 import numpy as np
 from PIL import Image
-
+import os
+import simplejson as json
 import sys
+import yaml
 
 sys.path.append("../common/")
-
 from cuboid import Cuboid3d
 from cuboid_pnp_solver import CuboidPNPSolver
 from detector import ModelData, ObjectDetector
-
-import simplejson as json
-
 from utils import loadimages_inference, loadweights, Draw
 
 
@@ -156,11 +155,6 @@ class DopeNode(object):
 
 
 if __name__ == "__main__":
-
-    import argparse
-    import yaml
-    import os
-
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
@@ -175,12 +169,12 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--config",
-        default="config/config_pose.yaml",
+        default="../config/config_pose.yaml",
         help="Path to inference config file",
     )
     parser.add_argument(
         "--camera",
-        default="config/camera_info.yaml",
+        default="../config/camera_info.yaml",
         help="Path to camera info file",
     )
 
@@ -226,7 +220,7 @@ if __name__ == "__main__":
         exit()
     else:
         print(f"Found {len(weights)} weights. ")
-    # Load inference images
+        # Load inference images
     imgs, imgsname = loadimages_inference(opt.data, extensions=opt.exts)
 
     if len(imgs) == 0 or len(imgsname) == 0:
@@ -235,7 +229,7 @@ if __name__ == "__main__":
         )
         exit()
 
-    for w_i, weight in enumerate(weights):
+    for w_i, weight in enumerate(weights): 
         dope_node = DopeNode(config, weight, opt.object)
 
         for i in range(len(imgs)):

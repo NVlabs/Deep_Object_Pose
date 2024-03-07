@@ -1,37 +1,25 @@
 """
 NVIDIA from jtremblay@gmail.com
 """
-import numpy as np
-import torch
-
-import os
-
-import torch
-import torch.nn as nn
-import torch.nn.parallel
-
-import torch.utils.data
-
-import torchvision.transforms as transforms
-
-import torch.utils.data as data
+import albumentations as A
+import colorsys
 import glob
-import os
 import io
-
-from PIL import Image
-from PIL import ImageDraw
-from PIL import ImageEnhance
-
+import json
+import math
 from math import acos
 from math import sqrt
 from math import pi
+import numpy as np
+import os
+from os.path import exists, basename, join
+from PIL import Image, ImageDraw, ImageEnhance, ImageFont
+import torch
+import torch.nn as nn
+import torch.nn.parallel
+import torch.utils.data as data
+import torchvision.transforms as transforms
 
-from os.path import exists, basename
-import json
-from os.path import join
-
-import albumentations as A
 
 
 def default_loader(path):
@@ -73,8 +61,6 @@ def py_ang(A, B=(1, 0)):
     else:  # if the det > 0 then A is immediately clockwise of B
         return 360 - inner
 
-
-import colorsys, math
 
 
 def append_dot(extensions):
@@ -858,7 +844,6 @@ def save_image(tensor, filename, nrow=4, padding=2, mean=None, std=None, save=Tr
     Saves a given Tensor into an image file.
     If given a mini-batch tensor, will save the tensor as a grid of images.
     """
-    from PIL import Image
 
     tensor = tensor.cpu()
     grid = make_grid(tensor, nrow=nrow, padding=10, pad_value=1)
@@ -887,10 +872,6 @@ def save_image(tensor, filename, nrow=4, padding=2, mean=None, std=None, save=Tr
     if save is True:
         im.save(filename)
     return im, grid
-
-
-from PIL import ImageDraw, Image, ImageFont
-import json
 
 
 class Draw(object):
@@ -943,3 +924,18 @@ class Draw(object):
             self.draw_text(points[i], str(i), (255, 0, 0))
 
 
+def get_image_grid(tensor, nrow=3, padding=2, mean=None, std=None):
+    """
+    Saves a given Tensor into an image file.
+    If given a mini-batch tensor, will save the tensor as a grid of images.
+    """
+
+    # tensor = tensor.cpu()
+    grid = make_grid(tensor, nrow=nrow, padding=padding, pad_value=1)
+    if not mean is None:
+        # ndarr = grid.mul(std).add(mean).mul(255).byte().transpose(0,2).transpose(0,1).numpy()
+        ndarr = grid.mul(std).add(mean).mul(255).byte().transpose(0, 2).transpose(0, 1).numpy()
+    else:
+        ndarr = grid.mul(0.5).add(0.5).mul(255).byte().transpose(0, 2).transpose(0, 1).numpy()
+    im = Image.fromarray(ndarr)
+    return im
