@@ -1,7 +1,7 @@
 # Deep Object Pose Estimation (DOPE) - Inference 
 
-This repo contains a simplified version of the **Inference** script for DOPE.
-The original repo for DOPE [can be found here](https://github.com/NVlabs/Deep_Object_Pose). 
+This directory contains a simple example of inference for DOPE.
+
 
 ## Setup
 

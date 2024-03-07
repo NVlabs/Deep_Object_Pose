@@ -1,18 +1,12 @@
 #!/usr/bin/env python
 
-
-"""
-This file starts a ROS node to run DOPE, 
-listening to an image topic and publishing poses.
-"""
-
 import cv2
 import numpy as np
 from PIL import Image
 
 import sys
 
-sys.path.append("inference")
+sys.path.append("../common/")
 
 from cuboid import Cuboid3d
 from cuboid_pnp_solver import CuboidPNPSolver
