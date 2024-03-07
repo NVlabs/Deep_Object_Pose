@@ -13,5 +13,7 @@ source /opt/ros/noetic/setup.bash
 mkdir -p ${CATKIN_WS}/src
 cd ${CATKIN_WS}/src
 catkin_init_workspace
+# Clone ROS libraires that must be built from source
+git clone https://github.com/ros-perception/camera_info_manager_py.git
 cd ..
 catkin_make

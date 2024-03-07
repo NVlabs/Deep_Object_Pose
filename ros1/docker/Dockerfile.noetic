@@ -9,8 +9,7 @@ ENV HOME /root
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install system and development components
-RUN apt-get update && apt-get -y --no-install-recommends install \
-    apt-utils \
+RUN apt update && apt -y --no-install-recommends install \
     software-properties-common \
     build-essential \
     cmake \
@@ -23,11 +22,11 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     libglx0 \
     libegl1 \
     freeglut3-dev \
-    && apt-get -y autoremove \
-    && apt-get clean
+    && apt -y autoremove \
+    && apt clean
 
 # Install required ROS components
-RUN apt-get update && apt-get -y --no-install-recommends install \
+RUN apt update && apt -y --no-install-recommends install \
   ros-noetic-cv-bridge \
   ros-noetic-geometry-msgs \
   ros-noetic-message-filters \
@@ -39,8 +38,8 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
   ros-noetic-vision-msgs \
   ros-noetic-visualization-msgs \
   ros-noetic-rviz \
-  && apt-get -y autoremove \
-  && apt-get clean
+  && apt -y autoremove \
+  && apt clean
 
 # pip install required Python packages
 COPY requirements.txt ${HOME}
@@ -48,9 +47,9 @@ RUN python3 -m pip install --no-cache-dir -r ${HOME}/requirements.txt
 
 # Setup catkin workspace
 ENV CATKIN_WS ${HOME}/catkin_ws
-COPY . ${CATKIN_WS}/src/dope
+COPY dope ${CATKIN_WS}/src/dope
 COPY docker/init_workspace.sh ${HOME}
-RUN ${CATKIN_WS}/src/dope/docker/init_workspace.sh
+RUN ${HOME}/init_workspace.sh
 RUN echo "source ${CATKIN_WS}/devel/setup.bash" >> ${HOME}/.bashrc
 
 ENV DISPLAY :0

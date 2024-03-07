@@ -20,14 +20,15 @@ import tf.transformations
 from PIL import Image
 from PIL import ImageDraw
 from cv_bridge import CvBridge
-from dope.inference.cuboid import Cuboid3d
-from dope.inference.cuboid_pnp_solver import CuboidPNPSolver
-from dope.inference.detector import ModelData, ObjectDetector
 from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import CameraInfo, Image as ImageSensor_msg
 from std_msgs.msg import String
 from vision_msgs.msg import Detection3D, Detection3DArray, ObjectHypothesisWithPose
 from visualization_msgs.msg import Marker, MarkerArray
+
+from dope.inference.cuboid import Cuboid3d
+from dope.inference.cuboid_pnp_solver import CuboidPNPSolver
+from dope.inference.detector import ModelData, ObjectDetector
 
 
 class Draw(object):
