@@ -24,6 +24,7 @@ PyWavelets
 PyYAML
 qudida
 requests
+seaborn
 s3transfer
 scikit-image
 scikit-learn
