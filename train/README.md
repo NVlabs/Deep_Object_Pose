@@ -4,7 +4,11 @@ This repo contains a simplified version of the **training** script for DOPE.
 The original repo for DOPE [can be found here](https://github.com/NVlabs/Deep_Object_Pose). 
 
 In addition, this repo contains scripts for inference, evaluation, and data visualization.
-More instructions can be found in the subdirectories `/evaluate` and `/inference`.
+More instructions can be found in the directories `evaluate` and `inference`.
+
+You can check out how to train DOPE on a single [GPU and using NVISII](https://github.com/NVlabs/Deep_Object_Pose/issues/155#issuecomment-791148200).
+
+
 
 ## Installing Dependencies
 ***Note***

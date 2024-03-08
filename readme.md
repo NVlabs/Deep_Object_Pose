@@ -4,13 +4,12 @@
 
 This is the official DOPE ROS package for detection and 6-DoF pose estimation of **known objects** from an RGB camera.  The network has been trained on the following YCB objects:  cracker box, sugar box, tomato soup can, mustard bottle, potted meat can, and gelatin box.  For more details, see our [CoRL 2018 paper](https://arxiv.org/abs/1809.10790) and [video](https://youtu.be/yVGViBqWtBI).
 
-*Note:*  The instructions below refer to inference only.  Training code is also provided but not supported. Thank you to [@Blaine141](https://github.com/blaine141) You can check out how to train DOPE on a single [GPU and using NVISII](https://github.com/NVlabs/Deep_Object_Pose/issues/155#issuecomment-791148200).
 
 ![DOPE Objects](dope_objects.png)
 
 ## Updates
 
-2024/03/07 - New training code, code reorganization and new synthetic data generation code, using Blenderproc
+2024/03/07 - New training code. New synthetic data generation code, using Blenderproc. Repo reorganization
 
 2022/07/13 - Added a script with a simple example for computing the ADD and ADD-S metric on data. Please refer to [script/metrics/](https://github.com/NVlabs/Deep_Object_Pose/tree/master/scripts/metrics). 
 
@@ -24,15 +23,11 @@ This is the official DOPE ROS package for detection and 6-DoF pose estimation of
 
 2020/03/09 - Added HOPE [weights to google drive](https://drive.google.com/open?id=1DfoA3m_Bm0fW8tOWXGVxi4ETlLEAgmcg), [the 3d models](https://drive.google.com/drive/folders/1jiJS9KgcYAkfb8KJPp5MRlB0P11BStft), and the objects dimensions to config. [Tremblay et al., IROS 2020](https://arxiv.org/abs/2008.11822).  The HOPE dataset can be found [here](https://github.com/swtyree/hope-dataset/) and is also part of the [BOP challenge](https://bop.felk.cvut.cz/datasets/#HOPE)
 
-<!-- 2020/02/09 - Upgraded DOPE to use Python 3. Updated Dockerfile to use Python3-compatible ROS Noetic. The Python 2.7/ROS Kinetic is still available on the ['ros-kinetic' branch](https://github.com/NVlabs/Deep_Object_Pose/tree/ros-kinetic). -->
 
-<!-- 2020/16/03 - Added a wiki (thanks to [@saratrajput](https://github.com/saratrajput))  -->
+<br>
+<br>
 
-<!-- 2019/03/07 - ROS interface update (thanks to Martin Günther) -->
-
-<!-- 2019/11/06 - Added bleach YCB weights  -->
-
-## Installing
+## Tested Configurations
 
 We have tested on Ubuntu 20.04 with ROS Noetic with an NVIDIA Titan X and RTX 2080ti with Python 3.8. The code may work on other systems.
 
@@ -42,9 +37,11 @@ We have tested on Ubuntu 20.04 with ROS Noetic with an NVIDIA Titan X and RTX 20
 For hardware-accelerated ROS2 inference support, please visit [Isaac ROS DOPE](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_pose_estimation/tree/main/isaac_ros_dope) which has been tested with ROS2 Foxy on Jetson AGX Xavier/JetPack 4.6 and on x86/Ubuntu 20.04 with RTX3060i.
 
 ---
+<br>
+<br>
 
 ## Synthetic Data Generation
-Code and instructions for generating synthetic training data are found in the `data_generation` directory. There are two options for generation: you can use [NVISII](https://github.com/owl-project/NVISII) or [Blenderproc](https://github.com/DLR-RM/BlenderProc)
+Code and instructions for generating synthetic training data are found in the `data_generation` directory. There are two options for the render engine: you can use [NVISII](https://github.com/owl-project/NVISII) or [Blenderproc](https://github.com/DLR-RM/BlenderProc)
 
 ## Training
 Code and instructions for training DOPE are found in the `train` directory.
@@ -60,6 +57,8 @@ Code and instructions for evaluating the quality of your results are found in th
 ## YCB 3D Models
 
 DOPE returns the poses of the objects in the camera coordinate frame.  DOPE uses the aligned YCB models, which can be obtained using [NVDU](https://github.com/NVIDIA/Dataset_Utilities) (see the `nvdu_ycb` command).
+
+---
 
 ## HOPE 3D Models
 
