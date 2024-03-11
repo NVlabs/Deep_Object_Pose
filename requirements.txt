@@ -2,7 +2,7 @@ pyrr==0.10.3
 torch==1.6.0
 torchvision==0.7.0
 numpy==1.17.4
-scipy==1.5.2
+scipy==1.10.0
 opencv_python==4.4.0.44
 Pillow==8.1.1
 configparser==5.0.0
