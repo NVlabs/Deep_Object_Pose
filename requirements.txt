@@ -1,5 +1,5 @@
 pyrr==0.10.3
-torch==1.6.0
+torch==1.13.1
 torchvision==0.7.0
 numpy==1.17.4
 scipy==1.5.2
