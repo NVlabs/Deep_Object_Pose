@@ -1,6 +1,6 @@
 # Deep Object Pose Estimation (DOPE) - Training 
 
-This repo contains a simplified version of the **training** script for DOPE.
+This repo contains a simplified version of the training pipeline for DOPE.
 Scripts for inference, evaluation, and data visualization can be found in this repo's top-level directories `inference` and `evaluate`.
 
 A user report of training DOPE on a single GPU using NVISII-created synthetic data can [be found here](https://github.com/NVlabs/Deep_Object_Pose/issues/155#issuecomment-791148200).
@@ -18,7 +18,7 @@ source ./output/dope_training/bin/activate
 ---
 To install the required dependencies, run:
 ```
-pip install -r requirements.txt
+pip install -r ../requirements.txt
 ```
 
 ## Training
@@ -65,6 +65,3 @@ python debug.py --data PATH_TO_IMAGES
 2. If you are running into dependency issues when installing, 
 you can try to install the version specific dependencies that are commented out in `requirements.txt`. Be sure to do this in a virtual environment.
 
-## License
-
-Copyright (C) 2018 NVIDIA Corporation. All rights reserved. Licensed under the [CC BY-NC-SA 4.0 license](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).

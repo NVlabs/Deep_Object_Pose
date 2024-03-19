@@ -22,7 +22,7 @@ The `inference.py` script will take a trained model to run inference. In order t
 Below is an example of running inference:
 
 ```
-python inference.py --weights ../output/weights --data ../sample_data --object cracker
+python inference.py --weights ../weights --data ../sample_data --object cracker
 ```
 
 ### Configuration Files

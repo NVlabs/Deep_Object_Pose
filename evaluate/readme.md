@@ -66,7 +66,8 @@ Only `--bop` is needed to be passed to load a bop scene. You can pass which scen
 
 We assume that you have the intrinsics stored in the camera data. If you do not have them, the script uses 512 x 512 with a fov of 0.78. If the camera data is complete, like with NViSII data, it will use the camera intrinsics. 
 
+<!-- 
 # TODO 
 - Make a `requirement.txt` file. 
 - Possibly subsamble vertices so computation is faster
-<!-- - make a script to visualize the json files from DOPE -->
+- make a script to visualize the json files from DOPE -->
