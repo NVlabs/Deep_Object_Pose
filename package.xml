@@ -1,77 +1,33 @@
 <?xml version="1.0"?>
-<package format="2">
-  <name>dope</name>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>dope_ros2</name>
   <version>0.0.0</version>
-  <description>The DOPE package for deep object pose estimation</description>
+  <description>TODO: Package description</description>
+  <maintainer email="sfederico@todo.todo">sfederico</maintainer>
+  <license>TODO: License declaration</license>
 
-  <!-- One maintainer tag required, multiple allowed, one person per tag -->
-  <!-- Example:  -->
-  <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
-  <maintainer email="jtremblay@nvidia.com">jtremblay</maintainer>
+  <depend>rclpy</depend>
+  
+  <build_depend>ament_cmake</build_depend>
+  <exec_depend>rclpy_components</exec_depend>
+  <exec_depend>ros2launch</exec_depend>
 
+  <build_depend>geometry_msgs</build_depend>  
+  <build_depend>sensor_msgs</build_depend>  
+  <build_depend>std_msgs_msgs</build_depend>  
+  <build_depend>vision_msgs_msgs</build_depend>  
+  <build_depend>visualization_msgs</build_depend>  
 
-  <!-- One license tag required, multiple allowed, one license per tag -->
-  <!-- Commonly used license strings: -->
-  <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
-  <license>CC BY-NC-SA 4.0</license>
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
 
+  <depend>uclv_utilities</depend>
 
-  <!-- Url tags are optional, but multiple are allowed, one per tag -->
-  <!-- Optional attribute type can be: website, bugtracker, or repository -->
-  <!-- Example: -->
-  <url type="website">https://research.nvidia.com/publication/2018-09_Deep-Object-Pose</url>
-
-
-  <!-- Author tags are optional, multiple are allowed, one per tag -->
-  <!-- Authors do not have to be maintainers, but could be -->
-  <!-- Example: -->
-  <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
-
-
-  <!-- The *depend tags are used to specify dependencies -->
-  <!-- Dependencies can be catkin packages or system dependencies -->
-  <!-- Examples: -->
-  <!-- Use depend as a shortcut for packages that are both build and exec dependencies -->
-  <!--   <depend>roscpp</depend> -->
-  <!--   Note that this is equivalent to the following: -->
-  <!--   <build_depend>roscpp</build_depend> -->
-  <!--   <exec_depend>roscpp</exec_depend> -->
-  <!-- Use build_depend for packages you need at compile time: -->
-  <!--   <build_depend>message_generation</build_depend> -->
-  <!-- Use build_export_depend for packages you need in order to build against this package: -->
-  <!--   <build_export_depend>message_generation</build_export_depend> -->
-  <!-- Use buildtool_depend for build tool packages: -->
-  <!--   <buildtool_depend>catkin</buildtool_depend> -->
-  <!-- Use exec_depend for packages you need at runtime: -->
-  <!--   <exec_depend>message_runtime</exec_depend> -->
-  <!-- Use test_depend for packages you need only for testing: -->
-  <!--   <test_depend>gtest</test_depend> -->
-  <!-- Use doc_depend for packages you need only for building documentation: -->
-  <!--   <doc_depend>doxygen</doc_depend> -->
-  <buildtool_depend>catkin</buildtool_depend>
-  <depend>camera_info_manager_py</depend>
-  <depend>cv_bridge</depend>
-  <depend>geometry_msgs</depend>
-  <depend>message_filters</depend>
-  <depend>python-argparse</depend>
-  <depend>resource_retriever</depend>
-  <depend>rospy</depend>
-  <depend>sensor_msgs</depend>
-  <depend>std_msgs</depend>
-  <depend>tf</depend>
-  <depend>vision_msgs</depend>
-  <depend>visualization_msgs</depend>
-  <depend>python3-pyrr-pip</depend>
-  <depend>python-pytorch-pip</depend>
-  <depend>python3-numpy</depend>
-  <depend>python3-scipy</depend>
-  <depend>python3-opencv</depend>
-  <depend>python3-pil</depend>
-  <depend>python-configparser</depend>
-
-  <!-- The export tag contains other, unspecified, tags -->
   <export>
-    <!-- Other tools can request additional information be placed here -->
-
+    <build_type>ament_python</build_type>
   </export>
+
 </package>

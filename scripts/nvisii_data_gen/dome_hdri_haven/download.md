@@ -1,1 +1,0 @@
-download hdri maps from https://polyhaven.com/hdris 

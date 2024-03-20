@@ -1,0 +1,53 @@
+/dope_node:
+  ros__parameters:
+    topic_camera: /camera/color/image_raw
+    topic_camera_info: /camera/color/camera_info # "/dope/webcam/camera_info"
+    topic_publishing: dope
+    input_is_rectified: true # Whether the input image is rectified (strongly suggested!)
+    downscale_height: 400 # if the input image is larger than this, scale it down to this pixel height
+
+    # Comment any of these lines to prevent detection / pose estimation of that object
+    weights:
+      # "apple": "package://dope/weights/apple_120.pth"
+      # "santal_ace": "package://dope_ros2/weights/santal_67.pth"
+      "lime": "package://dope_ros2/weights/lime_215.pth"
+
+    # Cuboid dimension in cm x, y, z
+    dimensions:
+      "apple": [9.756118059158325, 8.538994193077087, 9.590171277523041]
+      "santal_ace": [8.69415, 6.90914, 4.38487] 
+      "lime": [4.0052998811006546,3.9955999702215195,5.266399681568146]
+
+    class_ids:
+      "apple": 1
+      "santal_ace": 4
+      "lime": 5
+
+    draw_colors:
+      "apple": [255, 0, 0]          # red
+      "santal_ace": [255, 127, 80]  # orange
+      "lime": [153, 255, 51]        # lime green
+
+    # optional: provide a transform that is applied to the pose returned by DOPE
+    # model_transforms:
+    #    "test": [[0, 0, 1, 0], [0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]]
+
+    # optional: if you provide a mesh of the object here, a mesh marker will be
+    # published for visualization in RViz
+    meshes:
+      #"apple": "/home/workstation/dope_ros_ws/src/grasp_dope/scripts/models/Apple/Apple_4K/food_apple_01_4k_simplify.obj"
+      #"santal_ace": "/home/sfederico/Documents/cad_models/santal_ace/santal_centered.obj"
+      "lime" : "package://dope_ros2/meshes/Lime.obj"
+
+    mesh_scales:
+      "apple": 1.0
+      "santal_ace": 0.001
+      "lime" : 1000
+
+    overlay_belief_images: true # Whether to overlay the input image on the belief images published on /dope/belief_[obj_name]
+
+    # Config params for DOPE
+    thresh_angle: 0.5
+    thresh_map: 0.0001
+    sigma: 0.3
+    thresh_points: 0.1
