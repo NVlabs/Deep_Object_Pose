@@ -8,6 +8,7 @@ The code has been tested on Ubuntu 22.04 with ROS2 Humble and Python 3.10.
 
 1. **Clone the repository into your ros2 workspace**
     ```
+    mkdir -p ~/ros2_ws/src
     cd ~/ros2_ws/src
     git clone https://github.com/Vanvitelli-Robotics/DOPE.git dope -b ros2_humble
     ```
@@ -21,7 +22,7 @@ The code has been tested on Ubuntu 22.04 with ROS2 Humble and Python 3.10.
 3. **Build**
     ```
     cd ~/ros2_ws
-    colcon build
+    colcon build --packages-select dope
     ```
     
 4. **Run the node**

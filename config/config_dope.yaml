@@ -9,28 +9,24 @@
     # Comment any of these lines to prevent detection / pose estimation of that object
     weights:
       # "apple": "package://dope/weights/apple_120.pth"
-      # "zucchina": "package://dope/weights/zucchina_37.pth"
-      # "banana": "package://dope/weights/banana_mixed_big_3_32.pth"
-      "santal_ace": "package://dope_ros2/weights/santal_67.pth"
+      # "santal_ace": "package://dope_ros2/weights/santal_67.pth"
+      "lime": "package://dope_ros2/weights/lime_215.pth"
 
     # Cuboid dimension in cm x, y, z
     dimensions:
       "apple": [9.756118059158325, 8.538994193077087, 9.590171277523041]
-      "zucchina": [7.375793933868409, 5.342805862426758, 25.496252059936525]
-      "banana": [3.938097953796387, 9.157999992370605, 20.31201171875]
-      "santal_ace": [8.69415, 6.90914, 4.38487] # [8.397, 6.673, 4.235]
+      "santal_ace": [8.69415, 6.90914, 4.38487] 
+      "lime": [4.0052998811006546,3.9955999702215195,5.266399681568146]
 
     class_ids:
       "apple": 1
-      "zucchina": 2
-      "banana": 3
       "santal_ace": 4
+      "lime": 5
 
     draw_colors:
-      "apple": [255, 0, 0] # red
-      "zucchina": [13, 255, 128] # green
-      "banana": [255, 255, 0] # yellow
-      "santal_ace": [255, 127, 80] # yellow
+      "apple": [255, 0, 0]          # red
+      "santal_ace": [255, 127, 80]  # orange
+      "lime": [153, 255, 51]        # lime green
 
     # optional: provide a transform that is applied to the pose returned by DOPE
     # model_transforms:
@@ -40,19 +36,18 @@
     # published for visualization in RViz
     meshes:
       #"apple": "/home/workstation/dope_ros_ws/src/grasp_dope/scripts/models/Apple/Apple_4K/food_apple_01_4k_simplify.obj"
-      #"banana": "/home/workstation/dope_ros_ws/src/grasp_dope/scripts/models/banana/banana_16/banana_centered_scaled.obj"
-      "santal_ace": "/home/sfederico/Documents/cad_models/santal_ace/santal_centered.obj"
+      #"santal_ace": "/home/sfederico/Documents/cad_models/santal_ace/santal_centered.obj"
+      "lime" : "package://dope_ros2/meshes/Lime.obj"
 
     mesh_scales:
       "apple": 1.0
-      "banana": 0.01
-      "zucchina": 0.01
       "santal_ace": 0.001
+      "lime" : 1000
 
     overlay_belief_images: true # Whether to overlay the input image on the belief images published on /dope/belief_[obj_name]
 
     # Config params for DOPE
     thresh_angle: 0.5
     thresh_map: 0.0001
-    sigma: 3
+    sigma: 0.3
     thresh_points: 0.1

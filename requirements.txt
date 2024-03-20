@@ -8,3 +8,4 @@ Pillow==9.0.1
 configparser==6.0.0
 transformations
 nptyping
+simple_colors
