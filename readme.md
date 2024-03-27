@@ -64,7 +64,7 @@ Copyright (C) 2018-2024 NVIDIA Corporation. All rights reserved. This code is li
 
 ## Acknowledgment
 
-Thanks to Jeffrey Smith (jeffreys@nvidia.com) for creating the Docker image.
+Thanks to Jeff Smith (jeffreys@nvidia.com) for help maintaining the repo and software.  Thanks also to [Martin Günther](https://github.com/mintar) for his code contributions and fixes.  
 
 
 ## Contact

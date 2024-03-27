@@ -1,7 +1,17 @@
 # Synthetic Data Generation with Blenderproc
 
+## Installation
+Blenderproc can be installed with pip:
+```
+pip install blenderproc
+```
+If you run into troubles, please consult the [project's own github page](https://github.com/DLR-RM/BlenderProc).
+
+
+## Usage
 
 [Blenderproc](https://github.com/DLR-RM/BlenderProc) is intended to create a single scene and render multiple frames of it. Adding and removing objects (such as varying the number of distractors) will cause memory bloat and poor performance.  To avoid this issue, we use a batching script (`run_blenderproc_datagen.py`) to run a standalone blenderproc script several times.
+
 
 
 ## Usage example:
