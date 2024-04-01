@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
 import blenderproc as bp  # must be first!
+from blenderproc.python.utility.Utility import Utility
+import bpy
+
 
 import argparse
 import cv2
@@ -199,7 +202,6 @@ def draw_cuboid_markers(objects, camera, im):
 
     return im
 
-
 def randomize_background(path, width, height):
     img = Image.open(path).resize([width, height])
     (cY, cX) = (height // 2, width // 2)
@@ -231,6 +233,53 @@ def randomize_background(path, width, height):
     return img
 
 
+# This code is copied from Blenderproc 4.03, for use with older versions of
+# the codebase
+def set_world_background_hdr_img2(path_to_hdr_file: str, strength: float = 1.0,
+                                 rotation_euler: list = None):
+    """
+    Sets the world background to the given hdr_file.
+
+    :param path_to_hdr_file: Path to the .hdr file
+    :param strength: The brightness of the background.
+    :param rotation_euler: The euler angles of the background.
+    """
+    if rotation_euler is None:
+        rotation_euler = [0.0, 0.0, 0.0]
+
+    if not os.path.exists(path_to_hdr_file):
+        raise FileNotFoundError(f"The given path does not exists: {path_to_hdr_file}")
+
+    world = bpy.context.scene.world
+    nodes = world.node_tree.nodes
+    links = world.node_tree.links
+
+    # add a texture node and load the image and link it
+    texture_node = nodes.new(type="ShaderNodeTexEnvironment")
+    texture_node.image = bpy.data.images.load(path_to_hdr_file, check_existing=True)
+
+    # get the one background node of the world shader
+    background_node = Utility.get_the_one_node_with_type(nodes, "Background")
+
+    # link the new texture node to the background
+    links.new(texture_node.outputs["Color"], background_node.inputs["Color"])
+
+    # Set the brightness of the background
+    background_node.inputs["Strength"].default_value = strength
+
+    # add a mapping node and a texture coordinate node
+    mapping_node = nodes.new("ShaderNodeMapping")
+    tex_coords_node = nodes.new("ShaderNodeTexCoord")
+
+    #link the texture coordinate node to mapping node
+    links.new(tex_coords_node.outputs["Generated"], mapping_node.inputs["Vector"])
+
+    #link the mapping node to the texture node
+    links.new(mapping_node.outputs["Vector"], texture_node.inputs["Vector"])
+
+    mapping_node.inputs["Rotation"].default_value = rotation_euler
+
+
 def main(args):
     ## Segmentation values
     SEG_DISTRACT = 0
@@ -242,7 +291,7 @@ def main(args):
     os.makedirs(out_directory, exist_ok=True)
 
     # Construct list of background images
-    image_types = ('*.jpg', '*.jpeg', '*.JPG', '*.JPEG', '*.png', '*.PNG')
+    image_types = ('*.jpg', '*.jpeg', '*.JPG', '*.JPEG', '*.png', '*.PNG', '*.hdr', '*.HDR')
     backdrop_images = []
     if opt.backgrounds_folder is not None:
         for ext in image_types:
@@ -353,30 +402,36 @@ def main(args):
             dd.set_scale([100*args.scale, 100*args.scale, 100*args.scale])
 
         # Render the scene
+        background_path = None
         if args.backgrounds_folder:
-            bp.renderer.set_output_format(enable_transparency=True)
+            background_path = backdrop_images[random.randint(0, len(backdrop_images) - 1)]
+            if os.path.splitext(background_path)[1].lower() == ".hdr":
+                strength = random.random()+0.5
+                rotation = [random.random()*0.2-0.1, random.random()*0.2-0.1,
+                            random.random()*0.2-0.1]
+                set_world_background_hdr_img2(background_path, strength, rotation)
+            else:
+                bp.renderer.set_output_format(enable_transparency=True)
 
         segs = bp.renderer.render_segmap()
         data = bp.renderer.render()
-        # save RGB data as image
         im = Image.fromarray(data['colors'][0])
 
-        filename = os.path.join(out_directory, str(frame).zfill(6) + ".png")
         if args.backgrounds_folder:
-            background_path = backdrop_images[random.randint(0, len(backdrop_images) - 1)]
-            background = randomize_background(background_path, args.width, args.height)
-            background = background.convert('RGB') # some images may be B&W
+            if os.path.splitext(background_path)[1].lower() != ".hdr":
+                # We have an ordinary image. We randomize its rotation and crop
+                # and paste it in as a background
+                background = randomize_background(background_path, args.width, args.height)
+                background = background.convert('RGB') # some images may be B&W
+                # Pasting the current image on the selected background
+                background.paste(im, mask=im.convert('RGBA'))
+                im = background
 
-            # Pasting the current image on the selected background
-            background.paste(im, mask=im.convert('RGBA'))
+        if args.debug:
+            im = draw_cuboid_markers(objects, bp.camera, background)
 
-            if args.debug:
-                background = draw_cuboid_markers(objects, bp.camera, background)
-            background.save(filename)
-        else:
-            if args.debug:
-                im = draw_cuboid_markers(objects, bp.camera, im)
-            im.save(filename)
+        filename = os.path.join(out_directory, str(frame).zfill(6) + ".png")
+        im.save(filename)
 
         ## Export JSON file
         filename = os.path.join(out_directory, str(frame).zfill(6) + ".json")
@@ -446,7 +501,7 @@ if __name__ == "__main__":
     parser.add_argument(
         '--backgrounds_folder',
         default=None,
-        help = "folder containing background images"
+        help = "folder containing background images. Images can .jpeg, .png, or .hdr."
     )
     parser.add_argument(
         '--nb_objects',
