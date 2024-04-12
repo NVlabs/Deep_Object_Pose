@@ -233,48 +233,36 @@ def randomize_background(path, width, height):
     return img
 
 
-# This code is copied from Blenderproc 4.03, for use with older versions of
-# the codebase
-def set_world_background_hdr_img2(path_to_hdr_file: str, strength: float = 1.0,
-                                 rotation_euler: list = None):
+def set_world_background_hdr(filename, strength=1.0, rotation_euler=None):
     """
-    Sets the world background to the given hdr_file.
+    Sets the background with a Poly Haven HDRI file
 
-    :param path_to_hdr_file: Path to the .hdr file
-    :param strength: The brightness of the background.
-    :param rotation_euler: The euler angles of the background.
+    strength: The brightness of the background.
+    rot_euler: Optional euler angles to rotate the background.
     """
     if rotation_euler is None:
         rotation_euler = [0.0, 0.0, 0.0]
 
-    if not os.path.exists(path_to_hdr_file):
-        raise FileNotFoundError(f"The given path does not exists: {path_to_hdr_file}")
-
-    world = bpy.context.scene.world
-    nodes = world.node_tree.nodes
-    links = world.node_tree.links
+    nodes = bpy.context.scene.world.node_tree.nodes
+    links = bpy.context.scene.world.node_tree.links
 
     # add a texture node and load the image and link it
     texture_node = nodes.new(type="ShaderNodeTexEnvironment")
-    texture_node.image = bpy.data.images.load(path_to_hdr_file, check_existing=True)
+    texture_node.image = bpy.data.images.load(filename, check_existing=True)
 
-    # get the one background node of the world shader
+    # get the background node of the world shader and link the new texture node
     background_node = Utility.get_the_one_node_with_type(nodes, "Background")
-
-    # link the new texture node to the background
     links.new(texture_node.outputs["Color"], background_node.inputs["Color"])
 
-    # Set the brightness of the background
+    # Set the brightness
     background_node.inputs["Strength"].default_value = strength
 
     # add a mapping node and a texture coordinate node
     mapping_node = nodes.new("ShaderNodeMapping")
     tex_coords_node = nodes.new("ShaderNodeTexCoord")
 
-    #link the texture coordinate node to mapping node
+    #link the texture coordinate node to mapping node and vice verse
     links.new(tex_coords_node.outputs["Generated"], mapping_node.inputs["Vector"])
-
-    #link the mapping node to the texture node
     links.new(mapping_node.outputs["Vector"], texture_node.inputs["Vector"])
 
     mapping_node.inputs["Rotation"].default_value = rotation_euler
@@ -409,7 +397,7 @@ def main(args):
                 strength = random.random()+0.5
                 rotation = [random.random()*0.2-0.1, random.random()*0.2-0.1,
                             random.random()*0.2-0.1]
-                set_world_background_hdr_img2(background_path, strength, rotation)
+                set_world_background_hdr(background_path, strength, rotation)
             else:
                 bp.renderer.set_output_format(enable_transparency=True)
 

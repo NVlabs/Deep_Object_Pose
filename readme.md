@@ -2,7 +2,7 @@
 ![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)
 # Deep Object Pose Estimation
 
-This is the official DOPE ROS package for detection and 6-DoF pose estimation of **known objects** from an RGB camera.  For full details, see our [CoRL 2018 paper](https://arxiv.org/abs/1809.10790) and [video](https://youtu.be/yVGViBqWtBI).
+This is the official repository for NVIDIA's Deep Object Pose Estimation, which performs detection and 6-DoF pose estimation of **known objects** from an RGB camera.  For full details, see our [CoRL 2018 paper](https://arxiv.org/abs/1809.10790) and [video](https://youtu.be/yVGViBqWtBI).
 
 
 ![DOPE Objects](dope_objects.png)
