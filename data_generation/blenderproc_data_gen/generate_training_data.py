@@ -16,38 +16,86 @@ from PIL import Image, ImageDraw
 import random
 import sys
 
+def random_object_position(near=5.0, far=40.0):
+    # Specialized function to randomly place the objects in a visible
+    # location
+    x = 20 - 40*random.random()
+    y = near + (far-near)*random.random()
+    z = 20 - 40*random.random()
+    return np.array([x, y, z])
 
 
-def point_in_frustrum(camera, width, height, near=0.0, far=25.0):
-    fov = camera.get_fov()
-    aspect = width/height
+def random_depth_in_frustrum(tw, th, bw, bh, depth):
+    '''
+    Generate a random depth within a frustrum. In order to get a uniform volume
+    distribution, we want the probability density function to be proportional to
+    the cross-sectional area of the frustum at the generated depth.
 
-    ## To simplify this function, we assume a camera position of [0,-25,0] with a
-    ## rotation of [np.pi / 2, 0, 0]
-    cam_pos = [0, -25, 0]
+    tw, th - the width and height, respectively at the "top" (narrowest part)
+             of the frustrum
+    bw, bh - the width and height, respectively at the "bottom" (widest part)
+             of the frustrum
+    depth  - depth of frustrum (distance between 'top' and 'bottom')
+    '''
+    THIRD=1./3.
 
-    ## Generate a random point in the unit cube
-    pos = np.random.random((3,))
-    # shift the Y and Z values to be centered around 0
-    pos[0] = 2.0*pos[1] - 1.0
-    pos[2] = 2.0*pos[2] - 1.0
-
-    # rescale depth (Y) to fit near/far
-    pos[1] = pos[1]*(far-near) + near
-    # rescale X and Z to fit frustrum
-    pos[0] = pos[0] * sin(fov[0]/2)*(25+pos[1])
-    pos[2] = pos[2] * sin(fov[1]/2)*aspect*(25+pos[1])
-    return pos
+    A = (tw - bw) * (th - bw)/(depth * depth)
+    B = (bw * (tw - bw) + bw * (th - bw))/depth
+    C = bw * bw
+    area = depth * (C + depth * (0.5 * B + depth * THIRD * A))
+    r = random.random() * area
+    det = B * B - 4 * A * C
+    part1 = B * (B * B - 6 * A * C) - 12 * A * A * r
+    part2 = sqrt(part1 * part1 - det * det * det)
+    part3 = pow(part1 + part2, THIRD)
+    return (-(B + det / part3 + part3) / (2 * A))
 
 
-def random_rotation_matrix():
-    # Generate a random quaternion (XYZW)
-    a,b,c = random.random(), random.random(), random.random()
-    x,y,z,w = sqrt(1-a)*sin(2*pi*b), sqrt(1-a)*cos(2*pi*b), sqrt(a)*sin(2*pi*c), sqrt(a)*cos(2*pi*c)
-    # Convert to a 3x3 rotation matrix
-    return np.array([[1-2*y*y-2*z*z, 2*x*y+2*z*w, 2*x*z-2*y*w],
-                     [2*x*y-2*z*w, 1-2*x*x-2*z*z, 2*y*z+2*x*w],
-                     [2*x*z+2*y*w, 2*y*z-2*x*w, 1-2*x*x-2*y*y]])
+def point_in_frustrum(camera, near=10, far=20):
+    fov_w, fov_h = camera.get_fov()
+
+    tw = sin(fov_w)*near
+    th = sin(fov_h)*near
+    bw = sin(fov_w)*far
+    bh = sin(fov_h)*far
+    x = random_depth_in_frustrum(tw, th, bw, bh, far-near) # 0 -> (far-near)
+
+    no = near/far
+    nx = no + (1.0-no)*(1.0-(x / (far-near))) # 0->1
+
+    x = x + near
+    y = sin(fov_w)*nx*(far-near) * (2.0*random.random()-1.0)
+    z = sin(fov_h)*nx*(far-near) * (2.0*random.random()-1.0)
+
+    xform = camera.get_camera_pose()
+    pt = (np.array([x,y,z,1]) @ xform)[0:3]
+    return np.array([pt[2],pt[0],pt[1]])
+
+
+def Rx(A):
+    return np.array([[1,      0,      0],
+                     [0, cos(A), -sin(A)],
+                     [0, sin(A),  cos(A)]])
+
+def Ry(A):
+    return np.array([[ cos(A), 0, sin(A)],
+                     [      0, 1,      0],
+                     [-sin(A), 0, cos(A)]])
+
+def Rz(A):
+    return np.array([[cos(A), -sin(A), 0],
+                     [sin(A),  cos(A), 0],
+                     [0,            0, 1]])
+
+def ur():
+    return 2.0*random.random() - 1.0
+
+def random_rotation_matrix(max_angle=180):
+    mr = pi*(max_angle/180.0)
+    # Orient the board so a white square (sq #0) in UL corner
+    RY = Ry(-0.5*pi)
+    # add some random rotations
+    return RY @ Rx(mr*ur()) @ Ry(mr*ur()) @ Rz(mr*ur())
 
 
 def rotated_rectangle_extents(w, h, angle):
@@ -77,6 +125,52 @@ def rotated_rectangle_extents(w, h, angle):
         wr,hr = (w*cos_a - h*sin_a)/cos_2a, (h*cos_a - w*sin_a)/cos_2a
 
     return wr,hr
+
+
+def crop_around_center(image, width, height):
+    """
+    Crop 'image' (a PIL image) to 'width' and height' around the images center
+    point
+    """
+    size = image.size
+    center = (int(size[0] * 0.5), int(size[1] * 0.5))
+
+    if(width > size[0]):
+        width = size[0]
+
+    if(height > size[1]):
+        height = size[1]
+
+    x1 = int(center[0] - width * 0.5)
+    x2 = int(center[0] + width * 0.5)
+    y1 = int(center[1] - height * 0.5)
+    y2 = int(center[1] + height * 0.5)
+
+    return image.crop((x1, y1, x2, y2)) # (left, upper, right, lower)
+
+
+def crop_to_rotation(img, angle):
+    # 'img' is a PIL Image of uint8 RGB values
+    # 'angle' is in degrees
+    angle_rad = angle*pi/180.0
+    width, height = img.size
+
+    img = img.rotate(angle)
+    # Crop out black border resulting from rotation
+    wr, hr = rotated_rectangle_extents(width, height, angle_rad)
+    return crop_around_center(img, wr, hr)
+
+
+def scale_to_original_shape(img, o_width, o_height):
+    c_width, c_height = img.size
+    o_ar = o_width/o_height
+    c_ar = c_width/c_height
+    if o_ar > c_ar:
+        cropped = crop_around_center(img, c_width, c_width/o_ar)
+    else:
+        cropped = crop_around_center(img, c_height*o_ar, c_height)
+
+    return cropped.resize((o_width, o_height))
 
 
 def get_cuboid_image_space(mesh, camera):
@@ -173,6 +267,9 @@ def write_json(outf, args, camera, objects, objects_data, seg_map):
         idx = ii+1 # objects ID indices start at '1'
 
         num_pixels = int(np.sum((seg_map == idx)))
+
+        if num_pixels < args.min_pixels:
+            continue
         projected_keypoints = get_cuboid_image_space(oo, camera)
 
         data['objects'].append({
@@ -202,25 +299,14 @@ def draw_cuboid_markers(objects, camera, im):
 
     return im
 
+
 def randomize_background(path, width, height):
-    img = Image.open(path).resize([width, height])
-    (cY, cX) = (height // 2, width // 2)
+    img = Image.open(path)
 
     # Randomly rotate
-    angle = random.random()*90.0
-    img = img.rotate(angle)
-    # Crop out black border resulting from rotation
-    wr, hr = rotated_rectangle_extents(width, height, angle*pi/180.0)
-    img = img.crop((cY-int(hr/2.0), cX-int(wr/2.0), cY+int(hr/2.0),
-                    cX+int(wr/2.0))).resize([width, height])
-
-    # Randomly recrop: between 50%-100%
-    rr = random.random()*0.5 + 0.5
-    hrr = int(height*rr)
-    wrr = int(width*rr)
-    cr_h = int((height-hrr)*random.random())
-    cr_w = int((width-wrr)*random.random())
-    img = img.crop((cr_h,cr_w, cr_h+hrr, cr_w+wrr)).resize([width, height])
+    angle = 45.0 - random.random()*90.0
+    img = crop_to_rotation(img, angle)
+    img = scale_to_original_shape(img, width, height)
 
     # Randomly flip in horizontal and vertical directions
     if random.random() > 0.5:
@@ -281,23 +367,29 @@ def main(args):
     # Construct list of background images
     image_types = ('*.jpg', '*.jpeg', '*.JPG', '*.JPEG', '*.png', '*.PNG', '*.hdr', '*.HDR')
     backdrop_images = []
-    if opt.backgrounds_folder is not None:
+    if args.backgrounds_folder is not None:
         for ext in image_types:
-            backdrop_images.extend(glob.glob(os.path.join(opt.backgrounds_folder,
+            backdrop_images.extend(glob.glob(os.path.join(args.backgrounds_folder,
                                                           os.path.join('**', ext)),
                                              recursive=True))
         if len(backdrop_images) == 0:
-            print(f"No images found in backgrounds directory '{opt.backgrounds_folder}'")
+            print(f"No images found in backgrounds directory '{args.backgrounds_folder}'")
         else:
             print(f"{len(backdrop_images)} images found in backgrounds directory "
-                  f"'{opt.backgrounds_folder}'")
+                  f"'{args.backgrounds_folder}'")
 
     # Construct list of object models
     object_models = []
+    tmp_p = None
     if args.path_single_obj:
         object_models.append(args.path_single_obj)
+        tmp_p = args.path_single_obj
     else:
-        object_models = glob.glob(opt.objs_folder + "**/textured.obj", recursive=True)
+        object_models = glob.glob(args.objs_folder + "**/textured.obj", recursive=True)
+        tmp_p = args.objs_folder
+    if len(object_models) == 0:
+        print(f"Failed to find any loadable models at {tmp_p}")
+        exit(1)
 
     # Construct list of distractors
     distractor_objs = glob.glob(args.distractors_folder + "**/model.obj", recursive=True)
@@ -305,14 +397,6 @@ def main(args):
 
     # Set up blenderproc
     bp.init()
-
-    # Create lights
-    bp.renderer.set_world_background([1,1,1], 1.0)
-    static_light = bp.types.Light()
-    static_light.set_type('SUN')
-    static_light.set_energy(100) # watts per sq. meter
-    light = bp.types.Light()
-    light.set_type('SUN')
 
     # Set the camera to be in front of the object
     cam_pose = bp.math.build_transformation_mat([0, -25, 0], [np.pi / 2, 0, 0])
@@ -328,6 +412,19 @@ def main(args):
         bp.camera.set_intrinsics_from_blender_params(lens=0.785398, # FOV in radians
                                                      lens_unit='FOV',
                                                      clip_start=1.0, clip_end=1000.0)
+
+    # Create lights
+    #bp.renderer.set_world_background([1,1,1], 1.0)
+    #static_light = bp.types.Light()
+    #static_light.set_type('SUN')
+    #static_light.set_energy(1) # watts per sq. meter
+
+    #light = bp.types.Light()
+    #light.set_type('POINT')
+    #light.set_energy(100) # watts per sq. meter
+
+    light = bp.lighting.add_intersecting_spot_lights_to_camera_poses(5.0, 50.0)
+
 
     # Renderer setup
     bp.renderer.set_output_format('PNG')
@@ -364,14 +461,14 @@ def main(args):
 
     for frame in range(args.nb_frames):
         # Randomize light
-        light.set_location([10-random.random()*20, 10-random.random()*20,
-                            150+random.random()*100])
+        #light.set_location([10-random.random()*20, 10-random.random()*20,
+        #                    150+random.random()*100])
+
         # Place object(s)
         for oo in objects:
             # Set a random pose
             xform = np.eye(4)
-            xform[0:3,3] = point_in_frustrum(bp.camera, args.width, args.height,
-                                             near=5.0, far=300.)
+            xform[0:3,3] = random_object_position(near=20, far=100)
             xform[0:3,0:3] = random_rotation_matrix()
             oo.set_local2world_mat(xform)
 
@@ -381,13 +478,10 @@ def main(args):
         # Place distractors
         for dd in distractors:
             xform = np.eye(4)
-            xform[0:3,3] = point_in_frustrum(bp.camera, args.width, args.height,
-                                             near=5.0, far=300.)
+            xform[0:3,3] = point_in_frustrum(bp.camera, near=5.0, far=100.)
             xform[0:3,0:3] = random_rotation_matrix()
             dd.set_local2world_mat(xform)
-
-            # Scale 3D model to cm ('google_scanned_models' is in scale of meters)
-            dd.set_scale([100*args.scale, 100*args.scale, 100*args.scale])
+            dd.set_scale([args.distractor_scale, args.distractor_scale, args.distractor_scale])
 
         # Render the scene
         background_path = None
@@ -401,8 +495,22 @@ def main(args):
             else:
                 bp.renderer.set_output_format(enable_transparency=True)
 
+        # redirect blenderproc output to log file
+        logfile = '/tmp/blender_render.log'
+        open(logfile, 'a').close()
+        old = os.dup(sys.stdout.fileno())
+        sys.stdout.flush()
+        os.close(sys.stdout.fileno())
+        fd = os.open(logfile, os.O_WRONLY)
+
         segs = bp.renderer.render_segmap()
         data = bp.renderer.render()
+
+        # disable output redirection
+        os.close(fd)
+        os.dup(old)
+        os.close(old)
+
         im = Image.fromarray(data['colors'][0])
 
         if args.backgrounds_folder:
@@ -457,7 +565,12 @@ if __name__ == "__main__":
         type=int,
         help = 'image output height'
     )
-    # TODO: change for an array
+    parser.add_argument(
+        '--focal-length',
+        default=None,
+        type=float,
+        help = "focal length of the camera"
+    )
     parser.add_argument(
         '--distractors_folder',
         default='google_scanned_models/',
@@ -503,21 +616,28 @@ if __name__ == "__main__":
         help = "how many distractor objects"
     )
     parser.add_argument(
+        '--distractor_scale',
+        default=50,
+        type=float,
+        help='Scaling to apply to distractor objects in order to put in units of centimeters; '
+             'e.g if the object scale is meters -> scale=100; if it is in cm -> scale=1'
+    )
+    parser.add_argument(
         '--nb_frames',
         type = int,
         default=2000,
         help = "how many total frames to generate"
     )
     parser.add_argument(
+        '--min_pixels',
+        type = int,
+        default=1,
+        help = "How many visible pixels an object must have to be included in the JSON data"
+    )
+    parser.add_argument(
         '--outf',
         default='output_example/',
         help = "output filename inside output/"
-    )
-    parser.add_argument(
-        '--focal-length',
-        default=None,
-        type=float,
-        help = "focal length of the camera"
     )
     parser.add_argument(
         '--debug',
