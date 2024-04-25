@@ -37,39 +37,44 @@ def random_depth_in_frustrum(tw, th, bw, bh, depth):
              of the frustrum
     depth  - depth of frustrum (distance between 'top' and 'bottom')
     '''
-    THIRD=1./3.
-
     A = (tw - bw) * (th - bw)/(depth * depth)
     B = (bw * (tw - bw) + bw * (th - bw))/depth
     C = bw * bw
-    area = depth * (C + depth * (0.5 * B + depth * THIRD * A))
+    area = depth * (C + depth * (0.5 * B + depth * A / 3.0))
     r = random.random() * area
     det = B * B - 4 * A * C
     part1 = B * (B * B - 6 * A * C) - 12 * A * A * r
     part2 = sqrt(part1 * part1 - det * det * det)
-    part3 = pow(part1 + part2, THIRD)
+    part3 = pow(part1 + part2, 1./3.)
     return (-(B + det / part3 + part3) / (2 * A))
 
 
 def point_in_frustrum(camera, near=10, far=20):
-    fov_w, fov_h = camera.get_fov()
+     fov_w, fov_h = camera.get_fov()
 
-    tw = sin(fov_w)*near
-    th = sin(fov_h)*near
-    bw = sin(fov_w)*far
-    bh = sin(fov_h)*far
-    x = random_depth_in_frustrum(tw, th, bw, bh, far-near) # 0 -> (far-near)
+    tw = sin(fov_w)*near # top (nearest to camera) width of frustrum
+    th = sin(fov_h)*near # top (nearest to camera) height of frustrum
+    bw = sin(fov_w)*far  # bottom width
+    bh = sin(fov_h)*far  # bottom height
 
-    no = near/far
-    nx = no + (1.0-no)*(1.0-(x / (far-near))) # 0->1
+    print(tw, th, bw, bh)
 
-    x = x + near
-    y = sin(fov_w)*nx*(far-near) * (2.0*random.random()-1.0)
-    z = sin(fov_h)*nx*(far-near) * (2.0*random.random()-1.0)
+    # calculate random inverse depth: 0 at the 'far' plane and 1 at the 'near' plane
+    inv_depth = random_depth_in_frustrum(tw, th, bw, bh, far-near)
+    depth = far-inv_depth
 
+    nd = depth/(far-near) # normalized depth
+    w = nd*(bw-tw)
+    h = nd*(bh-th)
+
+    # construct points so that we are looking down -Z, +Y is up, +X to right
+    x = (0.5 - random.random())*w
+    y = (0.5 - random.random())*h
+    z = depth
+
+    # orient them along the camera's view direction
     xform = camera.get_camera_pose()
-    pt = (np.array([x,y,z,1]) @ xform)[0:3]
-    return np.array([pt[2],pt[0],pt[1]])
+    return (np.array([x,y,z,1]) @ xform)[0:3]
 
 
 def Rx(A):
