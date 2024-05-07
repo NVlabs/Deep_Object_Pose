@@ -12,4 +12,4 @@ source /opt/ros/humble/setup.bash
 # Create colcon workspace.
 mkdir -p ${ROS2WS}/src
 cd ${ROS2WS}/
-colcon_build
+colcon build
