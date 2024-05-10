@@ -12,7 +12,7 @@
       # "santal_ace": "package://dope_ros2/weights/santal_67.pth"
       "lime": "package://dope_ros2/weights/lime_215.pth"
       "bowl": "package://dope_ros2/weights/bowl_114.pth"
-      "fork": "package://dope_ros2/weights/fork_150.pth"
+      #"fork": "package://dope_ros2/weights/fork_150.pth"
       "glass": "package://dope_ros2/weights/red_glass_120.pth"
 
     # Cuboid dimension in cm x, y, z

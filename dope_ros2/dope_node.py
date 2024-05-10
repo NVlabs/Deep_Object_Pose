@@ -353,10 +353,15 @@ class DopeNode(Node):
                 # Add to Detection3DArray
                 detection = Detection3D()
                 hypothesis = ObjectHypothesisWithPose()
+
+
                 hypothesis.hypothesis.class_id = str(self.class_ids[result["name"]])
                 hypothesis.hypothesis.score = float(result["score"])
                 hypothesis.pose.pose = pose_msg.pose
+                
                 detection.results.append(hypothesis)
+
+                
                 detection.bbox.center = pose_msg.pose
                 detection.bbox.size.x = dims[0] / CONVERT_SCALE_CM_TO_METERS
                 detection.bbox.size.y = dims[1] / CONVERT_SCALE_CM_TO_METERS

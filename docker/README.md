@@ -6,13 +6,13 @@ You can run DOPE directly in a docker container with Ubuntu 22.04 with ROS2 Humb
 
 1. **Download the DOPE code**
    ```
-   $ git clone https://github.com/Vanvitelli-Robotics/DOPE.git dope -b ros2_humble
+   git clone https://github.com/Vanvitelli-Robotics/DOPE.git dope -b ros2_humble
    ```
 
 2. **Build the docker image**
    ```
-   $ cd dope/docker
-   $ docker build -t dope-ros2:humble-v1 -f Dokerfile.humble ..
+   cd dope/docker
+   docker build -t dope-ros2:humble-v1 -f Dokerfile.humble ..
    ```
    This will take several minutes and requires an internet connection. If the build fails check if the dope/docker/init_workspace.sh has the execution rights.
 
@@ -21,7 +21,7 @@ You can run DOPE directly in a docker container with Ubuntu 22.04 with ROS2 Humb
 
 4. **Run the container**
    ```
-   $ ./run_docker.sh [name] [host dir] [container dir]
+   ./run_docker.sh [name] [host dir] [container dir]
    ```
    Parameters:
    - `name` is an optional field that specifies the name of this image. By default, it is `dope-ros2-v2`.  By using different names, you can create multiple containers from the same image.
