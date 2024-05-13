@@ -15,7 +15,7 @@ setup(
         (os.path.join('share', package_name, 'launch'), glob(os.path.join('launch', '*launch.[pxy][yma]*'))),
         (os.path.join('share', package_name, 'config'), glob('config/*.yaml')),
         (os.path.join('share', package_name, 'rviz'), glob('rviz/*.rviz')),
-        (os.path.join('share', package_name, 'meshes'), glob('meshes/lime/*.obj')),
+        (os.path.join('share', package_name, 'meshes'), glob('meshes/*/*')),
         (os.path.join('share', package_name, 'weights'), glob('weights/*.pth')),
     ],
     install_requires=['setuptools', 'inference_script'],

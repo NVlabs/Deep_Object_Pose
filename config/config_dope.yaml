@@ -12,7 +12,7 @@
       # "santal_ace": "package://dope_ros2/weights/santal_67.pth"
       "lime": "package://dope_ros2/weights/lime_215.pth"
       "bowl": "package://dope_ros2/weights/bowl_114.pth"
-      #"fork": "package://dope_ros2/weights/fork_150.pth"
+      "fork": "package://dope_ros2/weights/fork_190.pth"
       "glass": "package://dope_ros2/weights/red_glass_120.pth"
 
     # Cuboid dimension in cm x, y, z
@@ -50,11 +50,10 @@
       #"apple": "/home/workstation/dope_ros_ws/src/grasp_dope/scripts/models/Apple/Apple_4K/food_apple_01_4k_simplify.obj"
       #"santal_ace": "/home/sfederico/Documents/cad_models/santal_ace/santal_centered.obj"
       "lime" : "package://dope_ros2/meshes/Lime.obj"
-      "bowl" : "package://dope_ros2/meshes/Lime.obj"
-      "glass" : "package://dope_ros2/meshes/Lime.obj"
-      "fork" : "package://dope_ros2/meshes/Lime.obj"
+      "bowl" : "package://dope_ros2/meshes/bowl.obj"
+      "glass" : "package://dope_ros2/meshes/simple_glass.obj"
+      "fork" : "package://dope_ros2/meshes/fork.obj"
 
-      
 
     mesh_scales:
       "apple": 1.0
