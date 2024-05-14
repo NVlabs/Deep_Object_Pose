@@ -14,6 +14,7 @@
       "bowl": "package://dope_ros2/weights/bowl_114.pth"
       "fork": "package://dope_ros2/weights/fork_190.pth"
       "glass": "package://dope_ros2/weights/red_glass_120.pth"
+      "cracker": "package://dope_ros2/weights/cracker_60.pth"
 
     # Cuboid dimension in cm x, y, z
     dimensions:
@@ -23,6 +24,7 @@
       "bowl": [20.5,20.5,9.15]
       "fork": [2.82,2.86,20.64]
       "glass": [7.4,7.4,9.5]
+      "cracker": [16.403600692749023,21.343700408935547,7.179999828338623]
 
     class_ids:
       "apple": 1
@@ -31,6 +33,7 @@
       "bowl": 6
       "fork": 7
       "glass": 8
+      "cracker": 9
 
     draw_colors:
       "apple": [255, 0, 0]          # red
@@ -39,6 +42,7 @@
       "bowl": [1, 172, 142] 
       "fork": [120, 120, 120]	    # silver
       "glass": [255, 2, 1]	    # red
+      "cracker": [255, 255, 0]	    # yellow
 
     # optional: provide a transform that is applied to the pose returned by DOPE
     # model_transforms:
@@ -53,6 +57,7 @@
       "bowl" : "package://dope_ros2/meshes/bowl.obj"
       "glass" : "package://dope_ros2/meshes/simple_glass.obj"
       "fork" : "package://dope_ros2/meshes/fork.obj"
+      "cracker": "package://dope_ros2/meshes/cracker_box.obj"
 
 
     mesh_scales:
@@ -62,6 +67,7 @@
       "bowl": 0.001
       "fork": 1.0
       "glass": 1.0
+      "cracker": 1.0
 
     overlay_belief_images: true # Whether to overlay the input image on the belief images published on /dope/belief_[obj_name]
 
