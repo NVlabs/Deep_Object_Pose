@@ -58,7 +58,7 @@
     mesh_scales:
       "apple": 1.0
       "santal_ace": 0.001
-      "lime" : 1000
+      "lime" : 1.0
       "bowl": 0.001
       "fork": 1.0
       "glass": 1.0
@@ -68,5 +68,5 @@
     # Config params for DOPE
     thresh_angle: 0.5
     thresh_map: 0.0001
-    sigma: 0.3
+    sigma: 3
     thresh_points: 0.1
