@@ -258,7 +258,7 @@ class CleanVisiiDopeLoader(data.Dataset):
         transform = A.Compose(
             [
                 A.RandomCrop(width=400, height=400),
-                A.Rotate(limit=180),
+                A.Rotate(limit=180, border_mode=cv2.BORDER_CONSTANT),
                 A.RandomBrightnessContrast(brightness_limit=0.2,contrast_limit=0.15,p=1),
                 A.GaussNoise(p=1),
 
