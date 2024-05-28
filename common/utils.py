@@ -906,19 +906,22 @@ class Draw(object):
     def draw_text(self, point, text, text_color):
         """Draws text on image"""
         if point is not None:
-            self.draw.text(point, text, fill=text_color, font=ImageFont.truetype("misc/arial.ttf", self.width // 50))
+            self.draw.text(point, text, fill=text_color)
 
     def draw_cube(self, points, color=(0, 255, 0)):
         """
         Draws cube with a thick solid line across
         the front top edge and an X on the top face.
         """
-        line_order = [[1, 2], [2, 4], [3, 4], [1, 3], [3, 7], [4, 8], [2, 6], [1, 5], [5, 6], [6, 8], [7, 8], [5, 7]]
+        line_order = [[0, 1], [1, 2], [3, 2], [3, 0],  # front
+                      [4, 5], [6, 5], [6, 7], [4, 7], # back
+                      [0, 4], [7, 3], [5, 1], [2, 6], # sides
+                      [0, 5], [1,4]]                  # x on top
 
         for l in line_order:
             self.draw_line(points[l[0]], points[l[1]], color, line_width=2)
         # Draw center
-        self.draw_dot(points[0], point_color=color, point_radius=6)
+        self.draw_dot(points[8], point_color=color, point_radius=6)
 
         for i in range(9):
             self.draw_text(points[i], str(i), (255, 0, 0))
