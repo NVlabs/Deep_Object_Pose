@@ -534,8 +534,6 @@ class ObjectDetector(object):
     ):
         """Detect objects given network output"""
 
-        # run_sampling = True
-
         # Detect objects from belief maps and affinities
         objects, all_peaks = ObjectDetector.find_objects(
             vertex2,
@@ -548,12 +546,16 @@ class ObjectDetector(object):
         detected_objects = []
         obj_name = pnp_solver.object_name
 
-        # print(all_peaks)
-
         # print("find_object_poses:  found {} objects ================".format(len(objects)))
         for obj in objects:
             # Run PNP
             points = obj[1] + [(obj[0][0] * scale_factor, obj[0][1] * scale_factor)]
+            if None in points:
+                print("Incomplete cuboid detection.")
+                print("  result from detection:", points)
+                print("Skipping.")
+                continue
+
             cuboid2d = np.copy(points)
             location, quaternion, projected_points = pnp_solver.solve_pnp(points)
 
