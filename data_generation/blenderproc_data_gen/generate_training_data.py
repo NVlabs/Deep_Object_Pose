@@ -4,7 +4,6 @@ import blenderproc as bp  # must be first!
 from blenderproc.python.utility.Utility import Utility
 import bpy
 
-
 import argparse
 import cv2
 import glob
@@ -13,8 +12,10 @@ from math import acos, atan, cos, pi, sin, sqrt
 import numpy as np
 import os
 from PIL import Image, ImageDraw
+from pyquaternion import Quaternion
 import random
 import sys
+
 
 def random_object_position(near=5.0, far=40.0):
     # Specialized function to randomly place the objects in a visible
@@ -50,14 +51,12 @@ def random_depth_in_frustrum(tw, th, bw, bh, depth):
 
 
 def point_in_frustrum(camera, near=10, far=20):
-     fov_w, fov_h = camera.get_fov()
+    fov_w, fov_h = camera.get_fov()
 
     tw = sin(fov_w)*near # top (nearest to camera) width of frustrum
     th = sin(fov_h)*near # top (nearest to camera) height of frustrum
     bw = sin(fov_w)*far  # bottom width
     bh = sin(fov_h)*far  # bottom height
-
-    print(tw, th, bw, bh)
 
     # calculate random inverse depth: 0 at the 'far' plane and 1 at the 'near' plane
     inv_depth = random_depth_in_frustrum(tw, th, bw, bh, far-near)
@@ -182,9 +181,9 @@ def get_cuboid_image_space(mesh, camera):
     # object aligned bounding box coordinates in world coordinates
     bbox = mesh.get_bound_box()
     '''
-    bbox is a list of the world-space coordinates of the corners of the
-    object's oriented bounding box
-    https://blender.stackexchange.com/questions/32283/what-are-all-values-in-bound-box
+    bbox is a list of the world-space coordinates of the corners of a
+    blender object's oriented bounding box
+     https://blender.stackexchange.com/questions/32283/what-are-all-values-in-bound-box
 
                    TOP
            3 +-----------------+ 7
@@ -201,7 +200,6 @@ def get_cuboid_image_space(mesh, camera):
         1 +-----------------+ 5
                 FRONT
 
-    Point '8' (the ninth entry) is the centroid
     '''
 
     centroid = np.array([0.,0.,0.])
@@ -217,7 +215,7 @@ def get_cuboid_image_space(mesh, camera):
 
     # However these points are in a different order than the original DOPE data format,
     # so we must reorder them
-    dope_order = [5, 1, 2, 6, 4, 0, 3, 7]
+    dope_order = [6, 2, 1, 5, 7, 3, 0, 4]
     cuboid = [None for ii in range(9)]
     for ii in range(8):
         cuboid[dope_order[ii]] = cv2.projectPoints(bbox[ii], rvec, tvec, K, np.array([]))[0][0][0]
@@ -281,7 +279,11 @@ def write_json(outf, args, camera, objects, objects_data, seg_map):
             'class': objects_data[ii]['class'],
             'name': objects_data[ii]['name'],
             'visibility': num_pixels,
-            'projected_cuboid': projected_keypoints
+            'projected_cuboid': projected_keypoints,
+            ## 'location' and 'quaternion_xyzw' are both optional data fields,
+            ## not used for training
+            'location': objects_data[ii]['location'],
+            'quaternion_xyzw': objects_data[ii]['quaternion_xyzw']
         })
 
     with open(outf, "w") as write_file:
@@ -470,12 +472,20 @@ def main(args):
         #                    150+random.random()*100])
 
         # Place object(s)
-        for oo in objects:
+        for idx, oo in enumerate(objects):
             # Set a random pose
             xform = np.eye(4)
             xform[0:3,3] = random_object_position(near=20, far=100)
             xform[0:3,0:3] = random_rotation_matrix()
             oo.set_local2world_mat(xform)
+
+            # 'location' and 'quaternion_xyzw' describe the position and orientation of the
+            # object in the camera coordinate system
+            xform_in_cam = np.linalg.inv(bp.camera.get_camera_pose()) @ xform
+            objects_data[idx]['location'] = xform_in_cam[0:3,3].tolist()
+            tmp_wxyz = Quaternion(matrix=xform_in_cam[0:3,0:3]).elements  # [scalar, x, y, z]
+            q_xyzw = [tmp_wxyz[1], tmp_wxyz[2], tmp_wxyz[3], tmp_wxyz[0]] # [x, y, z, scalar]
+            objects_data[idx]['quaternion_xyzw'] = q_xyzw
 
             # Scale 3D model to cm
             oo.set_scale([args.scale, args.scale, args.scale])
@@ -529,7 +539,7 @@ def main(args):
                 im = background
 
         if args.debug:
-            im = draw_cuboid_markers(objects, bp.camera, background)
+            im = draw_cuboid_markers(objects, bp.camera, im)
 
         filename = os.path.join(out_directory, str(frame).zfill(6) + ".png")
         im.save(filename)
