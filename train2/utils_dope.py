@@ -181,11 +181,8 @@ class CleanVisiiDopeLoader(data.Dataset):
 
         def load_data(path,extensions):
             imgs = loadimages(path,extensions = extensions)
-
-            # Check all the folders in path 
-            for name in os.listdir(str(path)):
-                imgs += loadimages(path +"/"+name,extensions = extensions)
             return imgs
+
         self.imgs = []
         for path_look in path_dataset:
             self.imgs += load_data(path_look,extensions = self.extensions)
