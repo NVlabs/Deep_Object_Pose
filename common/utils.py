@@ -191,6 +191,7 @@ class CleanVisiiDopeLoader(data.Dataset):
         self.use_s3 = use_s3
 
         if self.use_s3:
+            import boto3
             self.session = boto3.Session()
             self.s3 = self.session.resource(
                 service_name="s3", endpoint_url=endpoint_url
