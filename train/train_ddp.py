@@ -21,6 +21,8 @@ from torch.utils.data.distributed import DistributedSampler
 import random
 from tensorboardX import SummaryWriter
 
+import sys
+sys.path.insert(1, '../common')
 from models import *
 from utils import *
 
@@ -219,8 +221,10 @@ def main(args):
     net = torch.nn.parallel.DistributedDataParallel(net, device_ids=[args.gpu])
 
 
+    start_epoch = 1
     if args.pretrained:
         if args.net_path is not None:
+            start_epoch = int(os.path.splitext(os.path.basename(args.net_path).split('_')[2])[0]) + 1
             net.load_state_dict(torch.load(args.net_path))
         else:
             print("Error: Did not specify path to pretrained weights.")
@@ -231,7 +235,7 @@ def main(args):
 
     nb_update_network = 0
 
-    for epoch in range(args.epochs):  # loop over the dataset multiple times
+    for epoch in range(start_epoch, args.epochs+1):  # loop over the dataset multiple times
         train_sampler.set_epoch(epoch)
         _runnetwork(args.gpu, local_rank, epoch, nb_update_network, net, train_loader, optimizer,
                     writer)
