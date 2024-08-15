@@ -15,6 +15,14 @@ Hardware-accelerated ROS2 inference can be done with the
 [Isaac ROS DOPE](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_pose_estimation/tree/main/isaac_ros_dope) project.
 
 
+### A Note On Repo Organization
+* `train2` contains the original training code, used to generate the results in the CORL paper. There have been some minor bug fixes, but this code will remain largely untouched in the future.
+* Similarly, the synthetic data generation code in `data_generation/nvisii_data_gen/` was used for the paper, but depends on a rendering library that is no longer maintained.
+* `train` contains new training code that is intended to be simpler and easier for users to understand and modify. This code will be maintained, and any new features will be added here.
+* The synthetic data generation code in `data_generation/blenderproc` is a replacement for the nvisii code, using a different rendering engine that is still actively maintained.
+
+
+
 ## Tested Configurations
 
 We have tested our standalone training, inference and evaluation scripts on Ubuntu 20.04 and 22.04 with Python 3.8+, using an NVIDIA Titan X, 2080Ti, and Titan RTX. 
