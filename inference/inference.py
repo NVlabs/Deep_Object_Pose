@@ -69,6 +69,7 @@ class DopeNode(object):
         img_name,  # this is the name of the img file to save, it needs the .png at the end
         output_folder,  # folder where to put the output
         weight,
+        debug=False
     ):
         # Update camera matrix and distortion coefficients
         if self.input_is_rectified:
@@ -107,7 +108,8 @@ class DopeNode(object):
 
         # Detect object
         results, _ = ObjectDetector.detect_object_in_image(
-            self.model.net, self.pnp_solver, img, self.config_detect
+            self.model.net, self.pnp_solver, img, self.config_detect,
+            grid_belief_debug=debug
         )
 
         # Publish pose and overlay cube on image
@@ -200,6 +202,12 @@ if __name__ == "__main__":
         help="Name of class to run detections on.",
     )
 
+    parser.add_argument(
+        '--debug',
+        action='store_true',
+        help="Generates debugging information, including raw belief maps and annotation of the results"
+    )
+
     opt = parser.parse_args()
 
     # load the configs
@@ -220,7 +228,8 @@ if __name__ == "__main__":
         exit()
     else:
         print(f"Found {len(weights)} weights. ")
-        # Load inference images
+
+    # Load inference images
     imgs, imgsname = loadimages_inference(opt.data, extensions=opt.exts)
 
     if len(imgs) == 0 or len(imgsname) == 0:
