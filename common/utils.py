@@ -231,7 +231,6 @@ class CleanVisiiDopeLoader(data.Dataset):
 
         # np.random.shuffle(self.imgs)
         print("Number of Training Images:", len(self.imgs))
-        print(self.imgs)
 
         if debug:
             print("Debuging will be save in debug/")
