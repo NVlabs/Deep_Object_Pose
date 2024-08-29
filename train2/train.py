@@ -42,9 +42,25 @@ from PIL import ImageDraw
 from models import *
 from utils_dope import *
 
-
+import os
+import argparse
 import warnings
 warnings.filterwarnings("ignore")
+
+print(f"LOCAL_RANK: {os.environ['LOCAL_RANK']}")
+local_rank = int(os.environ['LOCAL_RANK'])
+torch.cuda.set_device(local_rank)
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--local_rank', type=int, default=0)
+parser.add_argument('--network', type=str, required=True)
+parser.add_argument('--epochs', type=int, required=True)
+parser.add_argument('--batchsize', type=int, required=True)
+parser.add_argument('--outf', type=str, required=True)
+parser.add_argument('--data', type=str, required=True)
+opt = parser.parse_args()
+
+torch.cuda.set_device(opt.local_rank)
 
 
 os.environ["CUDA_VISIBLE_DEVICES"]="0,1,2,3,4,5,6,7"
@@ -96,10 +112,10 @@ parser.add_argument('--objects',nargs='+', type=str, default=None,
     help='In the dataset which objets of interest')
 parser.add_argument('--optimizer', default='adam', 
     help='which optimizer to use, default=adam')
-parser.add_argument('--workers', type=int, help='number of data loading workers', default=8)
+parser.add_argument('--workers', type=int, help='number of data loading workers', default=8) ##
 parser.add_argument('--batchsize', type=int, default=32, help='input batch size')
 parser.add_argument('--imagesize', type=int, default=448, help='the height / width of the input image to network')
-parser.add_argument('--lr', type=float, default=0.0001, help='learning rate, default=0.001')
+parser.add_argument('--lr', type=float, default=0.0001, help='learning rate, default=0.001') ##
 parser.add_argument('--noise', type=float, default=2.0, help='gaussian noise added to the image')
 parser.add_argument('--net', default='', help="path to net (to continue training)")
 parser.add_argument('--net_dope', default=None, help="path to pretrained dope_network")
@@ -107,7 +123,7 @@ parser.add_argument('--network', default='dream_full', help="[dream_full,dope,mo
 parser.add_argument('--namefile', default='epoch', help="name to put on the file of the save weightss")
 parser.add_argument('--manualseed', type=int, help='manual seed')
 parser.add_argument('--epochs', type=int, default=60)
-parser.add_argument('--loginterval', type=int, default=100)
+parser.add_argument('--loginterval', type=int, default=100) ###
 # parser.add_argument('--gpuids',nargs='+', type=int, default=[0,1,2,3], help='GPUs to use')
 parser.add_argument('--gpuids',nargs='+', type=int, default=[0], help='GPUs to use')
 parser.add_argument('--extensions',nargs='+', type=str, default=["png"], 
@@ -254,7 +270,7 @@ if not opt.save:
     transform = transforms.Compose([
                                AddRandomContrast(0.2),
                                AddRandomBrightness(0.2),
-                               transforms.Scale(opt.imagesize),
+                               transforms.Resize(opt.imagesize),
                                ])
 else:
     contrast = 0.00001
@@ -583,7 +599,6 @@ def _runnetwork(epoch,train_loader,train=True,syn=False):
         # if not opt.nbupdates is None and nb_update_network > int(opt.nbupdates):
         #     torch.save(net.state_dict(), '{}/net_{}.pth'.format(opt.outf, opt.namefile))
         #     break
-
     # log the loss values
     if opt.local_rank == 0:
 
@@ -602,6 +617,7 @@ def _runnetwork(epoch,train_loader,train=True,syn=False):
             writer.add_scalar('loss/test_bel',np.mean(loss_avg_to_log["loss_belief"]),epoch)
 
 for epoch in range(1, opt.epochs + 1):
+    start_time = time.time()
 
     if not trainingdata is None and not opt.testonly:
         _runnetwork(epoch,trainingdata)
@@ -623,6 +639,8 @@ for epoch in range(1, opt.epochs + 1):
 
     if not opt.nbupdates is None and nb_update_network > int(opt.nbupdates):
         break
+    end_time =time.time()
+    print(f"Total Time for epoch {epoch}: {end_time-start_time}")
 # print(best_results)
 if opt.local_rank == 0:
     torch.save(net.state_dict(), f'{opt.outf}/net_{opt.namefile}_{str(epoch).zfill(2)}.pth')
