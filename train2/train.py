@@ -137,7 +137,7 @@ parser.add_argument('--data1', default=None, help='path to dataset1')
 parser.add_argument('--data2', default=None, help='path to dataset2')
 parser.add_argument('--size1', default=None, help='size of dataset1 in percentage (0,1)')
 parser.add_argument('--size2', default=None, help='size of dataset2 in percentage (0,1)')
-parser.add_argument("--local_rank", type=int)
+parser.add_argument("--local-rank", type=int)
 
 # Read the config but do not overwrite the args written 
 args, remaining_argv = conf_parser.parse_known_args()
@@ -254,7 +254,7 @@ if not opt.save:
     transform = transforms.Compose([
                                AddRandomContrast(0.2),
                                AddRandomBrightness(0.2),
-                               transforms.Scale(opt.imagesize),
+                               transforms.Resize(opt.imagesize),
                                ])
 else:
     contrast = 0.00001
