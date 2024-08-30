@@ -17,7 +17,7 @@ from PIL import Image
 from PIL import ImageDraw
 
 import sys 
-sys.path.append("inference")
+sys.path.append("../common")
 from cuboid import Cuboid3d
 from cuboid_pnp_solver import CuboidPNPSolver
 from detector import ModelData, ObjectDetector
