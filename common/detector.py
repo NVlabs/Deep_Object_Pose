@@ -233,10 +233,11 @@ class DopeNetwork(nn.Module):
 class ModelData(object):
     """This class contains methods for loading the neural network"""
 
-    def __init__(self, name="", net_path="", gpu_id=0, architecture="dope"):
+    def __init__(self, name="", net_path="", parallel=False, gpu_id=0, architecture="dope"):
         self.name = name
         self.net_path = net_path  # Path to trained network model
         self.net = None  # Trained network
+        self.parallel = parallel
         self.gpu_id = gpu_id
         self.architecture = architecture
 
@@ -260,7 +261,11 @@ class ModelData(object):
         print("Loading DOPE model '{}'...".format(path))
         net = DopeNetwork()
 
-        net = torch.nn.DataParallel(net, [0]).cuda()
+        if self.parallel:
+            net = torch.nn.DistributedDataParallel(net, [self.gpu_id]).cuda()
+        else:
+            net = net.cuda()
+
         net.load_state_dict(torch.load(path))
         net.eval()
         print(
@@ -493,8 +498,8 @@ class ObjectDetector(object):
             for j in range(tensor.size()[0]):
                 belief = tensor[j].clone()
                 if norm_belief:
-                    belief -= float(torch.min(belief)[0].data.cpu().numpy())
-                    belief /= float(torch.max(belief)[0].data.cpu().numpy())
+                    belief -= float(torch.min(belief).data.cpu().numpy())
+                    belief /= float(torch.max(belief).data.cpu().numpy())
 
                 belief = (
                     upsampling(belief.unsqueeze(0).unsqueeze(0))
