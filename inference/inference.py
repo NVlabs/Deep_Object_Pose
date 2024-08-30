@@ -21,8 +21,9 @@ class DopeNode(object):
 
     def __init__(
         self,
-        config,  # config yaml loaded eg dict
-        weight,  # path to weight
+        config,   # config yaml loaded eg dict
+        weight,   # path to weight file
+        parallel, # was it trained using DDP
         class_name,
     ):
         self.input_is_rectified = config["input_is_rectified"]
@@ -43,6 +44,7 @@ class DopeNode(object):
         self.model = ModelData(
             name=class_name,
             net_path=weight,
+            parallel=parallel
         )
         self.model.load_net_model()
         print("Model Loaded")
@@ -107,7 +109,7 @@ class DopeNode(object):
         dict_out = {"camera_data": {}, "objects": []}
 
         # Detect object
-        results, _ = ObjectDetector.detect_object_in_image(
+        results, belief_imgs = ObjectDetector.detect_object_in_image(
             self.model.net, self.pnp_solver, img, self.config_detect,
             grid_belief_debug=debug
         )
@@ -147,6 +149,8 @@ class DopeNode(object):
             os.makedirs(output_path, exist_ok=True)
 
         im.save(os.path.join(output_path, img_name_base))
+        if belief_imgs is not None:
+            belief_imgs.save(os.path.join(output_path, "belief_maps.png"))
 
         json_path = os.path.join(
             output_path, ".".join(img_name_base.split(".")[:-1]) + ".json"
@@ -185,7 +189,16 @@ if __name__ == "__main__":
         "--weight",
         "-w",
         required=True,
-        help="Path to weights or folder containing weights. If path is to a folder, then script will run inference with all of the weights in the folder. This could take a while if the set of test images is large.",
+        help="Path to weights or folder containing weights. If path is to a folder, then script "
+        "will run inference with all of the weights in the folder. This could take a while if "
+        "the set of test images is large.",
+    )
+
+    parser.add_argument(
+        "--parallel",
+        action='store_true',
+        help="Were the weights trained using DDP; if set to true, the names of later weights "
+        " will be altered during load to match the model"
     )
 
     parser.add_argument(
@@ -193,7 +206,8 @@ if __name__ == "__main__":
         nargs="+",
         type=str,
         default=["png"],
-        help="Extensions for images to use. Can have multiple entries seperated by space. e.g. png jpg",
+        help="Extensions for images to use. Can have multiple entries seperated by space. "
+        "e.g. png jpg",
     )
 
     parser.add_argument(
@@ -205,7 +219,8 @@ if __name__ == "__main__":
     parser.add_argument(
         '--debug',
         action='store_true',
-        help="Generates debugging information, including raw belief maps and annotation of the results"
+        help="Generates debugging information, including raw belief maps and annotation of "
+        "the results"
     )
 
     opt = parser.parse_args()
@@ -234,12 +249,13 @@ if __name__ == "__main__":
 
     if len(imgs) == 0 or len(imgsname) == 0:
         print(
-            "No input images found at specified path and extensions. Please check --data and --exts flags and try again."
+            "No input images found at specified path and extensions. Please check --data "
+            "and --exts flags and try again."
         )
         exit()
 
-    for w_i, weight in enumerate(weights): 
-        dope_node = DopeNode(config, weight, opt.object)
+    for w_i, weight in enumerate(weights):
+        dope_node = DopeNode(config, weight, opt.parallel, opt.object)
 
         for i in range(len(imgs)):
             print(
@@ -258,6 +274,7 @@ if __name__ == "__main__":
                 img_name=img_name,
                 output_folder=opt.outf,
                 weight=weight,
+                debug=opt.debug
             )
 
         print("------")
