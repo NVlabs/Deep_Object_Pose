@@ -8,6 +8,9 @@ The data produced by these pipelines are compatible with each
 other, and can be combined into a single dataset without
 issues.
 
+The NVISII library is no longer being maintained, so we suggest you use
+the Blenderproc version.
+
 We highly recommend a GPU with 
 [RTX capabilities](https://www.nvidia.com/en-us/geforce/news/geforce-gtx-dxr-ray-tracing-available-now/), as ray tracing can be costly on a non-RTX GPU. 
 
