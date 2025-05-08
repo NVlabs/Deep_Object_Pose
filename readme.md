@@ -9,25 +9,15 @@ This is the official repository for NVIDIA's Deep Object Pose Estimation, which 
 
 
 ## Contents
-This repository contains complete code for [training](train), [inference](inference), numerical [evaluation](evaluate) of results, and synthetic [data generation](data_generation) using either  [NVISII](https://github.com/owl-project/NVISII) or [Blenderproc](https://github.com/DLR-RM/BlenderProc).  We also provide a [ROS1 Noetic package](ros1) that performs inference on images from a USB camera.
 
-Hardware-accelerated ROS2 inference can be done with the
-[Isaac ROS DOPE](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_pose_estimation/tree/main/isaac_ros_dope) project.
+This repository contains complete code for [training](train), [inference](inference), numerical [evaluation](evaluate) of results, and synthetic [data generation](data_generation).  We also provide a [ROS1 Noetic package](ros1) that performs inference on images from a USB camera.
 
-
-### A Note On Repo Organization
-* `train2` contains the original training code, used to generate the results in the CORL paper. There have been some minor bug fixes, but this code will remain largely untouched in the future.
-* Similarly, the synthetic data generation code in `data_generation/nvisii_data_gen/` was used for the paper, but depends on a rendering library that is no longer maintained.
-* `train` contains new training code that is intended to be simpler and easier for users to understand and modify. This code will be maintained, and any new features will be added here.
-* The synthetic data generation code in `data_generation/blenderproc` is a replacement for the nvisii code, using a different rendering engine that is still actively maintained.
+Hardware-accelerated ROS2 inference can be done with the external
+[NVIDIA Isaac ROS DOPE](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_pose_estimation/tree/main/isaac_ros_dope) project.
 
 
-
-## Tested Configurations
-
-We have tested our standalone training, inference and evaluation scripts on Ubuntu 20.04 and 22.04 with Python 3.8+, using an NVIDIA Titan X, 2080Ti, and Titan RTX. 
-
-The ROS1 node has been tested with ROS Noetic using Python 3.10. The Isaac ROS2 DOPE node has been tested with ROS2 Foxy on Jetson AGX Xavier with JetPack 4.6; and on x86/Ubuntu 20.04 with a NVIDIA Titan X, 2080Ti, and Titan RTX.  
+The [original version](CoRL) of the code used for the CoRL paper is also included
+for reference, but is no longer being maintianed.
 
 
 ## Datasets
@@ -46,11 +36,16 @@ The folders are organized in the style of the YCB 3d models.
 
 The physical objects can be purchased online (details and links to Amazon can be found in the [HOPE repository README](https://github.com/swtyree/hope-dataset/).
 
-<br><br>
-
----
 
 
+## Tested Configurations
+
+We have tested our standalone training, inference and evaluation scripts on Ubuntu 20.04 and 22.04 with Python 3.8+, using an NVIDIA Titan X, 2080Ti, and Titan RTX. 
+
+The ROS1 node has been tested with ROS Noetic using Python 3.10. The Isaac ROS2 DOPE node has been tested with ROS2 Foxy on Jetson AGX Xavier with JetPack 4.6; and on x86/Ubuntu 20.04 with a NVIDIA Titan X, 2080Ti, and Titan RTX.  
+
+<br>
+<br>
 
 ## How to cite DOPE 
 
@@ -67,7 +62,7 @@ If you use this tool in a research project, please cite as follows:
 
 ## License
 
-Copyright (C) 2018-2024 NVIDIA Corporation. All rights reserved. This code is licensed under the [NVIDIA Source Code License](https://github.com/NVlabs/HANDAL/blob/main/LICENSE.txt).
+Copyright (C) 2018-2025 NVIDIA Corporation. All rights reserved. This code is licensed under the [NVIDIA Source Code License](license.md).
 
 
 ## Acknowledgment
