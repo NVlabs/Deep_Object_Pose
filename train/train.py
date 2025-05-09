@@ -7,6 +7,7 @@ Example usage:
 import argparse
 import datetime
 import os
+from queue import Queue
 import random
 import warnings
 warnings.filterwarnings("ignore")
@@ -117,6 +118,11 @@ parser.add_argument(
     default="output/weights",
     help="folder to output images and model checkpoints",
 )
+parser.add_argument("--nb_checkpoints", type=int, default=0,
+                    help="Number of checkpoints (.pth files) to save. Older ones will be "
+                    "deleted as new ones are saved. A value of 0 means an unlimited "
+                    "number will be saved")
+
 parser.add_argument("--sigma", default=4, help="keypoint creation sigma")
 parser.add_argument("--local-rank", type=int, default=0)
 
@@ -208,6 +214,9 @@ net = DopeNetwork()
 output_size = 50
 opt.sigma = 0.5
 
+# Convert object names to lower-case for comparison later
+for idx in range(len(opt.object)):
+    opt.object[idx] = opt.object[idx].lower()
 
 train_dataset = CleanVisiiDopeLoader(
     opt.data,
@@ -370,6 +379,10 @@ def _runnetwork(epoch, train_loader, syn=False):
             "loss/train_bel", np.mean(loss_avg_to_log["loss_belief"]), epoch
         )
 
+ckpt_q = None
+if opt.nb_checkpoints > 0:
+    ckpt_q = Queue(maxsize=opt.nb_checkpoints)
+
 start_epoch = 1
 if opt.pretrained and opt.net_path is not None:
     # we started with a saved checkpoint, we start numbering
@@ -383,11 +396,16 @@ for epoch in range(start_epoch, opt.epochs + 1):
 
     try:
         if local_rank == 0:
+            out_fn = f"{opt.outf}/net_{opt.namefile}_{str(epoch).zfill(4)}.pth"
+            torch.save(net.state_dict(), out_fn)
 
-            torch.save(
-                net.state_dict(),
-                f"{opt.outf}/net_{opt.namefile}_{str(epoch).zfill(2)}.pth",
-            )
+            # Clean up old checkpoints if we're limiting the number saved
+            if ckpt_q is not None:
+                if ckpt_q.full():
+                    to_del = ckpt_q.get()
+                    os.remove(to_del)
+                ckpt_q.put(out_fn)
+
     except Exception as e:
         print(f"Encountered Exception: {e}")
 
@@ -396,16 +414,16 @@ for epoch in range(start_epoch, opt.epochs + 1):
 
 if local_rank == 0:
     torch.save(
-        net.state_dict(), f"{opt.outf}/net_{opt.namefile}_{str(epoch).zfill(2)}.pth"
+        net.state_dict(), f"{opt.outf}/final_net_{opt.namefile}_{str(epoch).zfill(4)}.pth"
     )
 else:
     torch.save(
         net.state_dict(),
-        f"{opt.outf}/net_{opt.namefile}_{str(epoch).zfill(2)}_rank_{local_rank}.pth",
+        f"{opt.outf}/final_net_{opt.namefile}_{str(epoch).zfill(4)}_rank_{local_rank}.pth",
     )
 
 print("end:", datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
 print(
     "Total time taken: ",
-    str(datetime.datetime.now() - start_time).split(".")[0],
+    str(datetime.datetime.now() - start_time).split(".")[0]
 )
