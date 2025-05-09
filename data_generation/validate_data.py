@@ -6,7 +6,8 @@ import os
 from PIL import Image, ImageDraw
 from pyquaternion import Quaternion
 import sys
-
+sys.path.append("../common/")
+from cuboid import CuboidVertexType
 
 def main(json_files):
     for json_fn in json_files:
@@ -41,10 +42,27 @@ def main(json_files):
                 draw.ellipse((pt[0]-2, pt[1]-2, pt[0]+2, pt[1]+2), fill = 'cyan',
                              outline ='cyan')
 
-            line_order = [[0, 1], [1, 2], [3, 2], [3, 0], # front
-                          [4, 5], [6, 5], [6, 7], [4, 7], # back
-                          [0, 4], [7, 3], [5, 1], [2, 6], # sides
-                          [0, 5], [1,4]]                  # 'x' on top
+            line_order = [
+                # Front
+                [CuboidVertexType.FrontTopRight, CuboidVertexType.FrontTopLeft],
+                [CuboidVertexType.FrontTopLeft, CuboidVertexType.FrontBottomLeft],
+                [CuboidVertexType.FrontBottomRight, CuboidVertexType.FrontBottomLeft],
+                [CuboidVertexType.FrontBottomRight, CuboidVertexType.FrontTopRight],
+                # Rear
+                [CuboidVertexType.RearTopRight, CuboidVertexType.RearTopLeft],
+                [CuboidVertexType.RearBottomLeft, CuboidVertexType.RearTopLeft],
+                [CuboidVertexType.RearBottomLeft, CuboidVertexType.RearBottomRight],
+                [CuboidVertexType.RearTopRight, CuboidVertexType.RearBottomRight],
+                # Sides
+                [CuboidVertexType.FrontTopRight, CuboidVertexType.RearTopRight],
+                [CuboidVertexType.RearBottomRight, CuboidVertexType.FrontBottomRight],
+                [CuboidVertexType.RearTopLeft, CuboidVertexType.FrontTopLeft],
+                [CuboidVertexType.FrontBottomLeft, CuboidVertexType.RearBottomLeft],
+                # 'X' on top
+                [CuboidVertexType.FrontTopRight, CuboidVertexType.RearTopLeft],
+                [CuboidVertexType.FrontTopLeft,CuboidVertexType.RearTopRight]
+            ]
+
             for ll in line_order:
                 draw.line([(pts[ll[0]][0],pts[ll[0]][1]), (pts[ll[1]][0],pts[ll[1]][1])],
                            fill='cyan', width=1)
