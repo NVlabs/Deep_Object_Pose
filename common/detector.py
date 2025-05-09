@@ -8,12 +8,13 @@ Contains the following classes:
    - ObjectDetector - Greedy algorithm to build cuboids from belief maps 
 """
 
-import time
-
-import sys
-from os import path
-
+from collections import OrderedDict
 import numpy as np
+from os import path
+from scipy.ndimage.filters import gaussian_filter
+from scipy import optimize
+import sys
+import time
 
 import torch
 import torch.nn as nn
@@ -21,16 +22,12 @@ import torchvision.transforms as transforms
 from torch.autograd import Variable
 import torchvision.models as models
 
-from scipy.ndimage.filters import gaussian_filter
-from scipy import optimize
-
-import sys
-
+# DOPE library imports
 sys.path.append("../")
 from models import *
-
 # Import the definition of the neural network model and cuboids
 from cuboid_pnp_solver import *
+
 
 # global transform for image input
 transform = transforms.Compose(
@@ -259,14 +256,18 @@ class ModelData(object):
         """Loads network model from disk with given path"""
         model_loading_start_time = time.time()
         print("Loading DOPE model '{}'...".format(path))
-        net = DopeNetwork()
+        net = DopeNetwork().cuda()
+        state_dict = torch.load(path)
 
         if self.parallel:
-            net = torch.nn.DistributedDataParallel(net, [self.gpu_id]).cuda()
-        else:
-            net = net.cuda()
+            # we must alter the layer names
+            new_state_dict = OrderedDict()
+            for k,v in state_dict.items():
+                name = k[7:] # remove `module.`
+                new_state_dict[name] = v
+            state_dict = new_state_dict
 
-        net.load_state_dict(torch.load(path))
+        net.load_state_dict(state_dict)
         net.eval()
         print(
             "    Model loaded in {:.2f} seconds.".format(
@@ -467,7 +468,7 @@ class ObjectDetector(object):
         if in_img is None:
             return []
 
-        # print("detect_object_in_image - image shape: {}".format(in_img.shape))
+        print("detect_object_in_image - image shape: {}".format(in_img.shape))
 
         # Run network inference
         image_tensor = transform(in_img)
@@ -551,7 +552,7 @@ class ObjectDetector(object):
         detected_objects = []
         obj_name = pnp_solver.object_name
 
-        # print("find_object_poses:  found {} objects ================".format(len(objects)))
+        #print("find_object_poses:  found {} objects ================".format(len(objects)))
         for obj in objects:
             # Run PNP
             points = obj[1] + [(obj[0][0] * scale_factor, obj[0][1] * scale_factor)]

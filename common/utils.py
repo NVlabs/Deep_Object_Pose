@@ -20,7 +20,7 @@ import torch.nn.parallel
 import torch.utils.data as data
 import torchvision.transforms as transforms
 
-
+from cuboid import CuboidVertexType, CuboidLineIndexes
 
 def default_loader(path):
     return Image.open(path).convert("RGB")
@@ -179,7 +179,7 @@ class CleanVisiiDopeLoader(data.Dataset):
     ):
         ###################
         self.path_dataset = path_dataset
-        self.objects_interest = objects
+        self.objects_interest = list(map(str.lower, objects))
         self.sigma = sigma
         self.output_size = output_size
         self.extensions = append_dot(extensions)
@@ -276,7 +276,7 @@ class CleanVisiiDopeLoader(data.Dataset):
         for obj in data_json["objects"]:
             if (
                 self.objects_interest is not None
-                and not obj["class"] in self.objects_interest
+                    and not obj["class"].lower() in self.objects_interest
             ):
                 continue
             # load the projected_cuboid_keypoints
@@ -913,15 +913,16 @@ class Draw(object):
         Draws cube with a thick solid line across
         the front top edge and an X on the top face.
         """
-        line_order = [[0, 1], [1, 2], [3, 2], [3, 0],  # front
-                      [4, 5], [6, 5], [6, 7], [4, 7], # back
-                      [0, 4], [7, 3], [5, 1], [2, 6], # sides
-                      [0, 5], [1,4]]                  # x on top
-
-        for l in line_order:
+        # draw cuboid
+        for l in CuboidLineIndexes:
             self.draw_line(points[l[0]], points[l[1]], color, line_width=2)
+        # draw 'X' on top
+        X_Indexes = [[CuboidVertexType.FrontTopRight, CuboidVertexType.RearTopLeft],
+                     [CuboidVertexType.FrontTopLeft, CuboidVertexType.RearTopRight]]
+        for x in X_Indexes:
+            self.draw_line(points[x[0]], points[x[1]], color, line_width=2)
         # Draw center
-        self.draw_dot(points[8], point_color=color, point_radius=6)
+        self.draw_dot(points[CuboidVertexType.Center], point_color=color, point_radius=6)
 
         for i in range(9):
             self.draw_text(points[i], str(i), (255, 0, 0))
