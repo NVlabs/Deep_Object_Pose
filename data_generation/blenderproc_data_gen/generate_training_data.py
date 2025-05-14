@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S blenderproc run
 
 import blenderproc as bp  # must be first!
 from blenderproc.python.utility.Utility import Utility
@@ -184,21 +184,37 @@ def get_cuboid_image_space(mesh, camera):
     bbox is a list of the world-space coordinates of the corners of a
     blender object's oriented bounding box
      https://blender.stackexchange.com/questions/32283/what-are-all-values-in-bound-box
+    The points from Blender are ordered like so:
 
-                   TOP
-           3 +-----------------+ 7
+
+            2 +-----------------+ 6
+             /|                /|
+            /                 / |
+         1 +-----------------+ 5
+           |     z    y      |  |
+           |      | /        |  |
+           |      |/         |  |
+           |  |   *--- x     |  |
+            3 +------------  |  + 7
+           | /               | /
+           |                 |/
+         0 +-----------------+ 4
+
+      But these points must be arranged to match the NVISII ordering
+      (Deep_Object_Pose/data_generation/nvisii_data_gen/utils.py:927)
+
+           3 +-----------------+ 0
             /                 /|
            /                 / |
-        2 +-----------------+ 6
-          |     z    y      |  |
-          |      | /        |  |
-          |      |/         |  |
-          |  |   +--- x     |  |
-           0 +-             |  + 4
-          | /               | /
-          |                 |/
-        1 +-----------------+ 5
-                FRONT
+        2 +-----------------+ 1|
+          |     z    x      |  |
+          |       | /       |  |
+          |       |/        |  |
+          |  y <--*         |  |
+          | 7 +----         |  + 4
+          |  /              | /
+          | /               |/
+        6 +-----------------+ 5
 
     '''
 
@@ -214,8 +230,9 @@ def get_cuboid_image_space(mesh, camera):
     K = camera.get_intrinsics_as_K_matrix()
 
     # However these points are in a different order than the original DOPE data format,
-    # so we must reorder them
+    # so we must reorder them (including coordinate frame changes)
     dope_order = [6, 2, 1, 5, 7, 3, 0, 4]
+
     cuboid = [None for ii in range(9)]
     for ii in range(8):
         cuboid[dope_order[ii]] = cv2.projectPoints(bbox[ii], rvec, tvec, K, np.array([]))[0][0][0]

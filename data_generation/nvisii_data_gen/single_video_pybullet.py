@@ -40,7 +40,7 @@ parser.add_argument(
 )
 # TODO: change for an array
 parser.add_argument(
-    '--objs_folder_distrators',
+    '--objs_folder_distractors',
     default='google_scanned_models/',
     help = "object to load folder"
 )
@@ -395,7 +395,7 @@ def adding_mesh_object(
         names_to_export.append(entity_name)
         add_cuboid(entity_name, scale=scale, debug=debug)
 
-google_content_folder = glob.glob(opt.objs_folder_distrators + "*/")
+google_content_folder = glob.glob(opt.objs_folder_distractors + "*/")
 
 for i_obj in range(int(opt.nb_distractors)):
 

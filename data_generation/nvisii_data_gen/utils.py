@@ -932,7 +932,7 @@ def add_cuboid(name, scale=1, debug=False):
           |       ^ z       |  |
           |       |         |  |
           |  y <--x         |  |
-      (y) |                 |  + 4 (g)
+    (y) 7 |                 |  + 4 (g)
           |                 | /
           |                 |/
     (y) 6 +-----------------+ 5 (g)

@@ -38,34 +38,37 @@ def main(json_files):
         for oo in objects:
             draw = ImageDraw.Draw(img)
             pts = oo['projected_cuboid']
-            for pt in pts:
+            for idx, pt in enumerate(pts):
                 draw.ellipse((pt[0]-2, pt[1]-2, pt[0]+2, pt[1]+2), fill = 'cyan',
                              outline ='cyan')
 
+            # Note that the enum names DO NOT MATCH the positions of the points
+            # when projected into 3D. This is an old bug that will not be fixed,
+            # as it will result in errors in inference in older trained models
             line_order = [
                 # Front
-                [CuboidVertexType.FrontTopRight, CuboidVertexType.FrontTopLeft],
-                [CuboidVertexType.FrontTopLeft, CuboidVertexType.FrontBottomLeft],
-                [CuboidVertexType.FrontBottomRight, CuboidVertexType.FrontBottomLeft],
-                [CuboidVertexType.FrontBottomRight, CuboidVertexType.FrontTopRight],
+                [CuboidVertexType.FrontTopRight,    CuboidVertexType.FrontTopLeft,     'red'],
+                [CuboidVertexType.FrontTopLeft,     CuboidVertexType.FrontBottomLeft,  'red'],
+                [CuboidVertexType.FrontBottomRight, CuboidVertexType.FrontBottomLeft,  'red'],
+                [CuboidVertexType.FrontBottomRight, CuboidVertexType.FrontTopRight,    'red'],
                 # Rear
-                [CuboidVertexType.RearTopRight, CuboidVertexType.RearTopLeft],
-                [CuboidVertexType.RearBottomLeft, CuboidVertexType.RearTopLeft],
-                [CuboidVertexType.RearBottomLeft, CuboidVertexType.RearBottomRight],
-                [CuboidVertexType.RearTopRight, CuboidVertexType.RearBottomRight],
+                [CuboidVertexType.RearTopRight,     CuboidVertexType.RearTopLeft,      'cyan'],
+                [CuboidVertexType.RearBottomLeft,   CuboidVertexType.RearTopLeft,      'cyan'],
+                [CuboidVertexType.RearBottomLeft,   CuboidVertexType.RearBottomRight,  'cyan'],
+                [CuboidVertexType.RearTopRight,     CuboidVertexType.RearBottomRight,  'cyan'],
                 # Sides
-                [CuboidVertexType.FrontTopRight, CuboidVertexType.RearTopRight],
-                [CuboidVertexType.RearBottomRight, CuboidVertexType.FrontBottomRight],
-                [CuboidVertexType.RearTopLeft, CuboidVertexType.FrontTopLeft],
-                [CuboidVertexType.FrontBottomLeft, CuboidVertexType.RearBottomLeft],
+                [CuboidVertexType.FrontTopRight,    CuboidVertexType.RearTopRight,     'green'],
+                [CuboidVertexType.RearBottomRight,  CuboidVertexType.FrontBottomRight, 'green'],
+                [CuboidVertexType.RearTopLeft,      CuboidVertexType.FrontTopLeft,     'cyan'],
+                [CuboidVertexType.FrontBottomLeft,  CuboidVertexType.RearBottomLeft,   'cyan'],
                 # 'X' on top
-                [CuboidVertexType.FrontTopRight, CuboidVertexType.RearTopLeft],
-                [CuboidVertexType.FrontTopLeft,CuboidVertexType.RearTopRight]
+                [CuboidVertexType.FrontTopRight,    CuboidVertexType.RearTopLeft,      'cyan'],
+                [CuboidVertexType.FrontTopLeft,     CuboidVertexType.RearTopRight,     'cyan']
             ]
 
             for ll in line_order:
                 draw.line([(pts[ll[0]][0],pts[ll[0]][1]), (pts[ll[1]][0],pts[ll[1]][1])],
-                           fill='cyan', width=1)
+                           fill=ll[2], width=1)
 
         img.save(base+'-output.png')
 
