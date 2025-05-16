@@ -19,6 +19,8 @@ Hardware-accelerated ROS2 inference can be done with the external
 The [original version](CoRL) of the code used for the CoRL paper is also included
 for reference, but is no longer being maintianed.
 
+## Examples
+We provide a [walkthrough](walkthrough.md) of the entire pipeline: generating data, training a model, and inference.
 
 ## Datasets
 

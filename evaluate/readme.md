@@ -1,5 +1,9 @@
 # Deep Object Pose Estimation (DOPE) - Evaluation 
 
+## IMPORTANT NOTE
+These utilities currently require NVISII for visualization.
+
+
 ## Simple Performance Evaluation
 This directory contains code to measure the performance of your trained DOPE model.  Below is an example of running the basic evaluation script:
 
