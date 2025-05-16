@@ -18,7 +18,7 @@ import math
 from scipy import spatial
 
 import simplejson as json
-import visii
+import nvisii as visii
 import csv
 
 from utils_eval import *

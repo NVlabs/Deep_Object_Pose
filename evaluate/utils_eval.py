@@ -1,5 +1,5 @@
 import os
-import visii
+import nvisii as visii
 import numpy as np
 
 
@@ -125,6 +125,7 @@ def loadmodels(root, cuboid, suffix=""):
             for path_entry in folders:
                 explore(path_entry)
         else:
+            print("Looking at:", path)
             path_obj = os.path.join(path, "textured_simple.obj")
             path_tex = os.path.join(path, "texture_map.png")
 
