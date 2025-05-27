@@ -93,7 +93,7 @@ You can change the `obj_to_load` and `texture_to_load` to match your data format
 
 ## Updates
 
-- 11/01/2022: Added the possility to load a single object with `--path_single_obj`. Just give the direct path to the object. 
+- 11/01/2022: Added the possibility to load a single object with `--path_single_obj`. Just give the direct path to the object. 
 This function uses [nvisii.import_scene()](https://nvisii.com/nvisii.html#nvisii.import_scene). 
 If the obj file is complex, it will break the object into sub components, 
 so you might not have the projected cuboid, and you will get each pose of the different components with the cuboid. 

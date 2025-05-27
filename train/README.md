@@ -1,7 +1,7 @@
 # Deep Object Pose Estimation (DOPE) - Training 
 
 This repo contains a simplified version of the training pipeline for DOPE.
-Scripts for inference, evaluation, and data visualization can be found in this repo's top-level directories `inference` and `evaluate`.
+Scripts for inference, evaluation, and data visualization can be found in this repos top-level directories `inference` and `evaluate`.
 
 A user report of training DOPE on a single GPU using NVISII-created synthetic data can [be found here](https://github.com/NVlabs/Deep_Object_Pose/issues/155#issuecomment-791148200).
 
@@ -30,7 +30,7 @@ The ``--data`` flag specifies the path to the training data. There can be multip
 
 The ``--object`` flag specifies the name of the object to train the DOPE model on.
 Although multiple objects can be passed in, DOPE is designed to be trained for a specific object. For best results, only specify one object.
-The name of this object must match the `"class"` field in groundtruth `.json` files.
+The name of this object must match the `"class"` field in ground-truth `.json` files.
 
 To get a full list of the command line arguments, run `python train.py --help`.
 

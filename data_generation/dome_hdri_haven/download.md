@@ -1,1 +1,1 @@
-download hdri maps from https://polyhaven.com/hdris 
+Download HDRI maps from https://polyhaven.com/hdris

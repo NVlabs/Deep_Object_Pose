@@ -17,14 +17,14 @@ Hardware-accelerated ROS2 inference can be done with the external
 
 
 The [original version](CoRL) of the code used for the CoRL paper is also included
-for reference, but is no longer being maintianed.
+for reference, but is no longer being maintained.
 
 ## Walkthrough
 We provide a [walkthrough](walkthrough.md) of the entire pipeline: generating data, training a model, and inference.
 
 ## Datasets
 
-We have trained and tested DOPE with two publicaly available datasets: YCB, and HOPE. The trained weights can be [downloaded from Google Drive](https://drive.google.com/drive/folders/1DfoA3m_Bm0fW8tOWXGVxi4ETlLEAgmcg).
+We have trained and tested DOPE with two publicly available datasets: YCB, and HOPE. The trained weights can be [downloaded from Google Drive](https://drive.google.com/drive/folders/1DfoA3m_Bm0fW8tOWXGVxi4ETlLEAgmcg).
 
 
 

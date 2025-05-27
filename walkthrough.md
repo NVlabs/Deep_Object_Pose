@@ -24,7 +24,7 @@ structure:
 `~/data/models/` contains our "hero" models in subdirectories; e.g. `~/data/models/Ketchup`.
 
 ## Data Generation
-We will use the Blenderproc data generation utilities.  In the `data_generation/blenderproc_data_gen` directory, run the following command:
+We will use the BlenderProc data generation utilities.  In the `data_generation/blenderproc_data_gen` directory, run the following command:
 
 ```
 ./run_blenderproc_datagen.py --nb_runs 10 --nb_frames 50000 --path_single_obj ~/data/models/Ketchup/google_16k/textured.obj --nb_objects 1 --distractors_folder ~/data/google_scanned_models/ --nb_distractors 10 --backgrounds_folder ~/data/dome_hdri_haven/ --outf ~/data/KetchupData
@@ -47,7 +47,7 @@ This command will train DOPE for 2000 epochs, saving a checkpoint every 100 epoc
 When training is finished, you will have several saved checkpoints including the final one: `final_net_epoch_2000.pth`.  We will use this checkpoint for inference.
 
 
-Generate a small number of new images in the same distrubution as your training images. We will use these for inference testing and evaluation.
+Generate a small number of new images in the same distribution as your training images. We will use these for inference testing and evaluation.
 ```
 ./run_blenderproc_datagen.py --nb_runs 2 --nb_frames 20 --path_single_obj ~/data/models/Ketchup/google_16k/textured.obj --nb_objects 1 --distractors_folder ~/data/google_scanned_models/ --nb_distractors 10 --backgrounds_folder ~/data/dome_hdri_haven/ --outf ~/data/KetchupTest
 ```

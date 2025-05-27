@@ -12,7 +12,7 @@ python evaluate.py --data_prediction ../inference/output --data ../sample_data
 ```
 ### Arguments 
 #### `--data`:
-Path to groundtruth data for the predictions that you wish to evaluate. 
+Path to ground-truth data for the predictions that you wish to evaluate. 
 
 #### `--data_prediction`:
 Path to predictions that were generated from running inference on your trained model. To support the evaluation of multiple sets of weights at once, this path can point to a folder containing the outputs of multiple inference results. 
@@ -92,8 +92,8 @@ These are the metrics we reported in the original DOPE paper. I will refer to th
 ## Assumptions
 We make a few assumptions in this script. 
 1. We assume the folders structures are the same and there are only scenes in the folder. See `data/` folder example from downloading the content. 
-2. We assume the notation folder is in the opengl format and that it is using the nvisii outputs from the data generation pipeline. If you use a diffirent file format please update the script or your data. 
-3. We assume the inferences are from DOPE inference, _e.g._, the poses are in the opengl format. These conventions are easy to change, _e.g._, look for the line `visii_gu.get_transform().rotate_around` in `add_compute.py` to change the pose convention.
+2. We assume the notation folder is in the OpenGL format and that it is using the nvisii outputs from the data generation pipeline. If you use a different file format please update the script or your data. 
+3. We assume the inferences are from DOPE inference, _e.g._, the poses are in the OpenGL format. These conventions are easy to change, _e.g._, look for the line `visii_gu.get_transform().rotate_around` in `add_compute.py` to change the pose convention.
 
 If the script takes to long to run, please run with `--cuboid`, instead of using the 3d models vertices to compare the metric, it uses the 3d cuboid of the 3d model to compute the metric.
 
@@ -124,7 +124,7 @@ Using the same argument, you can use this script on the BOP annotation with 3d m
 python render_json.py --path_json /PATH/TO/hope_bop/hope_val/val/000001/scene_gt.json --bop --objs_folder /PATH/TO/hope_bop/hope_models/models/ --gray --contour --bop_scene 0
 ```
 
-Only `--bop` is needed to be passed to load a bop scene. You can pass which scene you want to load with `--bop_scene`. The rest is the same behaviour. This was only tested on the HOPE data. 
+Only `--bop` is needed to be passed to load a bop scene. You can pass which scene you want to load with `--bop_scene`. The rest is the same behavior. This was only tested on the HOPE data. 
 
 ## Assumptions 
 

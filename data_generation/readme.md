@@ -3,11 +3,11 @@
 This directory contains code for data generation (both
 images and associated JSON files) for training DOPE. 
 The newer version of the data generation code uses 
-[Blenderproc](https://github.com/DLR-RM/BlenderProc) for rendering.
+[BlenderProc](https://github.com/DLR-RM/BlenderProc) for rendering.
 
 The original CoRL paper used the [NVISII](https://github.com/owl-project/NVISII) library
 for rendering.  However, NVISII is no longer being maintained so we suggest you use
-the newer Blenderproc version. 
+the newer BlenderProc version. 
 
 The data produced by the new and old pipelines are compatible with each
 other, and can be combined into a single dataset without
@@ -60,7 +60,7 @@ All length measurements are in meters.
 
 The indices of the 3D bounding cuboid are in the order shown in the sketch below (0..7), with the object being in its neutral orientation (X axis pointing forward, Y left, Z up).
 
-The order of the indices is the same as NVidia Deep learning Dataset Synthesizer (NDDS) and nvdu_viz from NVidia Dataset Utilities.
+The order of the indices is the same as NVIDIA Deep learning Dataset Synthesizer (NDDS) and nvdu_viz from NVIDIA Dataset Utilities.
 
 ```text
    (m) 3 +-----------------+ 0 (b)
@@ -115,7 +115,7 @@ If your object has any rotational symmetries, they have to be handled specially.
 
 ## Cylinder object
 
-Here is a video that demonstrates what happens with a rotationally symmetric object if you do not specifiy the symmetries:
+Here is a video that demonstrates what happens with a rotationally symmetric object if you do not specify the symmetries:
 
 https://user-images.githubusercontent.com/320188/159683931-8e87f778-8711-4e54-9ad8-536cf5862e01.mp4
 
@@ -142,7 +142,7 @@ As you can see, we have specified one *discrete* symmetry (rotating the object b
 2. Combine all discrete and continuous symmetries into one set of complete symmetry transformations.
 3. Find the combined symmetry transformation such that when the object is rotated by that transformation,
     - the y axis of the object (`"object": [0, 1, 0]`) has the best alignment (smallest angle) with the z axis of the camera (`"camera": [0, 0, 1]`)
-    - if there are multiple equally good such transformations, it will choose the obje where the z axis of the object (`"object": [0, 0, 1]`) has the best alignment with the y axis of the camera (`"camera": [0, 1, 0]`).
+    - if there are multiple equally good such transformations, it will choose the object where the z axis of the object (`"object": [0, 0, 1]`) has the best alignment with the y axis of the camera (`"camera": [0, 1, 0]`).
 
 See below for a documentation of the object and camera coordinate systems.
 
