@@ -51,7 +51,7 @@ Generate a small number of new images in the same distrubution as your training 
 ```
 ./run_blenderproc_datagen.py --nb_runs 2 --nb_frames 20 --path_single_obj ~/data/models/Ketchup/google_16k/textured.obj --nb_objects 1 --distractors_folder ~/data/google_scanned_models/ --nb_distractors 10 --backgrounds_folder ~/data/dome_hdri_haven/ --outf ~/data/KetchupTest
 ```
-For convenience, we have uploaded 20 test images and JSON files to the  [Google Drive](https://drive.google.com/drive/folders/1zq4yJUj8lTn56bWdOMnkCr1Wmj0dq-GL).
+For convenience, we have uploaded 20 test images and JSON files to the  [Google Drive](https://drive.google.com/drive/folders/1zq4yJUj8lTn56bWdOMnkCr1Wmj0dq-GL)
  location mentioned above.
 
 
