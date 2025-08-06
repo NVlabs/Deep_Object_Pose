@@ -231,7 +231,7 @@ def get_cuboid_image_space(mesh, camera):
 
     # However these points are in a different order than the original DOPE data format,
     # so we must reorder them (including coordinate frame changes)
-    dope_order = [6, 2, 1, 5, 7, 3, 0, 4]
+    dope_order = [5, 1, 2, 6, 4, 0, 3, 7]
 
     cuboid = [None for ii in range(9)]
     for ii in range(8):
@@ -464,9 +464,6 @@ def main(args):
         obj.set_cp("category_id", 1+idx)
         objects.append(obj)
         obj_class = args.object_class
-        if obj_class is None:
-            # e.g. 'models/Ketchup/google_16k/textured.obj'
-            obj_class = os.path.split(os.path.split(os.path.split(model_path)[0])[0])[1]
         obj_name = obj_class + "_" + str(idx).zfill(3)
         objects_data.append({'class': obj_class,
                             'name': obj_name,
@@ -620,9 +617,8 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         '--object_class',
-        default=None,
-        help="The class name of the object(s). If none is provided, the name of the directory "
-        "containing the model(s) will be used."
+        required=True,
+        help="The class name of the object(s) you will be training to recognize."
     )
     parser.add_argument(
         '--scale',
