@@ -60,24 +60,30 @@ All length measurements are in meters.
 
 The indices of the 3D bounding cuboid are in the order shown in the sketch below (0..7), with the object being in its neutral orientation (X axis pointing forward, Y left, Z up).
 
-The order of the indices is the same as NVIDIA Deep learning Dataset Synthesizer (NDDS) and nvdu_viz from NVIDIA Dataset Utilities.
+The order of the indices is the same as NVIDIA Deep learning Dataset 
+Synthesizer (NDDS) and nvdu_viz from NVIDIA Dataset Utilities. Point '8' is
+the centoid.
 
 ```text
-   (m) 3 +-----------------+ 0 (b)
+       3 +-----------------+ 2
         /                 /|
        /                 / |
-(m) 2 +-----------------+ 1| (b)
+    7 +-----------------+ 6|
       |                 |  |
       |         ^ z     |  |
       |         |       |  |
       |    y <--x       |  |
       |  |              |  |
-   (y) 7 +--            |  + 4 (g)
+       0 +--            |  + 1
       | /               | /
       |/                |/
-(y) 6 +-----------------+ 5 (g)
+    4 +-----------------+ 5
+            REAR
 ```
-Debug markers for the cuboid corners can be rendered using the `--debug` option, with (b) = blue, (m) = magenta, (g) = green, (y) = yellow and the centroid being white.
+
+Cuboid markers and the cuboid bounding boxes can be visualized with the `validate_data.py` script
+in this directory.
+
 
 ## JSON Fields
 
