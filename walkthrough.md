@@ -27,7 +27,7 @@ structure:
 We will use the BlenderProc data generation utilities.  In the `data_generation/blenderproc_data_gen` directory, run the following command:
 
 ```
-./run_blenderproc_datagen.py --nb_runs 10 --nb_frames 50000 --path_single_obj ~/data/models/Ketchup/google_16k/textured.obj --nb_objects 1 --distractors_folder ~/data/google_scanned_models/ --nb_distractors 10 --backgrounds_folder ~/data/dome_hdri_haven/ --outf ~/data/KetchupData
+./run_blenderproc_datagen.py --nb_runs 10 --nb_frames 50000 --path_single_obj ~/data/models/Ketchup/google_16k/textured.obj --nb_objects 1 --object_class Ketchup --distractors_folder ~/data/google_scanned_models/ --nb_distractors 10 --backgrounds_folder ~/data/dome_hdri_haven/ --outf ~/data/KetchupData
 ```
 
 This will create ten subdirectories under the `~/data/KetchupData` directory, each containing 5000 images (`nb_images` divided by `nb_runs`).  For Blender efficiency reasons, the distractors are only changed from run to run. That is, we will have 10 different selections of distractors in our 50,000 images.  If you want 

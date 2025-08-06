@@ -21,15 +21,6 @@ def main(json_files):
         # Load JSON data
         with open(json_fn, 'r') as F:
             data_json = json.load(F)
-        up = np.array(data_json['camera_data']['camera_look_at']['up'])
-        at = np.array(data_json['camera_data']['camera_look_at']['at'])
-        eye = np.array(data_json['camera_data']['camera_look_at']['eye'])
-
-        cam_matrix = np.eye(4)
-        cam_matrix[0:3,0] = up
-        cam_matrix[0:3,1] = np.cross(up, -at)
-        cam_matrix[0:3,2] = -at
-        cam_matrix[0:3,3] = -eye
 
         img = Image.open(img_fn)
 
@@ -39,8 +30,10 @@ def main(json_files):
             draw = ImageDraw.Draw(img)
             pts = oo['projected_cuboid']
             for idx, pt in enumerate(pts):
-                draw.ellipse((pt[0]-2, pt[1]-2, pt[0]+2, pt[1]+2), fill = 'cyan',
-                             outline ='cyan')
+                pos = (pt[0]-2, pt[1]-2, pt[0]+2, pt[1]+2)
+                draw.ellipse(pos, fill = 'cyan', outline ='cyan')
+                pos = (pos[0]-4, pos[1]-4)
+                draw.text(pos, str(idx), align ="left")
 
             # Note that the enum names DO NOT MATCH the positions of the points
             # when projected into 3D. This is an old bug that will not be fixed,
